@@ -1,0 +1,52 @@
+# Dependências
+node_modules/
+vendor/
+target/
+build/
+dist/
+out/
+
+# Ambiente e segredos — nunca commitar credenciais de envio de e-mail
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+
+# Dados — protótipo usa dados fictícios; nada real entra no repo
+*.db
+*.sqlite
+*.sqlite3
+/data/real/
+*.csv
+*.xlsx
+!docs/**/*.xlsx
+
+# Build / compilação
+*.class
+*.jar
+*.war
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.swp
+
+# Sistema operacional
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Temporários do Office (arquivos de bloqueio ao abrir .docx)
+~$*
