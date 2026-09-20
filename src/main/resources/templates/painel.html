@@ -185,6 +185,59 @@
 
         form { display: inline-flex; gap: 6px; align-items: center; margin: 0; }
 
+        .cartao {
+            background: var(--cartao);
+            border: 1px solid var(--borda);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 32px 0 24px;
+        }
+
+        .cartao h2 { margin: 0 0 4px; font-size: 17px; }
+        .cartao .dica { margin: 0 0 16px; font-size: 13px; color: var(--suave); }
+
+        .campos {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+        }
+
+        .campo { display: flex; flex-direction: column; gap: 4px; }
+        .campo label { font-size: 12px; color: var(--suave); }
+
+        .campo input, .campo select {
+            padding: 8px 10px;
+            border: 1px solid var(--borda);
+            border-radius: 6px;
+            background: var(--fundo);
+            color: var(--texto);
+            font-family: inherit;
+            font-size: 14px;
+            width: 100%;
+        }
+
+        .erro { color: var(--critico); font-size: 12px; }
+
+        .consentimento {
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+            margin: 16px 0;
+            font-size: 13px;
+            color: var(--suave);
+        }
+
+        .consentimento input { margin-top: 2px; }
+
+        .envio-real {
+            background: var(--critico-bg);
+            border: 1px solid var(--critico);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
+
         footer {
             margin-top: 32px;
             padding-top: 16px;
@@ -221,6 +274,10 @@
             <div class="numero critico" th:text="${totalEmFalta}">4</div>
             <div class="rotulo">em nível baixo (atenção ou crítico)</div>
         </div>
+        <div class="indicador">
+            <div class="numero" th:text="${totalDoadores}">120</div>
+            <div class="rotulo">doadores cadastrados</div>
+        </div>
     </div>
 
     <div class="tipo" th:each="s : ${situacoes}">
@@ -253,6 +310,89 @@
                 <button type="submit">Convocar doadores</button>
             </form>
         </div>
+    </div>
+
+    <div class="cartao">
+        <h2>Cadastrar doador</h2>
+        <p class="dica">
+            Para testar o envio de verdade, cadastre-se com seu próprio e-mail e depois clique em
+            &ldquo;Convocar doadores&rdquo; no tipo sanguíneo correspondente.
+        </p>
+
+        <div class="envio-real" th:if="${envioReal}">
+            <strong>Envio real ativo.</strong>
+            <span th:if="${#strings.isEmpty(destinatarioTeste)}">
+                As mensagens irão para o e-mail de cada doador.
+            </span>
+            <span th:unless="${#strings.isEmpty(destinatarioTeste)}">
+                Todas as mensagens estão sendo redirecionadas para
+                <strong th:text="${destinatarioTeste}">endereco</strong>.
+            </span>
+        </div>
+
+        <form th:action="@{/doadores}" th:object="${novoDoador}" method="post" style="display:block;">
+            <div class="campos">
+                <div class="campo">
+                    <label for="nome">Nome completo</label>
+                    <input type="text" id="nome" th:field="*{nome}"/>
+                    <span class="erro" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></span>
+                </div>
+
+                <div class="campo">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" th:field="*{email}"/>
+                    <span class="erro" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+                </div>
+
+                <div class="campo">
+                    <label for="tipoSanguineo">Tipo sanguíneo</label>
+                    <select id="tipoSanguineo" th:field="*{tipoSanguineo}">
+                        <option value="">Selecione</option>
+                        <option th:each="t : ${tiposSanguineos}" th:value="${t}" th:text="${t.sigla}">A+</option>
+                    </select>
+                    <span class="erro" th:if="${#fields.hasErrors('tipoSanguineo')}" th:errors="*{tipoSanguineo}"></span>
+                </div>
+
+                <div class="campo">
+                    <label for="sexo">Sexo</label>
+                    <select id="sexo" th:field="*{sexo}">
+                        <option value="">Selecione</option>
+                        <option th:each="sx : ${sexos}" th:value="${sx}"
+                                th:text="${sx == T(br.univille.sendhemosc.domain.enums.Sexo).MASCULINO
+                                          ? 'Masculino' : 'Feminino'}">Masculino</option>
+                    </select>
+                    <span class="erro" th:if="${#fields.hasErrors('sexo')}" th:errors="*{sexo}"></span>
+                </div>
+
+                <div class="campo">
+                    <label for="dataNascimento">Data de nascimento</label>
+                    <input type="date" id="dataNascimento" th:field="*{dataNascimento}"/>
+                    <span class="erro" th:if="${#fields.hasErrors('dataNascimento')}"
+                          th:errors="*{dataNascimento}"></span>
+                </div>
+
+                <div class="campo">
+                    <label for="pesoKg">Peso (kg) &mdash; opcional</label>
+                    <input type="number" id="pesoKg" step="0.1" min="0" th:field="*{pesoKg}"/>
+                </div>
+
+                <div class="campo">
+                    <label for="telefone">Telefone &mdash; opcional</label>
+                    <input type="text" id="telefone" th:field="*{telefone}"/>
+                </div>
+            </div>
+
+            <label class="consentimento">
+                <input type="checkbox" th:field="*{aceitaContato}"/>
+                <span>
+                    Autorizo o recebimento de convocações por e-mail quando meu tipo sanguíneo estiver
+                    em falta. Posso cancelar a qualquer momento pelo link presente em toda mensagem.
+                    <strong>Sem esta autorização o doador não recebe convocação</strong> &mdash; exigência da LGPD.
+                </span>
+            </label>
+
+            <button type="submit">Cadastrar doador</button>
+        </form>
     </div>
 
     <footer>

@@ -1,6 +1,7 @@
 package br.univille.sendhemosc.domain.port.outbound;
 
 import br.univille.sendhemosc.domain.dto.CandidatoConvocacao;
+import br.univille.sendhemosc.domain.dto.NovoDoador;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
@@ -21,6 +22,29 @@ public interface IDoadorRepositoryPort {
      * @return lista de candidatos a convocacao
      */
     List<CandidatoConvocacao> buscarCandidatos(Set<String> siglasTipoSanguineo, LocalDate referencia);
+
+    /**
+     * Indica se ja existe doador cadastrado com o e-mail informado.
+     *
+     * @param email endereco a verificar
+     * @return true se o e-mail ja esta em uso
+     */
+    boolean existeComEmail(String email);
+
+    /**
+     * Persiste um novo doador, gerando o token usado no link de descadastro.
+     *
+     * @param doador dados do cadastro
+     * @return identificador do doador criado
+     */
+    Long salvar(NovoDoador doador);
+
+    /**
+     * Total de doadores cadastrados.
+     *
+     * @return quantidade de doadores
+     */
+    long contar();
 
     /**
      * Revoga o consentimento de contato do doador a partir do token do link de descadastro.

@@ -1,13 +1,17 @@
 package br.univille.sendhemosc.adapter.outbound.persistence;
 
+import br.univille.sendhemosc.adapter.outbound.persistence.entity.DoadorEntity;
 import br.univille.sendhemosc.adapter.outbound.persistence.repository.DoadorJpaRepository;
 import br.univille.sendhemosc.domain.dto.CandidatoConvocacao;
+import br.univille.sendhemosc.domain.dto.NovoDoador;
 import br.univille.sendhemosc.domain.enums.Sexo;
 import br.univille.sendhemosc.domain.enums.TipoSanguineo;
 import br.univille.sendhemosc.domain.port.outbound.IDoadorRepositoryPort;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -41,6 +45,41 @@ public class DoadorPersistenceAdapter implements IDoadorRepositoryPort {
                         projecao.getUltimaDoacao(),
                         projecao.getDoacoesJanela()))
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existeComEmail(final String email) {
+        return doadorRepository.existsByEmail(email);
+    }
+
+    @Override
+    @Transactional
+    public Long salvar(final NovoDoador doador) {
+        final LocalDateTime agora = LocalDateTime.now();
+
+        final DoadorEntity entidade = doadorRepository.save(DoadorEntity.builder()
+                .nome(doador.nome())
+                .email(doador.email())
+                .telefone(doador.telefone())
+                .tipoSanguineo(doador.tipoSanguineo().getSigla())
+                .sexo(doador.sexo())
+                .dataNascimento(doador.dataNascimento())
+                .pesoKg(doador.pesoKg())
+                .ativo(true)
+                .aceitaContato(doador.aceitaContato())
+                .tokenDescadastro(UUID.randomUUID().toString())
+                .criadoEm(agora)
+                .atualizadoEm(agora)
+                .build());
+
+        return entidade.getId();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long contar() {
+        return doadorRepository.count();
     }
 
     @Override
