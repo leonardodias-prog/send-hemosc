@@ -1,0 +1,31 @@
+# Sobe o ambiente completo do prototipo: banco PostgreSQL e caixa de e-mail falsa.
+# Requer Docker instalado. Sem Docker, use o perfil dev (H2 em memoria + e-mail em log).
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: sendhemosc-db
+    environment:
+      POSTGRES_DB: sendhemosc
+      POSTGRES_USER: sendhemosc
+      POSTGRES_PASSWORD: sendhemosc
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sendhemosc"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Caixa de entrada falsa: captura todo e-mail enviado, nada sai para a internet.
+  # Interface web em http://localhost:8025
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: sendhemosc-mail
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+volumes:
+  postgres-data:

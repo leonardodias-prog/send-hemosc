@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Convocação de doador</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;color:#18181b;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:24px 12px;">
+    <tr>
+        <td align="center">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                   style="max-width:560px;background:#ffffff;border-radius:8px;overflow:hidden;">
+                <tr>
+                    <td style="background:#b91c1c;padding:20px 24px;color:#ffffff;">
+                        <h1 style="margin:0;font-size:20px;">Send Hemosc</h1>
+                        <p style="margin:4px 0 0;font-size:13px;opacity:.9;">Agência Transfusional &middot; Joinville/SC</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:24px;">
+                        <p style="margin:0 0 16px;font-size:16px;">
+                            Olá, <strong th:text="${nomeDoador}">Nome do doador</strong>.
+                        </p>
+
+                        <p style="margin:0 0 16px;font-size:15px;line-height:1.6;">
+                            O estoque de sangue do tipo
+                            <strong th:text="${tipoNecessario}">O-</strong>
+                            está em nível
+                            <strong th:text="${nivel}">crítico</strong>
+                            (<span th:text="${percentual}">18</span>% da capacidade).
+                        </p>
+
+                        <p style="margin:0 0 16px;font-size:15px;line-height:1.6;">
+                            Você está recebendo esta mensagem porque seu tipo sanguíneo
+                            (<strong th:text="${tipoDoador}">O-</strong>) é compatível e, pelo nosso registro,
+                            você já cumpriu o intervalo mínimo desde a última doação.
+                        </p>
+
+                        <table role="presentation" cellpadding="0" cellspacing="0" style="margin:20px 0;">
+                            <tr>
+                                <td style="background:#b91c1c;border-radius:6px;">
+                                    <a href="https://www.hemosc.org.br"
+                                       style="display:inline-block;padding:12px 24px;color:#ffffff;text-decoration:none;font-size:15px;font-weight:bold;">
+                                        Quero agendar minha doação
+                                    </a>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <p style="margin:0;font-size:13px;color:#52525b;line-height:1.6;">
+                            Leve um documento com foto, alimente-se bem antes e evite alimentos gordurosos
+                            nas 4 horas anteriores à doação.
+                        </p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:16px 24px;background:#fafafa;border-top:1px solid #e4e4e7;">
+                        <p style="margin:0 0 8px;font-size:12px;color:#71717a;line-height:1.5;">
+                            <strong>PROTÓTIPO ACADÊMICO.</strong> Mensagem gerada por um trabalho de extensão da
+                            UNIVILLE com dados fictícios. Não representa comunicação oficial do HEMOSC.
+                        </p>
+                        <p style="margin:0;font-size:12px;color:#71717a;">
+                            Não quer mais receber estas mensagens?
+                            <a th:href="${linkDescadastro}" href="#"
+                               style="color:#b91c1c;">Cancelar inscrição</a>.
+                        </p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

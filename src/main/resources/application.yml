@@ -1,0 +1,68 @@
+spring:
+  application:
+    name: send-hemosc
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: America/Sao_Paulo
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+  thymeleaf:
+    cache: false
+
+  messages:
+    basename: messages
+    encoding: UTF-8
+
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: always
+    include-stacktrace: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# ---------------------------------------------------------------------------
+# Regras de negócio do domínio.
+#
+# ATENCAO: os valores abaixo reproduzem a normativa vigente de hemoterapia,
+# mas PRECISAM SER VALIDADOS FORMALMENTE pela equipe do HEMOSC antes de
+# qualquer uso que não seja demonstração. Informação errada aqui gera dano real.
+# ---------------------------------------------------------------------------
+sendhemosc:
+  aptidao:
+    intervalo-dias-masculino: 60
+    intervalo-dias-feminino: 90
+    max-doacoes-ano-masculino: 4
+    max-doacoes-ano-feminino: 3
+    idade-minima: 16
+    idade-maxima: 69
+    peso-minimo-kg: 50
+  estoque:
+    # Percentual da capacidade alvo que separa cada nível
+    limiar-critico-percentual: 30
+    limiar-atencao-percentual: 60
+  notificacao:
+    # Reenvio para quem não compareceu, enquanto o tipo seguir em nível baixo
+    intervalo-reenvio-dias: 30
+    remetente: nao-responda@sendhemosc.local
+    remetente-nome: Send Hemosc (PROTOTIPO)
+    url-base: ${APP_URL_BASE:http://localhost:8080}

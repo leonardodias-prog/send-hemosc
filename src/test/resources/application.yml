@@ -1,0 +1,39 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:sendhemosc-test;DB_CLOSE_DELAY=-1;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ''
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+sendhemosc:
+  email:
+    modo: log
+  seed:
+    habilitado: false
+  aptidao:
+    intervalo-dias-masculino: 60
+    intervalo-dias-feminino: 90
+    max-doacoes-ano-masculino: 4
+    max-doacoes-ano-feminino: 3
+    idade-minima: 16
+    idade-maxima: 69
+    peso-minimo-kg: 50
+  estoque:
+    limiar-critico-percentual: 30
+    limiar-atencao-percentual: 60
+  notificacao:
+    intervalo-reenvio-dias: 30
+    remetente: teste@example.org
+    remetente-nome: Send Hemosc Teste
+    url-base: http://localhost:8080
+
+logging:
+  level:
+    root: WARN
+    br.univille.sendhemosc: INFO
