@@ -14,10 +14,8 @@ spring:
     locations: classpath:db/migration
 
 sendhemosc:
-  email:
-    # log  = apenas registra o e-mail no console (padrão seguro, não sai nada)
-    # smtp = envia de verdade pelo SMTP configurado
-    modo: log
+  # O modo de e-mail vem de application.yml e respeita a variavel EMAIL_MODO,
+  # para que seja possivel testar o envio real sem subir Postgres nem Docker.
   seed:
     # Popula o banco com doadores e estoque fictícios na subida
     habilitado: true

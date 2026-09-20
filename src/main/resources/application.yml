@@ -25,6 +25,22 @@ spring:
     basename: messages
     encoding: UTF-8
 
+  # Servidor de saida. So e usado quando sendhemosc.email.modo = smtp.
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USER:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_AUTH:true}
+          starttls:
+            enable: ${MAIL_STARTTLS:true}
+          connectiontimeout: 10000
+          timeout: 10000
+          writetimeout: 10000
+
 server:
   port: ${PORT:${SERVER_PORT:8080}}
   servlet:
@@ -68,9 +84,18 @@ sendhemosc:
     # Percentual da capacidade alvo que separa cada nível
     limiar-critico-percentual: 30
     limiar-atencao-percentual: 60
+  email:
+    # log  = apenas registra a mensagem no console. Padrão: nada sai da máquina.
+    # smtp = envia de verdade pelo servidor configurado em spring.mail.
+    modo: ${EMAIL_MODO:log}
+    # Quando preenchido, TODA mensagem vai para este endereço, seja qual for o doador.
+    # Existe para que um teste de envio real não atinja a massa fictícia inteira.
+    destinatario-teste: ${EMAIL_DESTINATARIO_TESTE:}
+
   notificacao:
     # Reenvio para quem não compareceu, enquanto o tipo seguir em nível baixo
     intervalo-reenvio-dias: 30
-    remetente: nao-responda@sendhemosc.local
+    # No Gmail o remetente precisa ser a própria conta autenticada.
+    remetente: ${MAIL_REMETENTE:nao-responda@sendhemosc.local}
     remetente-nome: Send Hemosc (PROTOTIPO)
     url-base: ${APP_URL_BASE:http://localhost:8080}
