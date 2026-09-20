@@ -56,7 +56,7 @@ class RenderizarConvocacaoUseCaseTest {
     void incluiDadosDoEstoque() {
         final MensagemEmail mensagem = useCase.execute(DOADOR, SITUACAO);
 
-        assertThat(mensagem.corpoHtml()).contains("O-", "Critico", "18");
+        assertThat(mensagem.corpoHtml()).contains("O-", "Crítico", "18");
         assertThat(mensagem.corpoHtml()).contains("Maria Silva");
     }
 
@@ -65,7 +65,7 @@ class RenderizarConvocacaoUseCaseTest {
     void assuntoDescritivo() {
         final MensagemEmail mensagem = useCase.execute(DOADOR, SITUACAO);
 
-        assertThat(mensagem.assunto()).contains("O-").contains("critico");
+        assertThat(mensagem.assunto()).contains("O-").contains("crítico");
     }
 
     @Test

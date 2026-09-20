@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Send Hemosc — Painel de captação</title>
+    <style>
+        :root {
+            --fundo: #f4f4f5;
+            --cartao: #ffffff;
+            --borda: #e4e4e7;
+            --texto: #18181b;
+            --suave: #71717a;
+            --critico: #b91c1c;
+            --atencao: #b45309;
+            --normal: #15803d;
+            --critico-bg: #fef2f2;
+            --atencao-bg: #fffbeb;
+            --normal-bg: #f0fdf4;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --fundo: #18181b;
+                --cartao: #27272a;
+                --borda: #3f3f46;
+                --texto: #fafafa;
+                --suave: #a1a1aa;
+                --critico: #f87171;
+                --atencao: #fbbf24;
+                --normal: #4ade80;
+                --critico-bg: #450a0a;
+                --atencao-bg: #451a03;
+                --normal-bg: #052e16;
+            }
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 0 16px 48px;
+            background: var(--fundo);
+            color: var(--texto);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            line-height: 1.5;
+        }
+
+        .container { max-width: 900px; margin: 0 auto; }
+
+        header {
+            padding: 32px 0 24px;
+            border-bottom: 1px solid var(--borda);
+            margin-bottom: 24px;
+        }
+
+        h1 { margin: 0 0 4px; font-size: 24px; }
+
+        .subtitulo { margin: 0; color: var(--suave); font-size: 14px; }
+
+        .faixa {
+            background: var(--atencao-bg);
+            border: 1px solid var(--atencao);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin: 16px 0 24px;
+            font-size: 13px;
+            color: var(--texto);
+        }
+
+        .aviso {
+            background: var(--normal-bg);
+            border: 1px solid var(--normal);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+
+        .resumo {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .indicador {
+            flex: 1 1 140px;
+            background: var(--cartao);
+            border: 1px solid var(--borda);
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .indicador .numero { font-size: 28px; font-weight: 700; line-height: 1; }
+        .indicador .rotulo { font-size: 12px; color: var(--suave); margin-top: 4px; }
+
+        .tipo {
+            background: var(--cartao);
+            border: 1px solid var(--borda);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .sigla {
+            font-size: 22px;
+            font-weight: 700;
+            min-width: 56px;
+            text-align: center;
+        }
+
+        .barra-area { flex: 1 1 220px; min-width: 200px; }
+
+        .barra {
+            height: 8px;
+            background: var(--borda);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 6px;
+        }
+
+        .barra span { display: block; height: 100%; border-radius: 4px; }
+
+        .detalhe { font-size: 12px; color: var(--suave); }
+
+        .etiqueta {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+
+        .critico { color: var(--critico); }
+        .atencao { color: var(--atencao); }
+        .normal  { color: var(--normal); }
+
+        .etiqueta.critico { background: var(--critico-bg); }
+        .etiqueta.atencao { background: var(--atencao-bg); }
+        .etiqueta.normal  { background: var(--normal-bg); }
+
+        .barra span.critico { background: var(--critico); }
+        .barra span.atencao { background: var(--atencao); }
+        .barra span.normal  { background: var(--normal); }
+
+        .acoes { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+        button {
+            background: var(--critico);
+            color: #fff;
+            border: 0;
+            border-radius: 6px;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        button:hover { opacity: .9; }
+
+        button.secundario {
+            background: transparent;
+            color: var(--texto);
+            border: 1px solid var(--borda);
+        }
+
+        input[type=number] {
+            width: 72px;
+            padding: 7px 8px;
+            border: 1px solid var(--borda);
+            border-radius: 6px;
+            background: var(--fundo);
+            color: var(--texto);
+            font-family: inherit;
+            font-size: 13px;
+        }
+
+        form { display: inline-flex; gap: 6px; align-items: center; margin: 0; }
+
+        footer {
+            margin-top: 32px;
+            padding-top: 16px;
+            border-top: 1px solid var(--borda);
+            font-size: 12px;
+            color: var(--suave);
+        }
+
+        footer a { color: inherit; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <header>
+        <h1>Send Hemosc</h1>
+        <p class="subtitulo">Painel de captação &middot; Agência Transfusional &middot; Joinville/SC</p>
+    </header>
+
+    <div class="faixa">
+        <strong>Protótipo acadêmico.</strong> Projeto de Extensão da UNIVILLE — Vivências de Extensão III.
+        Todos os dados desta tela são <strong>fictícios</strong> e nenhum e-mail é enviado de verdade:
+        as convocações são apenas registradas em log. O estado volta ao inicial a cada reinício.
+    </div>
+
+    <div class="aviso" th:if="${aviso}" th:text="${aviso}">mensagem</div>
+
+    <div class="resumo">
+        <div class="indicador">
+            <div class="numero" th:text="${#lists.size(situacoes)}">8</div>
+            <div class="rotulo">tipos sanguíneos monitorados</div>
+        </div>
+        <div class="indicador">
+            <div class="numero critico" th:text="${totalEmFalta}">4</div>
+            <div class="rotulo">em nível baixo (atenção ou crítico)</div>
+        </div>
+    </div>
+
+    <div class="tipo" th:each="s : ${situacoes}">
+        <div class="sigla" th:classappend="${s.nivel.name().toLowerCase()}"
+             th:text="${s.tipoSanguineo.sigla}">O-</div>
+
+        <div class="barra-area">
+            <div class="barra">
+                <span th:classappend="${s.nivel.name().toLowerCase()}"
+                      th:style="'width:' + ${s.percentualOcupacao > 100 ? 100 : s.percentualOcupacao} + '%'"></span>
+            </div>
+            <div class="detalhe">
+                <span th:text="${s.quantidadeBolsas}">11</span> de
+                <span th:text="${s.capacidadeAlvo}">60</span> bolsas
+                (<span th:text="${s.percentualOcupacao}">18</span>%)
+            </div>
+        </div>
+
+        <span class="etiqueta" th:classappend="${s.nivel.name().toLowerCase()}"
+              th:text="${s.nivel.descricao}">Crítico</span>
+
+        <div class="acoes">
+            <form th:action="@{'/estoque/' + ${s.tipoSanguineo.sigla}}" method="post">
+                <input type="number" name="quantidadeBolsas" min="0"
+                       th:value="${s.quantidadeBolsas}" aria-label="Quantidade de bolsas"/>
+                <button type="submit" class="secundario">Salvar</button>
+            </form>
+
+            <form th:action="@{'/convocar/' + ${s.tipoSanguineo.sigla}}" method="post">
+                <button type="submit">Convocar doadores</button>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <p>
+            A convocação usa a tabela de compatibilidade transfusional: ao convocar para A+,
+            o sistema busca doadores A+, A&minus;, O+ e O&minus; que já cumpriram o intervalo mínimo
+            desde a última doação.
+        </p>
+        <p>
+            Código-fonte em
+            <a href="https://github.com/leonardodias-prog/send-hemosc">github.com/leonardodias-prog/send-hemosc</a>
+            &middot; API em <a href="/api/estoque">/api/estoque</a>
+        </p>
+    </footer>
+
+</div>
+</body>
+</html>

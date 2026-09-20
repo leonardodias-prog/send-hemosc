@@ -6,8 +6,8 @@ package br.univille.sendhemosc.domain.enums;
  */
 public enum NivelEstoque {
 
-    CRITICO("Critico", true),
-    ATENCAO("Atencao", true),
+    CRITICO("Crítico", true),
+    ATENCAO("Atenção", true),
     NORMAL("Normal", false);
 
     private final String descricao;

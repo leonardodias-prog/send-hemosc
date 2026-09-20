@@ -1,0 +1,20 @@
+# Blueprint do Render. Permite subir o projeto sem configurar nada na interface:
+# New > Blueprint > aponta para este repositorio.
+services:
+  - type: web
+    name: send-hemosc
+    runtime: docker
+    plan: free
+    region: oregon
+    branch: main
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: demo
+      - key: APP_URL_BASE
+        # Render preenche com a URL publica do proprio servico
+        fromService:
+          type: web
+          name: send-hemosc
+          property: host

@@ -44,7 +44,7 @@ transfusional**. Quando A+ está em falta, convoca A+, A−, O+ e O−.
 mvn spring-boot:run
 ```
 
-A aplicação sobe em `http://localhost:8080` com H2 em memória, 120 doadores fictícios e os oito
+Abra `http://localhost:8080` e o painel de captação aparece. Sobe com H2 em memória, 120 doadores fictícios e os oito
 tipos sanguíneos já com estoque. **Nenhum e-mail é enviado** — o adapter padrão apenas registra
 a mensagem no log.
 
@@ -73,6 +73,7 @@ só dispara para `ATENCAO` e `CRITICO`. Para forçar, use `?ignorarNivel=true`.
 | `/api/estoque/{sigla}?quantidadeBolsas=N` | PUT | Atualiza o estoque |
 | `/api/convocacoes/{sigla}` | POST | Dispara convocação manual |
 | `/descadastro/{token}` | GET | Link de cancelamento do e-mail |
+| `/` | GET | Painel de captação (tela principal) |
 | `/h2-console` | GET | Banco em memória (perfil `dev`) |
 | `/actuator/health` | GET | Health check |
 
@@ -96,7 +97,29 @@ MailHog captura todo e-mail enviado em `http://localhost:8025`, sem nada sair pa
 mvn clean verify
 ```
 
-42 testes. O Checkstyle roda na fase `validate` e quebra o build em violação.
+48 testes. O Checkstyle roda na fase `validate` e quebra o build em violação.
+
+## Publicando a demonstração
+
+O repositório já traz o blueprint do [Render](https://render.com) em
+[`render.yaml`](render.yaml). No plano gratuito, sem cartão e **sem banco de dados**: o perfil
+`demo` usa H2 em memória com massa fictícia gerada na subida.
+
+1. Entre no Render com a conta do GitHub
+2. **New → Blueprint** e aponte para este repositório
+3. O Render lê o `render.yaml`, constrói o Dockerfile e publica
+
+Cada `git push` na `main` republica sozinho.
+
+O perfil `demo` tem três travas próprias: o envio de e-mail fica em modo log, o agendador
+automático é desligado (`cron-convocacao: "-"`) e o estado volta ao inicial a cada reinício —
+quem abrir o link sempre encontra o mesmo cenário de demonstração.
+
+> [!NOTE]
+> No plano gratuito o serviço hiberna após ~15 minutos sem acesso, e o primeiro carregamento
+> depois disso leva cerca de um minuto. Se for apresentar ao vivo, abra o link alguns minutos
+> antes. O `Dockerfile` e o perfil `demo` são genéricos: o mesmo deploy funciona em Railway,
+> Fly.io ou Koyeb sem alteração.
 
 ## Stack
 

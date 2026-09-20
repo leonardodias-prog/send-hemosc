@@ -26,7 +26,15 @@ spring:
     encoding: UTF-8
 
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${PORT:${SERVER_PORT:8080}}
+  servlet:
+    session:
+      # Somente cookie: evita que o Spring reescreva a URL com ;jsessionid quando ainda nao
+      # existe cookie, o que quebrava o redirect do painel e expunha o id da sessao na URL.
+      tracking-modes: cookie
+      cookie:
+        http-only: true
+        same-site: lax
   error:
     include-message: always
     include-stacktrace: never
