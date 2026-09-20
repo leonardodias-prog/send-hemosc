@@ -17,8 +17,11 @@ spring:
 
 sendhemosc:
   email:
-    # NUNCA mudar para smtp nesta demonstracao publica.
-    modo: log
+    # Padrao: nao envia nada. Para ligar o envio real nesta demonstracao publica e
+    # obrigatorio definir tambem destinatario-teste; EnvioSeguroDemoValidator recusa
+    # subir na combinacao smtp sem destinatario unico.
+    modo: ${EMAIL_MODO:log}
+    destinatario-teste: ${EMAIL_DESTINATARIO_TESTE:}
   seed:
     habilitado: true
     quantidade-doadores: 120

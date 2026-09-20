@@ -115,6 +115,27 @@ O perfil `demo` tem três travas próprias: o envio de e-mail fica em modo log, 
 automático é desligado (`cron-convocacao: "-"`) e o estado volta ao inicial a cada reinício —
 quem abrir o link sempre encontra o mesmo cenário de demonstração.
 
+### Ligando o envio de e-mail no Render
+
+Opcional, e com uma restrição embutida. No painel do serviço, em **Environment**:
+
+| Chave | Valor |
+|---|---|
+| `EMAIL_MODO` | `smtp` |
+| `EMAIL_DESTINATARIO_TESTE` | o endereço que vai receber **tudo** |
+| `MAIL_USER` | conta de e-mail autenticada |
+| `MAIL_PASSWORD` | senha de app (nunca a senha da conta) |
+| `MAIL_REMETENTE` | no Gmail, igual ao `MAIL_USER` |
+
+As chaves sensíveis estão declaradas com `sync: false` no `render.yaml`: o Render pede o valor
+pela interface e nada disso fica versionado.
+
+> [!CAUTION]
+> Com `EMAIL_MODO=smtp` e `EMAIL_DESTINATARIO_TESTE` vazio, **a aplicação recusa subir**.
+> A demonstração é pública e roda com a massa fictícia carregada: sem restringir o destino,
+> qualquer visitante conseguiria disparar e-mail para a base inteira. A verificação está em
+> [`EnvioSeguroDemoValidator`](src/main/java/br/univille/sendhemosc/config/EnvioSeguroDemoValidator.java).
+
 > [!NOTE]
 > No plano gratuito o serviço hiberna após ~15 minutos sem acesso, e o primeiro carregamento
 > depois disso leva cerca de um minuto. Se for apresentar ao vivo, abra o link alguns minutos

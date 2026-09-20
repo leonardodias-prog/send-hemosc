@@ -15,7 +15,35 @@ services:
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: demo
+
       - key: APP_URL_BASE
-        # Usado apenas para montar o link de descadastro nos e-mails. No perfil demo o envio
-        # fica em modo log, entao um valor divergente nao causa efeito pratico.
+        # Monta o link de descadastro nos e-mails. Ajuste junto se trocar o nome do servico.
         value: https://send-hemosc.onrender.com
+
+      # --- Envio de e-mail ---
+      # Padrao log: nada e enviado. Para testar envio real, preencha as chaves abaixo pelo
+      # painel do Render. Elas usam sync: false, ou seja, o valor e pedido na interface e NAO
+      # fica versionado aqui — senha nenhuma entra no repositorio.
+      #
+      # Com EMAIL_MODO=smtp o servico so sobe se EMAIL_DESTINATARIO_TESTE estiver preenchido:
+      # a demonstracao e publica e nao pode disparar para a massa ficticia.
+      - key: EMAIL_MODO
+        value: log
+
+      - key: EMAIL_DESTINATARIO_TESTE
+        sync: false
+
+      - key: MAIL_HOST
+        value: smtp.gmail.com
+
+      - key: MAIL_PORT
+        value: "587"
+
+      - key: MAIL_USER
+        sync: false
+
+      - key: MAIL_PASSWORD
+        sync: false
+
+      - key: MAIL_REMETENTE
+        sync: false
