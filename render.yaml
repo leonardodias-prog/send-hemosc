@@ -1,5 +1,8 @@
 # Blueprint do Render. Permite subir o projeto sem configurar nada na interface:
 # New > Blueprint > aponta para este repositorio.
+#
+# ATENCAO: "name" define a URL publica (https://<name>.onrender.com) e precisa ser unico
+# em todo o Render. Se o nome ja estiver em uso, troque aqui e tambem em APP_URL_BASE.
 services:
   - type: web
     name: send-hemosc
@@ -13,8 +16,6 @@ services:
       - key: SPRING_PROFILES_ACTIVE
         value: demo
       - key: APP_URL_BASE
-        # Render preenche com a URL publica do proprio servico
-        fromService:
-          type: web
-          name: send-hemosc
-          property: host
+        # Usado apenas para montar o link de descadastro nos e-mails. No perfil demo o envio
+        # fica em modo log, entao um valor divergente nao causa efeito pratico.
+        value: https://send-hemosc.onrender.com

@@ -24,5 +24,6 @@ ENV SPRING_PROFILES_ACTIVE=demo
 ENV PORT=8080
 EXPOSE 8080
 
-# MaxRAMPercentage mantem a JVM dentro do limite de container pequeno (512 MB no plano free).
-ENTRYPOINT ["sh", "-c", "java -XX:MaxRAMPercentage=70 -XX:+UseSerialGC -Xss512k -jar app.jar"]
+# Ajustado para o container de 512 MB do plano gratuito: 60% de heap deixa folga para
+# metaspace, code cache e threads, que somados passam de 100 MB em uma app Spring Boot.
+ENTRYPOINT ["sh", "-c", "java -XX:MaxRAMPercentage=60 -XX:MaxMetaspaceSize=128m -XX:+UseSerialGC -Xss512k -jar app.jar"]
