@@ -28,8 +28,9 @@
 
     <div class="faixa">
         <strong>Protótipo acadêmico.</strong> Projeto de Extensão da UNIVILLE — Vivências de Extensão III.
-        Todos os dados desta tela são <strong>fictícios</strong> e nenhum e-mail é enviado de verdade:
-        as convocações são apenas registradas em log. O estado volta ao inicial a cada reinício.
+        Não é sistema oficial do HEMOSC. Os dados aqui tratados incluem
+        <strong>tipo sanguíneo</strong>, que é dado pessoal sensível de saúde:
+        <a th:href="@{/termo}">leia o termo</a> antes de cadastrar alguém.
     </div>
 
     <div class="aviso" th:if="${aviso}" th:text="${aviso}">mensagem</div>
