@@ -63,6 +63,17 @@ management:
   endpoint:
     health:
       show-details: when-authorized
+  health:
+    mail:
+      # Desligado de proposito. O indicador padrao abre uma conexao SMTP autenticada a cada
+      # verificacao de saude, o que traz tres problemas em producao:
+      #   1. a saude da aplicacao passaria a depender do servidor de e-mail estar no ar, e uma
+      #      instabilidade do provedor faria a plataforma reiniciar um servico que esta bom;
+      #   2. cada checagem custa ate 10 segundos, acima do tempo limite de varias plataformas;
+      #   3. autenticar repetidamente contra o provedor desperdica conexao e pode disparar
+      #      alerta de seguranca na conta.
+      # O envio propriamente dito continua tendo o seu proprio tratamento de falha.
+      enabled: false
 
 # ---------------------------------------------------------------------------
 # Regras de negócio do domínio.
