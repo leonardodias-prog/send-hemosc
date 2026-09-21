@@ -122,7 +122,7 @@ Opcional, e com uma restrição embutida. No painel do serviço, em **Environmen
 | Chave | Valor |
 |---|---|
 | `EMAIL_MODO` | `smtp` |
-| `EMAIL_DESTINATARIO_TESTE` | o endereço que vai receber **tudo** |
+| `EMAIL_DESTINATARIO_TESTE` | quem recebe **tudo**. Vários separados por vírgula |
 | `MAIL_USER` | conta de e-mail autenticada |
 | `MAIL_PASSWORD` | senha de app (nunca a senha da conta) |
 | `MAIL_REMETENTE` | no Gmail, igual ao `MAIL_USER` |

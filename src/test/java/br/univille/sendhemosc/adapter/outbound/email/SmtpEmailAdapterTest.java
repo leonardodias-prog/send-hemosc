@@ -87,6 +87,38 @@ class SmtpEmailAdapterTest {
     }
 
     @Test
+    @DisplayName("aceita varios destinatarios separados por virgula")
+    void aceitaVariosDestinatarios() throws Exception {
+        final MimeMessage enviada = capturarEnvio("um@example.org,dois@example.org,tres@example.org");
+
+        assertThat(enviada.getRecipients(Message.RecipientType.TO))
+                .hasSize(3)
+                .extracting(Object::toString)
+                .containsExactlyInAnyOrder("um@example.org", "dois@example.org", "tres@example.org");
+    }
+
+    @Test
+    @DisplayName("ignora espacos e entradas vazias na lista de destinatarios")
+    void limpaListaDeDestinatarios() throws Exception {
+        final MimeMessage enviada = capturarEnvio("  um@example.org , , dois@example.org ,");
+
+        assertThat(enviada.getRecipients(Message.RecipientType.TO))
+                .hasSize(2)
+                .extracting(Object::toString)
+                .containsExactlyInAnyOrder("um@example.org", "dois@example.org");
+    }
+
+    @Test
+    @DisplayName("com varios destinatarios o doador original continua fora da lista")
+    void doadorNuncaEntraNaLista() throws Exception {
+        final MimeMessage enviada = capturarEnvio("um@example.org,dois@example.org");
+
+        assertThat(enviada.getRecipients(Message.RecipientType.TO))
+                .extracting(Object::toString)
+                .doesNotContain("doador42@example.org");
+    }
+
+    @Test
     @DisplayName("espaco em branco no destinatario de teste conta como nao configurado")
     void brancoNaoEConsideradoRedirecionamento() throws Exception {
         final MimeMessage enviada = capturarEnvio("   ");
