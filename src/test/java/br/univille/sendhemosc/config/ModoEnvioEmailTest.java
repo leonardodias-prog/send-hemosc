@@ -12,15 +12,15 @@ import org.junit.jupiter.params.provider.ValueSource;
 class ModoEnvioEmailTest {
 
     @ParameterizedTest(name = "{0} -> envio real: {1}")
-    @CsvSource({"log,false", "smtp,true", "resend,true", "LOG,false", "SMTP,true", "ReSend,true"})
+    @CsvSource({"log,false", "brevo,true", "LOG,false", "BREVO,true", "BrEvO,true"})
     @DisplayName("reconhece quais modos entregam mensagens de verdade")
     void reconheceEnvioReal(final String configurado, final boolean esperado) {
         assertThat(ModoEnvioEmail.envioReal(configurado)).isEqualTo(esperado);
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"", "  ", "desconhecido", "imap"})
-    @DisplayName("valor nao reconhecido cai no modo seguro, que nao envia")
+    @ValueSource(strings = {"", "  ", "desconhecido", "smtp", "resend"})
+    @DisplayName("valor nao reconhecido, inclusive modo ja removido, cai no modo seguro")
     void valorDesconhecidoNaoEnvia(final String configurado) {
         assertThat(ModoEnvioEmail.de(configurado)).isEqualTo(ModoEnvioEmail.LOG);
         assertThat(ModoEnvioEmail.envioReal(configurado)).isFalse();
@@ -29,7 +29,7 @@ class ModoEnvioEmailTest {
     @Test
     @DisplayName("todo modo novo precisa declarar explicitamente se envia")
     void todosOsModosDeclarados() {
-        assertThat(ModoEnvioEmail.values()).hasSize(3);
+        assertThat(ModoEnvioEmail.values()).hasSize(2);
         assertThat(ModoEnvioEmail.LOG.isEnvioReal()).isFalse();
     }
 }

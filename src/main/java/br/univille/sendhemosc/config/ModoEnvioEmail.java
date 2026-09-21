@@ -12,11 +12,8 @@ public enum ModoEnvioEmail {
     /** Apenas registra a mensagem no log. Nada sai da aplicacao. */
     LOG(false),
 
-    /** Entrega pelo servidor SMTP configurado. Bloqueado por varias hospedagens gratuitas. */
-    SMTP(true),
-
-    /** Entrega pela API HTTP do Resend, que nao depende de porta SMTP liberada. */
-    RESEND(true);
+    /** Entrega pela API HTTP do Brevo, que nao depende de porta SMTP liberada. */
+    BREVO(true);
 
     private final boolean envioReal;
 

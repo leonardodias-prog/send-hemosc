@@ -29,11 +29,11 @@ class InfoEnvioContributorTest {
     }
 
     @Test
-    @DisplayName("modo smtp e reportado como envio real")
-    void modoSmtp() {
-        final Map<String, Object> email = detalhes("smtp", "leo@gmail.com");
+    @DisplayName("modo brevo e reportado como envio real")
+    void modoBrevo() {
+        final Map<String, Object> email = detalhes("brevo", "leo@gmail.com");
 
-        assertThat(email).containsEntry("modo", "smtp").containsEntry("envioReal", true);
+        assertThat(email).containsEntry("modo", "brevo").containsEntry("envioReal", true);
         assertThat(email).containsEntry("redirecionamentoAtivo", true);
         assertThat(email).containsEntry("totalDestinatariosDeTeste", 1);
     }
@@ -41,7 +41,7 @@ class InfoEnvioContributorTest {
     @Test
     @DisplayName("o endereco aparece mascarado, nunca por inteiro")
     void mascaraEndereco() {
-        final Map<String, Object> email = detalhes("smtp", "leonardo@gmail.com");
+        final Map<String, Object> email = detalhes("brevo", "leonardo@gmail.com");
 
         assertThat(email.get("destinatariosDeTeste").toString())
                 .contains("le***@gmail.com")
@@ -51,7 +51,7 @@ class InfoEnvioContributorTest {
     @Test
     @DisplayName("conta corretamente varios destinatarios")
     void varios() {
-        final Map<String, Object> email = detalhes("smtp", "um@a.com, dois@b.com ,tres@c.com");
+        final Map<String, Object> email = detalhes("brevo", "um@a.com, dois@b.com ,tres@c.com");
 
         assertThat(email).containsEntry("totalDestinatariosDeTeste", 3);
         assertThat((List<String>) email.get("destinatariosDeTeste")).hasSize(3);
@@ -60,7 +60,7 @@ class InfoEnvioContributorTest {
     @Test
     @DisplayName("endereco sem arroba nao vaza nada")
     void enderecoInvalido() {
-        final Map<String, Object> email = detalhes("smtp", "semarroba");
+        final Map<String, Object> email = detalhes("brevo", "semarroba");
 
         assertThat(email.get("destinatariosDeTeste").toString()).doesNotContain("semarroba");
     }
