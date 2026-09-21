@@ -26,8 +26,8 @@ USER app
 
 COPY --from=build /build/app.jar app.jar
 
-# Perfil de demonstracao: H2 em memoria, dados ficticios, e-mail apenas em log.
-ENV SPRING_PROFILES_ACTIVE=demo
+# Perfil publicado: PostgreSQL, sem massa ficticia, e-mail em log por padrao.
+ENV SPRING_PROFILES_ACTIVE=producao
 
 # A plataforma injeta PORT; 8080 e o padrao local.
 ENV PORT=8080

@@ -21,6 +21,10 @@ sendhemosc:
     habilitado: true
     quantidade-doadores: 120
 
+  scheduler:
+    # Desligado em desenvolvimento: o disparo automatico so faz sentido em ambiente real.
+    cron-convocacao: ${CRON_CONVOCACAO:-}
+
 logging:
   level:
     br.univille.sendhemosc: DEBUG

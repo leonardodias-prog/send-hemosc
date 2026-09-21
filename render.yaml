@@ -14,43 +14,51 @@ services:
     healthCheckPath: /actuator/health
     envVars:
       - key: SPRING_PROFILES_ACTIVE
-        value: demo
+        value: producao
+
+      # --- Banco de dados (Neon) ---
+      # A partir do momento em que existem contas de acesso, banco em memoria deixa de servir:
+      # o Render hiberna por inatividade e todo usuario cadastrado desapareceria ao acordar.
+      - key: DB_URL
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+
+      # --- Administrador inicial ---
+      # Criado apenas na primeira subida, quando ainda nao existe nenhum. Trocar a senha aqui
+      # depois nao redefine a senha de quem ja existe.
+      - key: MASTER_EMAIL
+        sync: false
+      - key: MASTER_SENHA
+        sync: false
 
       - key: APP_URL_BASE
         # Monta o link de descadastro nos e-mails. Ajuste junto se trocar o nome do servico.
         value: https://send-hemosc.onrender.com
 
       # --- Envio de e-mail ---
-      # Padrao log: nada e enviado. Para ligar o envio real use EMAIL_MODO=resend.
+      # Padrao log: nada e enviado. Para ligar o envio real use EMAIL_MODO=brevo.
       #
       # NAO use smtp aqui: o Render bloqueia a porta de saida do SMTP para conter spam, e o
-      # envio falha com tempo limite de conexao. O Resend entrega por HTTPS na porta 443.
-      #
-      # Com um modo de envio real, o servico so sobe se EMAIL_DESTINATARIO_TESTE estiver
-      # preenchido: a demonstracao e publica e nao pode disparar para a massa ficticia.
+      # envio falha com tempo limite de conexao. O Brevo entrega por HTTPS na porta 443.
       #
       # As chaves com sync: false tem o valor pedido na interface do Render e NAO ficam
       # versionadas aqui — credencial nenhuma entra no repositorio.
       - key: EMAIL_MODO
         value: log
 
-      - key: RESEND_API_KEY
+      - key: BREVO_API_KEY
         sync: false
 
       - key: EMAIL_DESTINATARIO_TESTE
         sync: false
 
-      - key: MAIL_HOST
-        value: smtp.gmail.com
 
-      - key: MAIL_PORT
-        value: "587"
 
-      - key: MAIL_USER
-        sync: false
 
-      - key: MAIL_PASSWORD
-        sync: false
 
+      # Remetente verificado no Brevo. Sem dominio proprio, verifica-se um endereco avulso.
       - key: MAIL_REMETENTE
         sync: false

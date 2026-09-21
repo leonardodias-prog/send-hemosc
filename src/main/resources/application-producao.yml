@@ -1,0 +1,49 @@
+# Perfil do ambiente publicado.
+#
+# Exige PostgreSQL: a partir do momento em que existem contas de acesso, banco em memoria
+# deixa de servir. A plataforma hiberna por inatividade, e ao acordar todo usuario cadastrado
+# desapareceria.
+spring:
+  datasource:
+    # String de conexao do Neon, no formato JDBC. Exemplo:
+    # jdbc:postgresql://ep-nome-123.sa-east-1.aws.neon.tech/sendhemosc?sslmode=require
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      # O plano gratuito do Neon suspende o banco apos alguns minutos sem uso. A primeira
+      # conexao depois disso precisa esperar ele acordar, o que passa do padrao de 30s.
+      connection-timeout: 45000
+      maximum-pool-size: 5
+      minimum-idle: 0
+      idle-timeout: 120000
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  h2:
+    console:
+      enabled: false
+
+  thymeleaf:
+    cache: true
+
+sendhemosc:
+  email:
+    # log = nada e enviado. Trocar para brevo liga a entrega de verdade.
+    modo: ${EMAIL_MODO:log}
+    destinatario-teste: ${EMAIL_DESTINATARIO_TESTE:}
+  seed:
+    # Massa ficticia desligada: ambiente publicado com contas reais nao deve nascer povoado.
+    # Ligar uma vez basta, porque o seed nao repete em base ja preenchida.
+    habilitado: ${SEED_HABILITADO:false}
+    quantidade-doadores: ${SEED_DOADORES:120}
+  scheduler:
+    # Varredura automatica desligada por padrao: o disparo fica sob decisao do responsavel.
+    cron-convocacao: ${CRON_CONVOCACAO:-}
+
+logging:
+  level:
+    root: WARN
+    br.univille.sendhemosc: INFO

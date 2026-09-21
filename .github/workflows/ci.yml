@@ -11,6 +11,24 @@ jobs:
     name: Build e testes
     runs-on: ubuntu-latest
 
+    # PostgreSQL de verdade para validar as migrations. Os demais testes usam H2 em modo de
+    # compatibilidade, que aceita construcoes que o PostgreSQL recusaria; sem esta etapa, uma
+    # diferenca de dialeto so apareceria no deploy.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: sendhemosc
+          POSTGRES_USER: sendhemosc
+          POSTGRES_PASSWORD: sendhemosc
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,6 +41,14 @@ jobs:
           cache: maven
 
       - name: Verificar padrao de codigo e rodar testes
+        env:
+          # A presenca desta variavel habilita o teste de migrations em PostgreSQL
+          DB_URL_TESTE: habilitado
+          DB_URL: jdbc:postgresql://localhost:5432/sendhemosc
+          DB_USER: sendhemosc
+          DB_PASSWORD: sendhemosc
+          MASTER_EMAIL: ci@example.org
+          MASTER_SENHA: senha-apenas-da-integracao-continua
         run: mvn -B clean verify
 
       - name: Publicar relatorio de testes
