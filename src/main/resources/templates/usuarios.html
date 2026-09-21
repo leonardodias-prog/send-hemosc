@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Contas — Send Hemosc</title>
+    <link rel="stylesheet" th:href="@{/css/sendhemosc.css}"/>
+</head>
+<body>
+<div class="container">
+
+    <header>
+        <h1>Contas de acesso</h1>
+        <p class="subtitulo">Aprovação de responsáveis e situação dos funcionários</p>
+        <nav class="topo">
+            <a th:href="@{/}">Painel de captação</a>
+            <a th:href="@{/usuarios}">Contas</a>
+            <span class="usuario">
+                <form th:action="@{/sair}" method="post" style="display:inline;">
+                    <button type="submit" class="secundario">Sair</button>
+                </form>
+            </span>
+        </nav>
+    </header>
+
+    <div class="aviso" th:if="${aviso}" th:text="${aviso}">mensagem</div>
+    <div class="erro-caixa" th:if="${erro}" th:text="${erro}">mensagem</div>
+
+    <div class="faixa" th:if="${pendentes > 0}">
+        <strong th:text="${pendentes}">1</strong> cadastro(s) aguardando sua decisão.
+        Aprovar um responsável libera o disparo de e-mail para a base de doadores.
+    </div>
+
+    <div class="cartao">
+        <table>
+            <thead>
+            <tr>
+                <th>Nome</th>
+                <th>E-mail</th>
+                <th>Perfil</th>
+                <th>Situação</th>
+                <th>Último acesso</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="u : ${usuarios}">
+                <td th:text="${u.nome}">Nome</td>
+                <td th:text="${u.email}">email</td>
+                <td th:text="${u.perfil.descricao}">Operador</td>
+                <td>
+                    <span class="etiqueta" th:classappend="${u.situacao.name().toLowerCase()}"
+                          th:text="${u.situacao.descricao}">Ativo</span>
+                </td>
+                <td th:text="${u.ultimoAcessoEm != null
+                        ? #temporals.format(u.ultimoAcessoEm, 'dd/MM/yyyy HH:mm') : 'nunca'}">nunca</td>
+                <td>
+                    <div th:if="${u.situacao.name() == 'PENDENTE'}" style="display:flex;gap:6px;">
+                        <form th:action="@{'/usuarios/' + ${u.id} + '/aprovar'}" method="post">
+                            <button type="submit">Aprovar</button>
+                        </form>
+                        <form th:action="@{'/usuarios/' + ${u.id} + '/recusar'}" method="post">
+                            <button type="submit" class="secundario">Recusar</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(usuarios)}">
+                <td colspan="6" style="color:var(--suave);">Nenhuma conta cadastrada.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <footer>
+        <p>
+            O perfil de responsável dispara convocações por e-mail. Aprove apenas quem tem
+            essa atribuição na unidade.
+        </p>
+    </footer>
+
+</div>
+</body>
+</html>

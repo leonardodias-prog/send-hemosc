@@ -71,6 +71,18 @@ management:
 # qualquer uso que não seja demonstração. Informação errada aqui gera dano real.
 # ---------------------------------------------------------------------------
 sendhemosc:
+  seguranca:
+    master:
+      # Administrador criado na primeira subida, quando ainda nao existe nenhum.
+      # Sem MASTER_SENHA, uma senha aleatoria e gerada e escrita no log da subida.
+      email: ${MASTER_EMAIL:admin@sendhemosc.local}
+      nome: ${MASTER_NOME:Administrador}
+      senha: ${MASTER_SENHA:}
+
+  termo:
+    # Versao registrada junto do consentimento de cada doador. Mudou o texto, muda a versao.
+    versao: ${TERMO_VERSAO:1.0}
+
   aptidao:
     intervalo-dias-masculino: 60
     intervalo-dias-feminino: 90

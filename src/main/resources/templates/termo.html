@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Termo de uso e privacidade — Send Hemosc</title>
+    <link rel="stylesheet" th:href="@{/css/sendhemosc.css}"/>
+</head>
+<body>
+<div class="container">
+
+    <header>
+        <h1>Termo de uso e privacidade</h1>
+        <p class="subtitulo">Versão 1.0 &middot; setembro de 2026</p>
+    </header>
+
+    <div class="faixa">
+        <strong>Protótipo acadêmico.</strong> O Send Hemosc é um trabalho da disciplina Vivências
+        de Extensão III, da UNIVILLE. Não é sistema oficial do HEMOSC nem de qualquer serviço de
+        hemoterapia, e não substitui os canais da instituição.
+    </div>
+
+    <div class="cartao">
+        <h2>Que dados são tratados</h2>
+        <p>Do doador cadastrado: nome, e-mail, telefone, data de nascimento, peso, tipo sanguíneo
+            e histórico de doações registrado no sistema.</p>
+        <p>O <strong>tipo sanguíneo é dado pessoal sensível de saúde</strong>, conforme o artigo 5º,
+            inciso II da Lei 13.709/2018, e recebe tratamento mais restritivo que dado comum.</p>
+    </div>
+
+    <div class="cartao">
+        <h2>Para que são usados</h2>
+        <p>Exclusivamente para identificar quem está apto a doar quando o estoque de um tipo
+            sanguíneo está baixo, e enviar a essa pessoa um convite por e-mail.</p>
+        <p>Os dados não são vendidos, cedidos nem compartilhados com terceiros, e não são usados
+            para qualquer outra finalidade.</p>
+    </div>
+
+    <div class="cartao">
+        <h2>Consentimento</h2>
+        <p>O envio de convocações depende de autorização explícita, dada no cadastro por meio de
+            caixa própria, que não vem marcada. Sem essa autorização o sistema não envia mensagem
+            alguma à pessoa.</p>
+        <p>Registramos a data, a hora e a versão deste termo vigente no momento da autorização.</p>
+    </div>
+
+    <div class="cartao">
+        <h2>Como revogar</h2>
+        <p>Toda mensagem enviada traz um link de cancelamento. Um clique interrompe as convocações
+            imediatamente, sem necessidade de contato com ninguém.</p>
+    </div>
+
+    <div class="cartao">
+        <h2>Acesso interno</h2>
+        <p>O sistema tem perfis distintos. Funcionários com perfil de operador cadastram e
+            consultam. Apenas responsáveis disparam convocações, e cada disparo fica registrado
+            com identificação de quem o fez, data e hora.</p>
+    </div>
+
+    <div class="cartao">
+        <h2>Limites desta versão</h2>
+        <p>Por ser protótipo acadêmico, o sistema opera em ambiente de testes. As regras de
+            intervalo entre doações reproduzem a normativa vigente de hemoterapia, mas
+            <strong>precisam ser validadas pela equipe responsável</strong> antes de qualquer uso
+            que não seja demonstração.</p>
+    </div>
+
+    <footer>
+        <p><a th:href="@{/login}">Voltar</a></p>
+    </footer>
+
+</div>
+</body>
+</html>
