@@ -5,6 +5,6 @@
   |____/ \___|_| |_|\__,_| |_| |_|\___|_| |_| |_|\___/|___/\___|
 
   :: Projeto de Extensao - UNIVILLE :: Vivencias de Extensao III ::
-  :: PROTOTIPO - dados ficticios, ambiente de testes            ::
-  :: ${spring.profiles.active:dev} ::
+  :: Prototipo academico - nao e sistema oficial do HEMOSC      ::
+  :: perfil: ${spring.profiles.active:dev} ::
 

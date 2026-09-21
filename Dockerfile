@@ -33,6 +33,10 @@ ENV SPRING_PROFILES_ACTIVE=producao
 ENV PORT=8080
 EXPOSE 8080
 
-# Ajustado para o container de 512 MB do plano gratuito: 60% de heap deixa folga para
-# metaspace, code cache e threads, que somados passam de 100 MB em uma app Spring Boot.
-ENTRYPOINT ["sh", "-c", "java -XX:MaxRAMPercentage=60 -XX:MaxMetaspaceSize=128m -XX:+UseSerialGC -Xss512k -jar app.jar"]
+# Ajustado para o container de 512 MB e uma CPU do plano gratuito:
+#  - MaxRAMPercentage=60 deixa folga para metaspace, code cache e threads, que somados
+#    passam de 100 MB em uma aplicacao Spring Boot
+#  - TieredStopAtLevel=1 limita a compilacao JIT ao primeiro nivel. Isso reduz o desempenho
+#    de regime, que aqui nao importa, em troca de subida mais rapida. O servico hiberna por
+#    inatividade, entao quem abre o link paga o tempo de subida, e nao o de regime.
+ENTRYPOINT ["sh", "-c", "java -XX:MaxRAMPercentage=60 -XX:MaxMetaspaceSize=128m -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -Xss512k -jar app.jar"]

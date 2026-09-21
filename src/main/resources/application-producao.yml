@@ -19,9 +19,6 @@ spring:
       minimum-idle: 0
       idle-timeout: 120000
 
-  jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-
   h2:
     console:
       enabled: false
