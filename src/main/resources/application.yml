@@ -106,6 +106,9 @@ sendhemosc:
     destinatario-teste: ${EMAIL_DESTINATARIO_TESTE:}
     # Interrompe a rodada depois desta quantidade de falhas seguidas
     max-falhas-consecutivas: ${EMAIL_MAX_FALHAS:5}
+    # Estado do interruptor na subida. O responsável liga e desliga pela tela; o valor volta
+    # para este a cada reinício, de propósito: desligar por incidente não deve ficar esquecido.
+    ativo-na-subida: ${EMAIL_ATIVO:true}
     brevo:
       api-key: ${BREVO_API_KEY:}
 

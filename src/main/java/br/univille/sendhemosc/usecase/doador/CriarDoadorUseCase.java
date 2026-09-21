@@ -3,6 +3,7 @@ package br.univille.sendhemosc.usecase.doador;
 import br.univille.sendhemosc.domain.dto.NovoDoador;
 import br.univille.sendhemosc.domain.exception.DoadorErrorsMessage;
 import br.univille.sendhemosc.domain.exception.NegocioException;
+import br.univille.sendhemosc.domain.port.outbound.IConsentimentoPort;
 import br.univille.sendhemosc.domain.port.outbound.IDoadorRepositoryPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 public class CriarDoadorUseCase {
 
     private final IDoadorRepositoryPort doadorRepository;
+    private final IConsentimentoPort consentimento;
 
     /**
      * Executa o cadastro.
@@ -41,6 +43,10 @@ public class CriarDoadorUseCase {
                 novoDoador.dataNascimento(),
                 novoDoador.pesoKg(),
                 novoDoador.aceitaContato()));
+
+        // Guardar o momento e a versao do termo e o que permite demonstrar o consentimento
+        // depois. O campo do cadastro diz apenas o estado atual.
+        consentimento.registrar(id, novoDoador.aceitaContato(), "CADASTRO");
 
         log.info("[m=execute] Doador {} cadastrado, tipo {}, consentimento de contato={}",
                 id, novoDoador.tipoSanguineo().getSigla(), novoDoador.aceitaContato());

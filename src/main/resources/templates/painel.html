@@ -33,10 +33,43 @@
     </div>
 
     <div class="aviso" th:if="${aviso}" th:text="${aviso}">mensagem</div>
+    <div class="erro-caixa" th:if="${erro}" th:text="${erro}">mensagem</div>
 
     <div class="faixa" sec:authorize="hasRole('OPERADOR')">
         Seu perfil cadastra doadores e atualiza o estoque. O disparo de convocação é atribuição
         do responsável pela captação.
+    </div>
+
+    <div class="cartao" sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')"
+         th:classappend="${envioReal} ? 'estado-envio ligado' : 'estado-envio'">
+        <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+            <div style="flex:1 1 320px;">
+                <h2 style="margin-bottom:2px;">
+                    Envio de e-mail:
+                    <span th:if="${envioReal}" class="critico">ligado</span>
+                    <span th:unless="${envioReal}" class="normal">desligado</span>
+                </h2>
+                <p class="dica" th:if="${envioReal and #strings.isEmpty(destinatarioTeste)}">
+                    As convocações estão chegando de verdade no e-mail de cada doador.
+                </p>
+                <p class="dica" th:if="${envioReal and !#strings.isEmpty(destinatarioTeste)}">
+                    Entregando, mas tudo redirecionado para
+                    <strong th:text="${destinatarioTeste}">endereço</strong>.
+                </p>
+                <p class="dica" th:unless="${envioReal}">
+                    <span th:if="${provedorConfigurado}">
+                        As convocações ficam apenas registradas no log. Ninguém recebe.
+                    </span>
+                    <span th:unless="${provedorConfigurado}">
+                        Não há provedor configurado neste ambiente, então nada é enviado.
+                    </span>
+                </p>
+            </div>
+            <form th:action="@{'/envio/' + ${envioReal ? 'desligar' : 'ligar'}}" method="post">
+                <button type="submit" th:classappend="${envioReal} ? 'secundario' : ''"
+                        th:text="${envioReal} ? 'Desligar envio' : 'Ligar envio'">Ligar envio</button>
+            </form>
+        </div>
     </div>
 
     <div class="resumo">
@@ -94,16 +127,6 @@
             &ldquo;Convocar doadores&rdquo; no tipo sanguíneo correspondente.
         </p>
 
-        <div class="envio-real" th:if="${envioReal}">
-            <strong>Envio real ativo.</strong>
-            <span th:if="${#strings.isEmpty(destinatarioTeste)}">
-                As mensagens irão para o e-mail de cada doador.
-            </span>
-            <span th:unless="${#strings.isEmpty(destinatarioTeste)}">
-                Todas as mensagens estão sendo redirecionadas para
-                <strong th:text="${destinatarioTeste}">endereco</strong>.
-            </span>
-        </div>
 
         <form th:action="@{/doadores}" th:object="${novoDoador}" method="post" style="display:block;">
             <div class="campos">

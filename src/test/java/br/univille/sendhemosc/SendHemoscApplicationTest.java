@@ -2,7 +2,7 @@ package br.univille.sendhemosc;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import br.univille.sendhemosc.adapter.outbound.email.LogEmailAdapter;
+import br.univille.sendhemosc.adapter.outbound.email.EnvioDeEmailRouter;
 import br.univille.sendhemosc.domain.dto.SituacaoEstoque;
 import br.univille.sendhemosc.domain.port.outbound.IEmailPort;
 import br.univille.sendhemosc.usecase.estoque.ListarSituacaoEstoqueUseCase;
@@ -42,8 +42,21 @@ class SendHemoscApplicationTest {
     }
 
     @Test
-    @DisplayName("por padrao nenhum e-mail sai de verdade: o adapter ativo e o de log")
-    void adapterSeguroPorPadrao() {
-        assertThat(emailPort).isInstanceOf(LogEmailAdapter.class);
+    @DisplayName("quem atende o dominio e o roteador, nao um adapter fixo")
+    void roteadorEOPontoDeEntrada() {
+        assertThat(emailPort).isInstanceOf(EnvioDeEmailRouter.class);
+    }
+
+    @Test
+    @DisplayName("sem provedor configurado nenhuma mensagem sai, mesmo com o interruptor ligado")
+    void semProvedorNadaSai() {
+        final EnvioDeEmailRouter roteador = (EnvioDeEmailRouter) emailPort;
+
+        assertThat(roteador.temProvedorConfigurado())
+                .as("o perfil de teste nao define provedor de entrega")
+                .isFalse();
+        assertThat(roteador.isEntregando())
+                .as("sem provedor, o interruptor nao deve fazer nada sair")
+                .isFalse();
     }
 }

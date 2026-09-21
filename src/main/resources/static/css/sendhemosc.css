@@ -110,3 +110,5 @@ footer a { color: inherit; }
     background: var(--critico-bg); border: 1px solid var(--critico); border-radius: 8px;
     padding: 12px 16px; margin-bottom: 16px; font-size: 13px;
 }
+
+.estado-envio.ligado { border-color: var(--critico); background: var(--critico-bg); }
