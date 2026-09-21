@@ -21,14 +21,21 @@ services:
         value: https://send-hemosc.onrender.com
 
       # --- Envio de e-mail ---
-      # Padrao log: nada e enviado. Para testar envio real, preencha as chaves abaixo pelo
-      # painel do Render. Elas usam sync: false, ou seja, o valor e pedido na interface e NAO
-      # fica versionado aqui — senha nenhuma entra no repositorio.
+      # Padrao log: nada e enviado. Para ligar o envio real use EMAIL_MODO=resend.
       #
-      # Com EMAIL_MODO=smtp o servico so sobe se EMAIL_DESTINATARIO_TESTE estiver preenchido:
-      # a demonstracao e publica e nao pode disparar para a massa ficticia.
+      # NAO use smtp aqui: o Render bloqueia a porta de saida do SMTP para conter spam, e o
+      # envio falha com tempo limite de conexao. O Resend entrega por HTTPS na porta 443.
+      #
+      # Com um modo de envio real, o servico so sobe se EMAIL_DESTINATARIO_TESTE estiver
+      # preenchido: a demonstracao e publica e nao pode disparar para a massa ficticia.
+      #
+      # As chaves com sync: false tem o valor pedido na interface do Render e NAO ficam
+      # versionadas aqui — credencial nenhuma entra no repositorio.
       - key: EMAIL_MODO
         value: log
+
+      - key: RESEND_API_KEY
+        sync: false
 
       - key: EMAIL_DESTINATARIO_TESTE
         sync: false

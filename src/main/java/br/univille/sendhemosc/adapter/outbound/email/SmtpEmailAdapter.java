@@ -8,7 +8,7 @@ import br.univille.sendhemosc.domain.port.outbound.IEmailPort;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -16,7 +16,6 @@ import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 /**
  * Envio real por SMTP. Em desenvolvimento deve apontar para uma caixa de captura como Mailtrap
@@ -29,62 +28,41 @@ public class SmtpEmailAdapter implements IEmailPort {
 
     private final JavaMailSender mailSender;
     private final SendHemoscProperties properties;
-    private final String[] destinatariosTeste;
+    private final RedirecionamentoDeTeste redirecionamento;
 
     public SmtpEmailAdapter(final JavaMailSender mailSender,
                             final SendHemoscProperties properties,
                             @Value("${sendhemosc.email.destinatario-teste:}") final String destinatarioTeste) {
         this.mailSender = mailSender;
         this.properties = properties;
-        this.destinatariosTeste = separarEnderecos(destinatarioTeste);
+        this.redirecionamento = RedirecionamentoDeTeste.de(destinatarioTeste);
 
-        if (destinatariosTeste.length > 0) {
+        if (redirecionamento.isAtivo()) {
             log.warn("[m=init] MODO DE TESTE: todo e-mail sera redirecionado para {} "
-                    + "independentemente do destinatario original", String.join(", ", destinatariosTeste));
+                    + "independentemente do destinatario original", redirecionamento.descricao());
         } else {
             log.warn("[m=init] ENVIO REAL ATIVO: as mensagens irao para o endereco de cada doador. "
                     + "Defina sendhemosc.email.destinatario-teste para redirecionar tudo a enderecos conhecidos");
         }
     }
 
-    /**
-     * Aceita um ou varios enderecos separados por virgula, de modo que a equipe inteira
-     * possa acompanhar um teste de envio ao mesmo tempo.
-     *
-     * @param configurado valor bruto da propriedade
-     * @return enderecos limpos, vazio quando nada foi configurado
-     */
-    private static String[] separarEnderecos(final String configurado) {
-        if (!StringUtils.hasText(configurado)) {
-            return new String[0];
-        }
-
-        return Arrays.stream(configurado.split(","))
-                .map(String::trim)
-                .filter(StringUtils::hasText)
-                .toArray(String[]::new);
-    }
-
     @Override
     public void enviar(final MensagemEmail mensagem) {
-        final boolean redirecionado = destinatariosTeste.length > 0;
-        final String[] destinos = redirecionado ? destinatariosTeste : new String[] {mensagem.destinatario()};
-        final String assunto = redirecionado
-                ? "[TESTE -> %s] %s".formatted(mensagem.destinatario(), mensagem.assunto())
-                : mensagem.assunto();
+        final List<String> destinos = redirecionamento.destinosPara(mensagem);
+        final String assunto = redirecionamento.assuntoPara(mensagem);
 
         try {
             final MimeMessage mime = mailSender.createMimeMessage();
             final MimeMessageHelper helper = new MimeMessageHelper(mime, false, "UTF-8");
 
             helper.setFrom(properties.notificacao().remetente(), properties.notificacao().remetenteNome());
-            helper.setTo(destinos);
+            helper.setTo(destinos.toArray(String[]::new));
             helper.setSubject(assunto);
             helper.setText(mensagem.corpoHtml(), true);
 
             mailSender.send(mime);
 
-            if (redirecionado) {
+            if (redirecionamento.isAtivo()) {
                 log.info("[m=enviar] Mensagem de {} redirecionada para {}",
                         mensagem.destinatario(), String.join(", ", destinos));
             } else {

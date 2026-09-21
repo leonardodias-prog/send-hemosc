@@ -99,12 +99,19 @@ sendhemosc:
     limiar-critico-percentual: 30
     limiar-atencao-percentual: 60
   email:
-    # log  = apenas registra a mensagem no console. Padrão: nada sai da máquina.
-    # smtp = envia de verdade pelo servidor configurado em spring.mail.
+    # log    = apenas registra a mensagem no console. Padrão: nada sai da máquina.
+    # smtp   = envia pelo servidor configurado em spring.mail. Bloqueado em várias
+    #          hospedagens gratuitas, que fecham a porta de saída para conter spam.
+    # resend = envia pela API HTTP do Resend, na porta 443. Funciona onde SMTP não passa.
     modo: ${EMAIL_MODO:log}
-    # Quando preenchido, TODA mensagem vai para este endereço, seja qual for o doador.
-    # Existe para que um teste de envio real não atinja a massa fictícia inteira.
+    # Quando preenchido, TODA mensagem vai para estes endereços, seja qual for o doador.
+    # Aceita vários separados por vírgula. Existe para que um teste de envio real não
+    # atinja a massa fictícia inteira.
     destinatario-teste: ${EMAIL_DESTINATARIO_TESTE:}
+    # Interrompe a rodada depois desta quantidade de falhas seguidas
+    max-falhas-consecutivas: ${EMAIL_MAX_FALHAS:5}
+    resend:
+      api-key: ${RESEND_API_KEY:}
 
   notificacao:
     # Reenvio para quem não compareceu, enquanto o tipo seguir em nível baixo

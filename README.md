@@ -97,7 +97,7 @@ MailHog captura todo e-mail enviado em `http://localhost:8025`, sem nada sair pa
 mvn clean verify
 ```
 
-48 testes. O Checkstyle roda na fase `validate` e quebra o build em violação.
+104 testes. O Checkstyle roda na fase `validate` e quebra o build em violação.
 
 ## Publicando a demonstração
 
@@ -121,11 +121,15 @@ Opcional, e com uma restrição embutida. No painel do serviço, em **Environmen
 
 | Chave | Valor |
 |---|---|
-| `EMAIL_MODO` | `smtp` |
+| `EMAIL_MODO` | `resend` |
+| `RESEND_API_KEY` | chave criada em resend.com/api-keys |
+| `MAIL_REMETENTE` | `onboarding@resend.dev` (sem domínio verificado) |
 | `EMAIL_DESTINATARIO_TESTE` | quem recebe **tudo**. Vários separados por vírgula |
-| `MAIL_USER` | conta de e-mail autenticada |
-| `MAIL_PASSWORD` | senha de app (nunca a senha da conta) |
-| `MAIL_REMETENTE` | no Gmail, igual ao `MAIL_USER` |
+
+> [!WARNING]
+> **Não use `EMAIL_MODO=smtp` no Render.** A plataforma bloqueia a porta de saída do SMTP
+> para conter spam, e o envio falha com `SocketTimeoutException: Connect timed out`. O
+> Resend entrega por HTTPS na porta 443, que nenhuma hospedagem bloqueia.
 
 As chaves sensíveis estão declaradas com `sync: false` no `render.yaml`: o Render pede o valor
 pela interface e nada disso fica versionado.
@@ -151,7 +155,7 @@ pela interface e nada disso fica versionado.
 | Persistência | Spring Data JPA + Hibernate |
 | Banco | H2 (dev) · PostgreSQL 16 (perfil `postgres`) |
 | Migrations | Flyway |
-| E-mail | Spring Mail · MailHog/Mailtrap em desenvolvimento |
+| E-mail | Resend (API HTTP) · Spring Mail (SMTP) · MailHog em desenvolvimento |
 | Agendador | `@Scheduled` |
 | Template de e-mail | Thymeleaf |
 | Testes | JUnit 5 · Mockito · AssertJ |

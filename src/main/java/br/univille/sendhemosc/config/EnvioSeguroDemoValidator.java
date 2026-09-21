@@ -34,7 +34,7 @@ public class EnvioSeguroDemoValidator {
      */
     @PostConstruct
     public void validar() {
-        if (!"smtp".equalsIgnoreCase(modo)) {
+        if (!ModoEnvioEmail.envioReal(modo)) {
             log.info("[m=validar] Demonstracao publica em modo log: nenhum e-mail sera enviado");
             return;
         }
@@ -43,7 +43,7 @@ public class EnvioSeguroDemoValidator {
             throw new IllegalStateException("""
                     Configuracao de envio recusada.
 
-                    O perfil demo esta com EMAIL_MODO=smtp mas sem EMAIL_DESTINATARIO_TESTE.
+                    O perfil demo esta com EMAIL_MODO de envio real mas sem EMAIL_DESTINATARIO_TESTE.
                     Nessa combinacao as convocacoes iriam para o endereco de cada doador da massa
                     ficticia. Defina EMAIL_DESTINATARIO_TESTE com um unico endereco de teste, ou
                     volte EMAIL_MODO para log.""");

@@ -1,5 +1,6 @@
 package br.univille.sendhemosc.adapter.inbound.http.controller;
 
+import br.univille.sendhemosc.config.ModoEnvioEmail;
 import br.univille.sendhemosc.domain.dto.NovoDoador;
 import br.univille.sendhemosc.domain.dto.ResultadoConvocacao;
 import br.univille.sendhemosc.domain.dto.SituacaoEstoque;
@@ -126,7 +127,7 @@ public class PainelViewAdapter {
         model.addAttribute("totalDoadores", doadorRepository.contar());
         model.addAttribute("tiposSanguineos", TipoSanguineo.values());
         model.addAttribute("sexos", Sexo.values());
-        model.addAttribute("envioReal", "smtp".equalsIgnoreCase(modoEmail));
+        model.addAttribute("envioReal", ModoEnvioEmail.envioReal(modoEmail));
         model.addAttribute("destinatarioTeste", destinatarioTeste);
     }
 

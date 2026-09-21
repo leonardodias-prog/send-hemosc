@@ -31,12 +31,12 @@ public class InfoEnvioContributor implements InfoContributor {
     @Override
     public void contribute(final Info.Builder builder) {
         final Map<String, Object> envio = new LinkedHashMap<>();
-        final boolean envioReal = "smtp".equalsIgnoreCase(modo);
+        final boolean envioReal = ModoEnvioEmail.envioReal(modo);
 
         envio.put("modo", modo);
         envio.put("envioReal", envioReal);
         envio.put("descricao", envioReal
-                ? "As mensagens sao entregues pelo servidor SMTP configurado"
+                ? "As mensagens sao entregues de verdade pelo modo " + modo
                 : "As mensagens sao apenas registradas em log e nao saem da aplicacao");
 
         final String[] destinos = StringUtils.hasText(destinatarioTeste)
