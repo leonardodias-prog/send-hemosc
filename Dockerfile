@@ -2,11 +2,20 @@
 FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /build
 
+# Baixar as dependencias antes de copiar o codigo aproveita o cache de camada do Docker:
+# enquanto o pom nao muda, esta etapa nao se repete. E apenas uma otimizacao, e o goal
+# dependency:go-offline falha com alguma facilidade em rede instavel, entao um erro aqui nao
+# interrompe o build: o package seguinte baixa o que faltar.
 COPY pom.xml .
-RUN mvn -B dependency:go-offline -q
+RUN mvn -B dependency:go-offline || echo "go-offline incompleto, o package baixa o restante"
 
+# Sem -q: se o build quebrar, a mensagem precisa aparecer no log da plataforma.
+# Sem clean: o container e novo, nao ha nada para limpar.
 COPY src ./src
-RUN mvn -B clean package -DskipTests -q
+RUN mvn -B package -DskipTests
+
+# Nome fixo, para a etapa seguinte nao depender de curinga.
+RUN cp target/send-hemosc-*.jar /build/app.jar
 
 # ---- Runtime ----
 FROM eclipse-temurin:21-jre-alpine
@@ -15,7 +24,7 @@ WORKDIR /app
 RUN addgroup -S app && adduser -S app -G app
 USER app
 
-COPY --from=build /build/target/send-hemosc-*.jar app.jar
+COPY --from=build /build/app.jar app.jar
 
 # Perfil de demonstracao: H2 em memoria, dados ficticios, e-mail apenas em log.
 ENV SPRING_PROFILES_ACTIVE=demo
