@@ -18,6 +18,7 @@ import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -37,6 +38,14 @@ public class ConvocarDoadoresUseCase {
     private final ClassificarNivelEstoqueUseCase classificarNivel;
     private final CalcularAptidaoUseCase calcularAptidao;
     private final RenderizarConvocacaoUseCase renderizarConvocacao;
+
+    /**
+     * Interrompe a rodada apos esta quantidade de falhas seguidas. Falha em sequencia indica
+     * problema de infraestrutura, e nao do destinatario: insistir so faz a requisicao pendurar,
+     * ja que cada tentativa espera o tempo limite de conexao antes de desistir.
+     */
+    @Value("${sendhemosc.email.max-falhas-consecutivas:5}")
+    private int maxFalhasConsecutivas;
 
     /**
      * Convoca doadores compativeis com o tipo sanguineo informado.
@@ -87,19 +96,28 @@ public class ConvocarDoadoresUseCase {
         final TipoSanguineo tipoSanguineo = situacao.tipoSanguineo();
         int enviados = 0;
         int falhas = 0;
+        int falhasSeguidas = 0;
 
         for (final CandidatoConvocacao doador : aptos) {
+            if (falhasSeguidas >= maxFalhasConsecutivas) {
+                log.error("[m=disparar] Rodada interrompida apos {} falhas seguidas. "
+                        + "Verifique a conectividade com o servidor de e-mail", falhasSeguidas);
+                break;
+            }
+
             final int tentativa = notificacaoRepository.proximaTentativa(doador.id(), tipoSanguineo);
             try {
                 emailPort.enviar(renderizarConvocacao.execute(doador, situacao));
                 notificacaoRepository.registrar(doador.id(), tipoSanguineo, situacao.nivel(), origem,
                         StatusNotificacao.ENVIADA, tentativa, null);
                 enviados++;
+                falhasSeguidas = 0;
             } catch (final RuntimeException excecao) {
                 log.warn("[m=disparar] Falha ao convocar doador {}: {}", doador.id(), excecao.getMessage());
                 notificacaoRepository.registrar(doador.id(), tipoSanguineo, situacao.nivel(), origem,
                         StatusNotificacao.FALHA, tentativa, excecao.getMessage());
                 falhas++;
+                falhasSeguidas++;
             }
         }
 

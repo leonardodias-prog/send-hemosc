@@ -39,6 +39,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Convocacao segmentada de doadores")
@@ -68,6 +69,8 @@ class ConvocarDoadoresUseCaseTest {
                 estoqueRepository, doadorRepository, notificacaoRepository, emailPort,
                 new ClassificarNivelEstoqueUseCase(properties), new CalcularAptidaoUseCase(properties),
                 renderizarConvocacao);
+
+        ReflectionTestUtils.setField(useCase, "maxFalhasConsecutivas", 5);
     }
 
     private CandidatoConvocacao candidato(final long id, final LocalDate ultimaDoacao) {
@@ -166,5 +169,54 @@ class ConvocarDoadoresUseCaseTest {
 
         verify(notificacaoRepository).registrar(anyLong(), any(), any(), any(),
                 eq(StatusNotificacao.FALHA), anyInt(), eq("smtp indisponivel"));
+    }
+
+    @Test
+    @DisplayName("interrompe a rodada apos o limite de falhas seguidas, em vez de insistir")
+    void interrompeAposFalhasSeguidas() {
+        estoqueEm(10, 100);
+        when(doadorRepository.buscarCandidatos(anySet(), any())).thenReturn(
+                java.util.stream.IntStream.rangeClosed(1, 40)
+                        .mapToObj(id -> candidato((long) id, null))
+                        .toList());
+        when(renderizarConvocacao.execute(any(), any()))
+                .thenReturn(new MensagemEmail("destino@example.org", "assunto", "<p>corpo</p>"));
+        doThrow(new IllegalStateException("Connect timed out")).when(emailPort).enviar(any());
+
+        final ResultadoConvocacao resultado = useCase.execute(
+                TipoSanguineo.O_NEGATIVO, OrigemNotificacao.AUTOMATICA, false);
+
+        assertThat(resultado.totalElegiveis()).isEqualTo(40);
+        assertThat(resultado.totalFalhas())
+                .as("deve parar no limite e nao tentar os 40")
+                .isEqualTo(5);
+        verify(emailPort, times(5)).enviar(any());
+    }
+
+    @Test
+    @DisplayName("um envio bem-sucedido zera a contagem de falhas seguidas")
+    void sucessoZeraContagem() {
+        estoqueEm(10, 100);
+        when(doadorRepository.buscarCandidatos(anySet(), any())).thenReturn(
+                java.util.stream.IntStream.rangeClosed(1, 10)
+                        .mapToObj(id -> candidato((long) id, null))
+                        .toList());
+        when(renderizarConvocacao.execute(any(), any()))
+                .thenReturn(new MensagemEmail("destino@example.org", "assunto", "<p>corpo</p>"));
+
+        // Alterna falha e sucesso: nunca acumula cinco seguidas, entao processa a lista toda.
+        doThrow(new IllegalStateException("falha")).doNothing()
+                .doThrow(new IllegalStateException("falha")).doNothing()
+                .doThrow(new IllegalStateException("falha")).doNothing()
+                .doThrow(new IllegalStateException("falha")).doNothing()
+                .doThrow(new IllegalStateException("falha")).doNothing()
+                .when(emailPort).enviar(any());
+
+        final ResultadoConvocacao resultado = useCase.execute(
+                TipoSanguineo.O_NEGATIVO, OrigemNotificacao.AUTOMATICA, false);
+
+        assertThat(resultado.totalEnviados()).isEqualTo(5);
+        assertThat(resultado.totalFalhas()).isEqualTo(5);
+        verify(emailPort, times(10)).enviar(any());
     }
 }
