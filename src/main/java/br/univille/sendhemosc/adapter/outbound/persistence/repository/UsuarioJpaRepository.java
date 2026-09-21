@@ -24,5 +24,7 @@ public interface UsuarioJpaRepository extends JpaRepository<UsuarioEntity, Long>
 
     List<UsuarioEntity> findByPerfilAndSituacao(PerfilUsuario perfil, SituacaoUsuario situacao);
 
+    long countByPerfilAndSituacao(PerfilUsuario perfil, SituacaoUsuario situacao);
+
     List<UsuarioEntity> findAllByOrderByCriadoEmDesc();
 }

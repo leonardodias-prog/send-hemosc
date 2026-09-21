@@ -15,6 +15,7 @@ import java.time.LocalDate;
  * @param email endereco de e-mail
  * @param tipoSanguineo tipo sanguineo do doador
  * @param tokenDescadastro token usado no link de descadastro
+ * @param aceitaContato se o doador autorizou receber convocacoes
  * @param sexo sexo biologico, define intervalo e limite anual
  * @param dataNascimento data de nascimento
  * @param pesoKg peso em quilos, pode ser nulo
@@ -27,6 +28,7 @@ public record CandidatoConvocacao(
         String email,
         TipoSanguineo tipoSanguineo,
         String tokenDescadastro,
+        boolean aceitaContato,
         Sexo sexo,
         LocalDate dataNascimento,
         BigDecimal pesoKg,

@@ -1,6 +1,7 @@
 package br.univille.sendhemosc.domain.port.outbound;
 
 import br.univille.sendhemosc.domain.dto.CandidatoConvocacao;
+import br.univille.sendhemosc.domain.dto.FiltroDoador;
 import br.univille.sendhemosc.domain.dto.NovoDoador;
 import java.time.LocalDate;
 import java.util.List;
@@ -22,6 +23,25 @@ public interface IDoadorRepositoryPort {
      * @return lista de candidatos a convocacao
      */
     List<CandidatoConvocacao> buscarCandidatos(Set<String> siglasTipoSanguineo, LocalDate referencia);
+
+    /**
+     * Busca candidatos pelos criterios da tela de listagem. A aptidao nao e avaliada aqui:
+     * o repositorio devolve os dados brutos e quem decide e CalcularAptidaoUseCase.
+     *
+     * @param filtro criterios informados
+     * @param referencia data de referencia da janela de doze meses
+     * @return candidatos que atendem aos criterios de busca e tipo
+     */
+    List<CandidatoConvocacao> buscarPorFiltro(FiltroDoador filtro, LocalDate referencia);
+
+    /**
+     * Busca candidatos por identificador, para a convocacao de uma selecao especifica.
+     *
+     * @param identificadores doadores escolhidos
+     * @param referencia data de referencia da janela de doze meses
+     * @return candidatos correspondentes, apenas os que existem
+     */
+    List<CandidatoConvocacao> buscarPorIdentificadores(Set<Long> identificadores, LocalDate referencia);
 
     /**
      * Indica se ja existe doador cadastrado com o e-mail informado.

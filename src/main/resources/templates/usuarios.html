@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -11,12 +12,15 @@
 
     <header>
         <h1>Contas de acesso</h1>
-        <p class="subtitulo">Aprovação de responsáveis e situação dos funcionários</p>
+        <p class="subtitulo">Criação, alteração, senha e exclusão de contas</p>
         <nav class="topo">
-            <a th:href="@{/}">Painel de captação</a>
+            <a th:href="@{/}">Painel</a>
+            <a th:href="@{/doadores}">Doadores</a>
             <a th:href="@{/usuarios}">Contas</a>
+            <a th:href="@{/termo}">Termo de uso</a>
             <span class="usuario">
-                <form th:action="@{/sair}" method="post" style="display:inline;">
+                <span sec:authentication="name">usuario</span>
+                <form th:action="@{/sair}" method="post" style="display:inline;margin-left:8px;">
                     <button type="submit" class="secundario">Sair</button>
                 </form>
             </span>
@@ -27,55 +31,108 @@
     <div class="erro-caixa" th:if="${erro}" th:text="${erro}">mensagem</div>
 
     <div class="faixa" th:if="${pendentes > 0}">
-        <strong th:text="${pendentes}">1</strong> cadastro(s) aguardando sua decisão.
+        <strong th:text="${pendentes}">1</strong> cadastro(s) aguardando decisão.
         Aprovar um responsável libera o disparo de e-mail para a base de doadores.
     </div>
 
-    <div class="cartao">
-        <table>
-            <thead>
-            <tr>
-                <th>Nome</th>
-                <th>E-mail</th>
-                <th>Perfil</th>
-                <th>Situação</th>
-                <th>Último acesso</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="u : ${usuarios}">
-                <td th:text="${u.nome}">Nome</td>
-                <td th:text="${u.email}">email</td>
-                <td th:text="${u.perfil.descricao}">Operador</td>
-                <td>
-                    <span class="etiqueta" th:classappend="${u.situacao.name().toLowerCase()}"
-                          th:text="${u.situacao.descricao}">Ativo</span>
-                </td>
-                <td th:text="${u.ultimoAcessoEm != null
-                        ? #temporals.format(u.ultimoAcessoEm, 'dd/MM/yyyy HH:mm') : 'nunca'}">nunca</td>
-                <td>
-                    <div th:if="${u.situacao.name() == 'PENDENTE'}" style="display:flex;gap:6px;">
-                        <form th:action="@{'/usuarios/' + ${u.id} + '/aprovar'}" method="post">
-                            <button type="submit">Aprovar</button>
-                        </form>
-                        <form th:action="@{'/usuarios/' + ${u.id} + '/recusar'}" method="post">
-                            <button type="submit" class="secundario">Recusar</button>
-                        </form>
-                    </div>
-                </td>
-            </tr>
-            <tr th:if="${#lists.isEmpty(usuarios)}">
-                <td colspan="6" style="color:var(--suave);">Nenhuma conta cadastrada.</td>
-            </tr>
-            </tbody>
-        </table>
+    <details class="cartao">
+        <summary style="cursor:pointer;font-weight:600;">Criar conta</summary>
+        <p class="dica" style="margin:12px 0;">
+            Conta criada aqui já nasce ativa, sem passar por aprovação: quem cria é a própria
+            autoridade que aprovaria.
+        </p>
+        <form th:action="@{/usuarios}" method="post" style="display:block;">
+            <div class="campos">
+                <div class="campo">
+                    <label for="novoNome">Nome completo</label>
+                    <input type="text" id="novoNome" name="nome" required/>
+                </div>
+                <div class="campo">
+                    <label for="novoEmail">E-mail</label>
+                    <input type="email" id="novoEmail" name="email" required/>
+                </div>
+                <div class="campo">
+                    <label for="novaSenha">Senha</label>
+                    <input type="password" id="novaSenha" name="senha" minlength="8" required/>
+                </div>
+                <div class="campo">
+                    <label for="novoPerfil">Perfil</label>
+                    <select id="novoPerfil" name="perfil" required>
+                        <option th:each="p : ${perfis}" th:value="${p}" th:text="${p.descricao}">Operador</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit">Criar conta</button>
+        </form>
+    </details>
+
+    <div class="cartao" th:each="u : ${usuarios}">
+        <form th:action="@{'/usuarios/' + ${u.id}}" method="post" style="display:block;">
+            <div class="campos">
+                <div class="campo">
+                    <label th:for="'nome-' + ${u.id}">Nome</label>
+                    <input type="text" th:id="'nome-' + ${u.id}" name="nome" th:value="${u.nome}" required/>
+                </div>
+                <div class="campo">
+                    <label th:for="'email-' + ${u.id}">E-mail</label>
+                    <input type="email" th:id="'email-' + ${u.id}" name="email" th:value="${u.email}" required/>
+                </div>
+                <div class="campo">
+                    <label th:for="'perfil-' + ${u.id}">Perfil</label>
+                    <select th:id="'perfil-' + ${u.id}" name="perfil">
+                        <option th:each="p : ${perfis}" th:value="${p}" th:text="${p.descricao}"
+                                th:selected="${u.perfil == p}">Operador</option>
+                    </select>
+                </div>
+                <div class="campo">
+                    <label th:for="'situacao-' + ${u.id}">Situação</label>
+                    <select th:id="'situacao-' + ${u.id}" name="situacao">
+                        <option th:each="s : ${situacoes}" th:value="${s}" th:text="${s.descricao}"
+                                th:selected="${u.situacao == s}">Ativo</option>
+                    </select>
+                </div>
+            </div>
+
+            <p class="dica">
+                Criada em <span th:text="${#temporals.format(u.criadoEm, 'dd/MM/yyyy')}">data</span> &middot;
+                último acesso
+                <span th:text="${u.ultimoAcessoEm != null
+                        ? #temporals.format(u.ultimoAcessoEm, 'dd/MM/yyyy HH:mm') : 'nunca'}">nunca</span>
+                &middot; <span th:text="${u.perfil.atribuicoes}">atribuições</span>
+            </p>
+
+            <div class="acoes" style="margin-top:12px;">
+                <button type="submit">Salvar alterações</button>
+
+                <button type="submit" class="secundario" th:if="${u.situacao.name() == 'PENDENTE'}"
+                        th:formaction="@{'/usuarios/' + ${u.id} + '/aprovar'}">Aprovar</button>
+                <button type="submit" class="secundario" th:if="${u.situacao.name() == 'PENDENTE'}"
+                        th:formaction="@{'/usuarios/' + ${u.id} + '/recusar'}">Recusar</button>
+
+                <button type="submit" class="secundario"
+                        th:formaction="@{'/usuarios/' + ${u.id} + '/senha'}"
+                        onclick="return confirm('Gerar uma senha nova para esta conta? A senha atual deixa de valer.')">
+                    Redefinir senha
+                </button>
+
+                <button type="submit" class="secundario"
+                        th:formaction="@{'/usuarios/' + ${u.id} + '/excluir'}"
+                        onclick="return confirm('Excluir esta conta definitivamente? Isso não pode ser desfeito.')">
+                    Excluir
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="cartao" th:if="${#lists.isEmpty(usuarios)}">
+        <p style="color:var(--suave);margin:0;">Nenhuma conta cadastrada.</p>
     </div>
 
     <footer>
         <p>
-            O perfil de responsável dispara convocações por e-mail. Aprove apenas quem tem
-            essa atribuição na unidade.
+            Duas ações são recusadas pelo sistema: alterar o próprio perfil, desativar-se ou
+            excluir-se, e remover a última conta de administrador ativa. Ambas deixariam o
+            sistema sem ninguém capaz de gerenciar contas.
         </p>
     </footer>
 

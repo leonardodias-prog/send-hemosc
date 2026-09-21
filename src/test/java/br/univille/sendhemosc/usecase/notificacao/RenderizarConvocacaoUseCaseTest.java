@@ -28,7 +28,7 @@ class RenderizarConvocacaoUseCaseTest {
     private RenderizarConvocacaoUseCase useCase;
 
     private static final CandidatoConvocacao DOADOR = new CandidatoConvocacao(
-            1L, "Maria Silva", "maria@example.org", TipoSanguineo.O_NEGATIVO, "tok-123",
+            1L, "Maria Silva", "maria@example.org", TipoSanguineo.O_NEGATIVO, "tok-123", true,
             Sexo.FEMININO, LocalDate.now().minusYears(30), BigDecimal.valueOf(65), null, 0);
 
     private static final SituacaoEstoque SITUACAO = new SituacaoEstoque(

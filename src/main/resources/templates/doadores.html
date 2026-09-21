@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Doadores — Send Hemosc</title>
+    <link rel="stylesheet" th:href="@{/css/sendhemosc.css}"/>
+</head>
+<body>
+<div class="container">
+
+    <header>
+        <h1>Doadores</h1>
+        <p class="subtitulo">Busca, aptidão e convocação individual ou em grupo</p>
+        <nav class="topo">
+            <a th:href="@{/}">Painel</a>
+            <a th:href="@{/doadores}">Doadores</a>
+            <a th:href="@{/usuarios}" sec:authorize="hasRole('MASTER')">Contas</a>
+            <a th:href="@{/termo}">Termo de uso</a>
+            <span class="usuario">
+                <span sec:authentication="name">usuario</span>
+                <form th:action="@{/sair}" method="post" style="display:inline;margin-left:8px;">
+                    <button type="submit" class="secundario">Sair</button>
+                </form>
+            </span>
+        </nav>
+    </header>
+
+    <div class="aviso" th:if="${aviso}" th:text="${aviso}">mensagem</div>
+    <div class="erro-caixa" th:if="${erro}" th:text="${erro}">mensagem</div>
+
+    <div class="cartao">
+        <h2>Filtros</h2>
+        <form th:action="@{/doadores}" method="get" style="display:block;">
+            <div class="campos">
+                <div class="campo">
+                    <label for="busca">Nome ou e-mail</label>
+                    <input type="text" id="busca" name="busca" th:value="${filtro.busca}"
+                           placeholder="parte do nome ou do e-mail"/>
+                </div>
+                <div class="campo">
+                    <label for="tipo">Tipo sanguíneo</label>
+                    <select id="tipo" name="tipo">
+                        <option value="">Todos</option>
+                        <option th:each="t : ${tiposSanguineos}" th:value="${t.sigla}" th:text="${t.sigla}"
+                                th:selected="${filtro.tipoSanguineo != null and filtro.tipoSanguineo == t}">A+</option>
+                    </select>
+                </div>
+            </div>
+
+            <label class="consentimento">
+                <input type="checkbox" name="apenasAptos" value="true" th:checked="${filtro.apenasAptos}"/>
+                <span>Somente quem pode doar hoje</span>
+            </label>
+            <label class="consentimento">
+                <input type="checkbox" name="apenasComConsentimento" value="true"
+                       th:checked="${filtro.apenasComConsentimento}"/>
+                <span>Somente quem autorizou receber convocações</span>
+            </label>
+
+            <button type="submit">Aplicar filtros</button>
+            <a th:href="@{/doadores}"><button type="button" class="secundario">Limpar</button></a>
+        </form>
+    </div>
+
+    <div class="resumo">
+        <div class="indicador">
+            <div class="numero" th:text="${#lists.size(doadores)}">0</div>
+            <div class="rotulo">doadores encontrados</div>
+        </div>
+        <div class="indicador">
+            <div class="numero normal" th:text="${totalConvocaveis}">0</div>
+            <div class="rotulo">podem ser convocados agora</div>
+        </div>
+    </div>
+
+    <form th:action="@{/doadores/convocar}" method="post">
+        <div class="cartao">
+            <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
+                <h2 style="margin:0;flex:1;">Resultado</h2>
+                <button type="submit" sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')">
+                    Convocar selecionados
+                </button>
+            </div>
+
+            <p class="dica" sec:authorize="hasRole('OPERADOR')" style="margin-bottom:12px;">
+                Seu perfil consulta e cadastra. A convocação é atribuição do responsável.
+            </p>
+
+            <table>
+                <thead>
+                <tr>
+                    <th sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')" style="width:32px;">
+                        <input type="checkbox" onclick="marcarTodos(this)" aria-label="Selecionar todos"/>
+                    </th>
+                    <th>Nome</th>
+                    <th>E-mail</th>
+                    <th>Tipo</th>
+                    <th>Situação</th>
+                    <th>Última doação</th>
+                    <th sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')"></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="d : ${doadores}">
+                    <td sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')">
+                        <input type="checkbox" name="selecionados" th:value="${d.id}"
+                               th:disabled="${!d.convocavel()}" th:aria-label="${d.nome}"/>
+                    </td>
+                    <td th:text="${d.nome}">Nome</td>
+                    <td th:text="${d.email}">email</td>
+                    <td><strong th:text="${d.tipoSanguineo.sigla}">O-</strong></td>
+                    <td>
+                        <span class="etiqueta ativo" th:if="${d.convocavel()}">Pode doar</span>
+                        <span class="etiqueta recusado" th:if="${!d.aceitaContato}">Sem autorização</span>
+                        <span class="etiqueta pendente" th:if="${d.aceitaContato and !d.apto}"
+                              th:title="${#strings.listJoin(d.motivosInaptidao, ', ')}">
+                            Apto em <span th:text="${#temporals.format(d.proximaDataApta, 'dd/MM/yyyy')}">data</span>
+                        </span>
+                    </td>
+                    <td th:text="${d.ultimaDoacao != null
+                            ? #temporals.format(d.ultimaDoacao, 'dd/MM/yyyy') : 'nunca doou'}">nunca</td>
+                    <td sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')">
+                        <button type="submit" class="secundario" th:if="${d.convocavel()}"
+                                th:formaction="@{'/doadores/' + ${d.id} + '/convocar'}">
+                            Convocar só este
+                        </button>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(doadores)}">
+                    <td colspan="7" style="color:var(--suave);">
+                        Nenhum doador encontrado com esses filtros.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </form>
+
+    <footer>
+        <p>
+            Quem não autorizou o contato ou não cumpriu o intervalo mínimo não pode ser
+            selecionado: escolher a quem oferecer não dispensa a regra de aptidão.
+        </p>
+    </footer>
+
+</div>
+
+<script>
+    function marcarTodos(origem) {
+        document.querySelectorAll('input[name="selecionados"]:not([disabled])')
+            .forEach(caixa => caixa.checked = origem.checked);
+    }
+</script>
+</body>
+</html>

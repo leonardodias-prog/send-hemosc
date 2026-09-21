@@ -2,7 +2,9 @@ package br.univille.sendhemosc.adapter.outbound.persistence;
 
 import br.univille.sendhemosc.adapter.outbound.persistence.entity.DoadorEntity;
 import br.univille.sendhemosc.adapter.outbound.persistence.repository.DoadorJpaRepository;
+import br.univille.sendhemosc.adapter.outbound.persistence.repository.DoadorJpaRepository.CandidatoProjection;
 import br.univille.sendhemosc.domain.dto.CandidatoConvocacao;
+import br.univille.sendhemosc.domain.dto.FiltroDoador;
 import br.univille.sendhemosc.domain.dto.NovoDoador;
 import br.univille.sendhemosc.domain.enums.Sexo;
 import br.univille.sendhemosc.domain.enums.TipoSanguineo;
@@ -30,21 +32,48 @@ public class DoadorPersistenceAdapter implements IDoadorRepositoryPort {
     @Override
     @Transactional(readOnly = true)
     public List<CandidatoConvocacao> buscarCandidatos(final Set<String> siglasTipoSanguineo, final LocalDate referencia) {
-        final LocalDate inicioJanela = referencia.minusMonths(12);
-
-        return doadorRepository.buscarCandidatos(siglasTipoSanguineo, inicioJanela).stream()
-                .map(projecao -> new CandidatoConvocacao(
-                        projecao.getId(),
-                        projecao.getNome(),
-                        projecao.getEmail(),
-                        TipoSanguineo.doSigla(projecao.getTipoSanguineo()),
-                        projecao.getTokenDescadastro(),
-                        Sexo.valueOf(projecao.getSexo()),
-                        projecao.getDataNascimento(),
-                        projecao.getPesoKg(),
-                        projecao.getUltimaDoacao(),
-                        projecao.getDoacoesJanela()))
+        return doadorRepository.buscarCandidatos(siglasTipoSanguineo, referencia.minusMonths(12)).stream()
+                .map(this::paraCandidato)
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CandidatoConvocacao> buscarPorFiltro(final FiltroDoador filtro, final LocalDate referencia) {
+        final String sigla = filtro.tipoSanguineo() == null ? null : filtro.tipoSanguineo().getSigla();
+
+        return doadorRepository.buscarPorFiltro(filtro.buscaComoPadrao(), sigla,
+                        filtro.apenasComConsentimento(), referencia.minusMonths(12)).stream()
+                .map(this::paraCandidato)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CandidatoConvocacao> buscarPorIdentificadores(final Set<Long> identificadores,
+                                                              final LocalDate referencia) {
+        if (identificadores.isEmpty()) {
+            return List.of();
+        }
+
+        return doadorRepository.buscarPorIdentificadores(identificadores, referencia.minusMonths(12)).stream()
+                .map(this::paraCandidato)
+                .toList();
+    }
+
+    private CandidatoConvocacao paraCandidato(final CandidatoProjection projecao) {
+        return new CandidatoConvocacao(
+                projecao.getId(),
+                projecao.getNome(),
+                projecao.getEmail(),
+                TipoSanguineo.doSigla(projecao.getTipoSanguineo()),
+                projecao.getTokenDescadastro(),
+                projecao.getAceitaContato(),
+                Sexo.valueOf(projecao.getSexo()),
+                projecao.getDataNascimento(),
+                projecao.getPesoKg(),
+                projecao.getUltimaDoacao(),
+                projecao.getDoacoesJanela());
     }
 
     @Override

@@ -16,7 +16,9 @@ public enum UsuarioErrorsMessage implements ErrorsMessage {
     SENHAS_DIFERENTES("USU-003", "usuario.senhas-diferentes", HttpStatus.BAD_REQUEST),
     PERFIL_NAO_PERMITIDO("USU-004", "usuario.perfil.nao-permitido", HttpStatus.FORBIDDEN),
     APROVACAO_INVALIDA("USU-005", "usuario.aprovacao.invalida", HttpStatus.GONE),
-    SEM_ADMINISTRADOR("USU-006", "usuario.sem-administrador", HttpStatus.SERVICE_UNAVAILABLE);
+    SEM_ADMINISTRADOR("USU-006", "usuario.sem-administrador", HttpStatus.SERVICE_UNAVAILABLE),
+    ACAO_SOBRE_SI("USU-007", "usuario.acao-sobre-si", HttpStatus.CONFLICT),
+    ULTIMO_ADMINISTRADOR("USU-008", "usuario.ultimo-administrador", HttpStatus.CONFLICT);
 
     private final String codigo;
     private final String chaveMensagem;

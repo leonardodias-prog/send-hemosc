@@ -63,8 +63,11 @@ public class SegurancaConfig {
                             "/aprovacao/**", "/actuator/health", "/actuator/info", "/css/**").permitAll()
                     // Gerenciamento de contas
                     .requestMatchers("/usuarios/**").hasRole(PERFIL_MASTER)
-                    // Acoes que produzem e-mail de verdade
-                    .requestMatchers("/convocar/**", "/api/convocacoes/**", "/envio/**")
+                    // Acoes que produzem e-mail de verdade. Precisam vir antes das regras
+                    // gerais abaixo: a primeira correspondencia decide, e /doadores/** liberaria
+                    // a convocacao seletiva para quem so deveria alimentar dados.
+                    .requestMatchers("/convocar/**", "/api/convocacoes/**", "/envio/**",
+                            "/doadores/convocar", "/doadores/*/convocar")
                             .hasAnyRole(PERFIL_RESPONSAVEL, PERFIL_MASTER)
                     // Alimentacao de dados e consulta
                     .requestMatchers("/", "/doadores/**", "/estoque/**", "/api/**")

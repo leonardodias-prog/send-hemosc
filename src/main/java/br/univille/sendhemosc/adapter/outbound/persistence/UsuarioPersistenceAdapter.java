@@ -36,8 +36,70 @@ public class UsuarioPersistenceAdapter implements IUsuarioRepositoryPort {
 
     @Override
     @Transactional(readOnly = true)
+    public Optional<UsuarioResumo> buscarPorId(final Long id) {
+        return usuarioRepository.findById(id).map(this::paraResumo);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public boolean existeComEmail(final String email) {
         return usuarioRepository.existsByEmailIgnoreCase(email);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existeComEmailDeOutro(final String email, final Long exetoUsuarioId) {
+        return usuarioRepository.findByEmailIgnoreCase(email)
+                .filter(entidade -> !entidade.getId().equals(exetoUsuarioId))
+                .isPresent();
+    }
+
+    @Override
+    @Transactional
+    public Optional<UsuarioResumo> atualizar(final Long id, final String nome, final String email,
+                                             final PerfilUsuario perfil, final SituacaoUsuario situacao) {
+        return usuarioRepository.findById(id).map(entidade -> {
+            entidade.setNome(nome);
+            entidade.setEmail(email);
+            entidade.setPerfil(perfil);
+            entidade.setSituacao(situacao);
+            entidade.setAtualizadoEm(LocalDateTime.now());
+
+            // Conta que deixa de estar pendente nao precisa mais do token do link de aprovacao.
+            if (situacao != SituacaoUsuario.PENDENTE) {
+                entidade.setTokenAprovacao(null);
+            }
+
+            return paraResumo(usuarioRepository.save(entidade));
+        });
+    }
+
+    @Override
+    @Transactional
+    public Optional<UsuarioResumo> trocarSenha(final Long id, final String senhaHash) {
+        return usuarioRepository.findById(id).map(entidade -> {
+            entidade.setSenhaHash(senhaHash);
+            entidade.setAtualizadoEm(LocalDateTime.now());
+
+            return paraResumo(usuarioRepository.save(entidade));
+        });
+    }
+
+    @Override
+    @Transactional
+    public Optional<UsuarioResumo> excluir(final Long id) {
+        return usuarioRepository.findById(id).map(entidade -> {
+            final UsuarioResumo removido = paraResumo(entidade);
+            usuarioRepository.delete(entidade);
+
+            return removido;
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long contarAdministradoresAtivos() {
+        return usuarioRepository.countByPerfilAndSituacao(PerfilUsuario.MASTER, SituacaoUsuario.ATIVO);
     }
 
     @Override

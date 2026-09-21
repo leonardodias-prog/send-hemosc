@@ -75,7 +75,7 @@ class ConvocarDoadoresUseCaseTest {
 
     private CandidatoConvocacao candidato(final long id, final LocalDate ultimaDoacao) {
         return new CandidatoConvocacao(id, "Doador " + id, "doador" + id + "@example.org",
-                TipoSanguineo.O_NEGATIVO, "token-" + id, Sexo.MASCULINO,
+                TipoSanguineo.O_NEGATIVO, "token-" + id, true, Sexo.MASCULINO,
                 LocalDate.now().minusYears(30), BigDecimal.valueOf(75), ultimaDoacao, 0);
     }
 

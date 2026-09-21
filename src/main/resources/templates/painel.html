@@ -15,6 +15,7 @@
         <p class="subtitulo">Painel de captação &middot; Agência Transfusional &middot; Joinville/SC</p>
         <nav class="topo">
             <a th:href="@{/}">Painel</a>
+            <a th:href="@{/doadores}">Doadores</a>
             <a th:href="@{/usuarios}" sec:authorize="hasRole('MASTER')">Contas</a>
             <a th:href="@{/termo}">Termo de uso</a>
             <span class="usuario">
@@ -124,8 +125,8 @@
     <div class="cartao">
         <h2>Cadastrar doador</h2>
         <p class="dica">
-            Para testar o envio de verdade, cadastre-se com seu próprio e-mail e depois clique em
-            &ldquo;Convocar doadores&rdquo; no tipo sanguíneo correspondente.
+            Para convocar pessoas específicas em vez da base inteira, use a
+            <a th:href="@{/doadores}">tela de doadores</a>, que tem filtros e seleção.
         </p>
 
 
