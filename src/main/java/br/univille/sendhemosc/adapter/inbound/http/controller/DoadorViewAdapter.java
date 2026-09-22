@@ -2,14 +2,22 @@ package br.univille.sendhemosc.adapter.inbound.http.controller;
 
 import br.univille.sendhemosc.domain.dto.DoadorListado;
 import br.univille.sendhemosc.domain.dto.FiltroDoador;
+import br.univille.sendhemosc.domain.dto.NovaDoacao;
 import br.univille.sendhemosc.domain.dto.ResultadoConvocacao;
+import br.univille.sendhemosc.domain.dto.ResultadoRegistroDoacao;
 import br.univille.sendhemosc.domain.enums.TipoSanguineo;
+import br.univille.sendhemosc.domain.exception.NegocioException;
 import br.univille.sendhemosc.usecase.doador.ListarDoadoresUseCase;
+import br.univille.sendhemosc.usecase.doador.RegistrarDoacaoUseCase;
 import br.univille.sendhemosc.usecase.notificacao.ConvocarSelecionadosUseCase;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSource;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,8 +38,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequiredArgsConstructor
 public class DoadorViewAdapter {
 
+    private static final Locale PT_BR = Locale.of("pt", "BR");
+
     private final ListarDoadoresUseCase listarDoadores;
     private final ConvocarSelecionadosUseCase convocarSelecionados;
+    private final RegistrarDoacaoUseCase registrarDoacao;
+    private final MessageSource messageSource;
 
     @GetMapping("/doadores")
     public String listar(@RequestParam(required = false) final String busca,
@@ -63,6 +75,52 @@ public class DoadorViewAdapter {
         }
 
         return responder(convocarSelecionados.execute(selecionados), selecionados.size(), atributos);
+    }
+
+    @PostMapping("/doadores/{id}/doacao")
+    public String registrarDoacao(@PathVariable final Long id,
+                                  @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+                                  final LocalDate dataDoacao,
+                                  @RequestParam(required = false) final String localColeta,
+                                  final RedirectAttributes atributos) {
+        try {
+            final ResultadoRegistroDoacao resultado = registrarDoacao
+                    .execute(new NovaDoacao(id, dataDoacao, localColeta, null));
+
+            atributos.addFlashAttribute("aviso", montarConfirmacao(resultado));
+        } catch (final NegocioException excecao) {
+            atributos.addFlashAttribute("erro", messageSource.getMessage(
+                    excecao.getErro().getChaveMensagem(), null,
+                    excecao.getErro().getChaveMensagem(), PT_BR));
+        }
+
+        return "redirect:/doadores";
+    }
+
+    /**
+     * Monta a confirmacao reunindo o que a equipe precisa saber de imediato: se alguma
+     * convocacao foi encerrada, quando a pessoa volta a poder doar, e o alerta quando o
+     * sistema a considerava inapta.
+     *
+     * @param resultado desfecho do registro
+     * @return texto exibido na tela
+     */
+    private String montarConfirmacao(final ResultadoRegistroDoacao resultado) {
+        final StringBuilder texto = new StringBuilder("Doação de %s registrada."
+                .formatted(resultado.nomeDoador()));
+
+        if (resultado.convocacoesFechadas() > 0) {
+            texto.append(" %d convocação(ões) passaram a constar como atendidas."
+                    .formatted(resultado.convocacoesFechadas()));
+        }
+
+        texto.append(" Volta a poder doar em %s.".formatted(resultado.proximaDataApta()));
+
+        if (!resultado.estavaApto()) {
+            texto.append(" Atenção: o sistema a considerava inapta nessa data.");
+        }
+
+        return texto.toString();
     }
 
     @PostMapping("/doadores/{id}/convocar")

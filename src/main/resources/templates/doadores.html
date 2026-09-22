@@ -76,6 +76,8 @@
     </div>
 
     <form th:action="@{/doadores/convocar}" method="post">
+        <input type="hidden" name="dataDoacao"
+               th:value="${#temporals.format(#temporals.createToday(), 'yyyy-MM-dd')}"/>
         <div class="cartao">
             <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
                 <h2 style="margin:0;flex:1;">Resultado</h2>
@@ -99,6 +101,7 @@
                     <th>Tipo</th>
                     <th>Situação</th>
                     <th>Última doação</th>
+                    <th>Doação</th>
                     <th sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')"></th>
                 </tr>
                 </thead>
@@ -121,6 +124,13 @@
                     </td>
                     <td th:text="${d.ultimaDoacao != null
                             ? #temporals.format(d.ultimaDoacao, 'dd/MM/yyyy') : 'nunca doou'}">nunca</td>
+                    <td>
+                        <button type="submit" class="secundario"
+                                th:formaction="@{'/doadores/' + ${d.id} + '/doacao'}"
+                                th:title="'Registrar doação de ' + ${d.nome} + ' hoje'">
+                            Doou hoje
+                        </button>
+                    </td>
                     <td sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')">
                         <button type="submit" class="secundario" th:if="${d.convocavel()}"
                                 th:formaction="@{'/doadores/' + ${d.id} + '/convocar'}">
@@ -129,7 +139,7 @@
                     </td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(doadores)}">
-                    <td colspan="7" style="color:var(--suave);">
+                    <td colspan="8" style="color:var(--suave);">
                         Nenhum doador encontrado com esses filtros.
                     </td>
                 </tr>
@@ -142,6 +152,10 @@
         <p>
             Quem não autorizou o contato ou não cumpriu o intervalo mínimo não pode ser
             selecionado: escolher a quem oferecer não dispensa a regra de aptidão.
+        </p>
+        <p>
+            Registrar a doação fecha as convocações que a pessoa tinha em aberto e recalcula
+            quando ela volta a poder doar — é o que impede que ela seja chamada de novo.
         </p>
     </footer>
 

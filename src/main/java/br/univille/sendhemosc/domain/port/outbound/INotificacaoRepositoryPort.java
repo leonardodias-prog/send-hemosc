@@ -37,6 +37,20 @@ public interface INotificacaoRepositoryPort {
     List<Long> buscarPendentesDeReenvio(TipoSanguineo tipoSanguineo, LocalDate anteriorA);
 
     /**
+     * Marca como atendidas as convocacoes que o doador ainda tinha em aberto.
+     *
+     * <p>E o que liga a doacao a convocacao que a motivou. Sem isso a pessoa que atendeu ao
+     * chamado continua constando como pendente, e nao ha como medir se a convocacao funcionou.
+     * Fecha todas as pendentes, e nao apenas a ultima: qualquer uma delas pode ter sido o
+     * motivo da visita, e deixar as demais abertas manteria um pendente que nunca se resolve.</p>
+     *
+     * @param doadorId quem doou
+     * @param dataDoacao data em que a doacao aconteceu
+     * @return quantas convocacoes passaram a constar como atendidas
+     */
+    int marcarComparecimento(Long doadorId, LocalDate dataDoacao);
+
+    /**
      * Numero da proxima tentativa de convocacao para o doador no tipo informado.
      *
      * @param doadorId identificador do doador

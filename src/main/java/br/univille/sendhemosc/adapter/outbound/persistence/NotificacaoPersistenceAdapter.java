@@ -52,6 +52,19 @@ public class NotificacaoPersistenceAdapter implements INotificacaoRepositoryPort
     }
 
     @Override
+    @Transactional
+    public int marcarComparecimento(final Long doadorId, final LocalDate dataDoacao) {
+        final int fechadas = notificacaoRepository.marcarComparecimento(doadorId, dataDoacao);
+
+        if (fechadas > 0) {
+            log.info("[m=marcarComparecimento] {} convocacao(oes) do doador {} passaram a constar "
+                    + "como atendidas em {}", fechadas, doadorId, dataDoacao);
+        }
+
+        return fechadas;
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public int proximaTentativa(final Long doadorId, final TipoSanguineo tipoSanguineo) {
         return notificacaoRepository.maiorTentativa(doadorId, tipoSanguineo.getSigla()) + 1;
