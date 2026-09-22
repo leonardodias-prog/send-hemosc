@@ -29,69 +29,51 @@ depois que o estoque já caiu.
 |---|---|
 | Classificação do estoque em **normal / atenção / crítico** | [`ClassificarNivelEstoqueUseCase`](src/main/java/br/univille/sendhemosc/usecase/estoque/ClassificarNivelEstoqueUseCase.java) |
 | Cálculo da data estimada da próxima doação | [`CalcularAptidaoUseCase`](src/main/java/br/univille/sendhemosc/usecase/doador/CalcularAptidaoUseCase.java) |
-| Convocação segmentada por tipo + aptidão | [`ConvocarDoadoresUseCase`](src/main/java/br/univille/sendhemosc/usecase/notificacao/ConvocarDoadoresUseCase.java) |
-| Disparo automático diário | [`ConvocacaoScheduler`](src/main/java/br/univille/sendhemosc/adapter/inbound/scheduler/ConvocacaoScheduler.java) |
+| Convocação por tipo sanguíneo + aptidão | [`ConvocarDoadoresUseCase`](src/main/java/br/univille/sendhemosc/usecase/notificacao/ConvocarDoadoresUseCase.java) |
+| Convocação de uma seleção específica | [`ConvocarSelecionadosUseCase`](src/main/java/br/univille/sendhemosc/usecase/notificacao/ConvocarSelecionadosUseCase.java) |
+| Interruptor de envio, acionável na tela | [`EnvioDeEmailRouter`](src/main/java/br/univille/sendhemosc/adapter/outbound/email/EnvioDeEmailRouter.java) |
 | Descadastro exigido pela LGPD | [`DescadastroApiAdapter`](src/main/java/br/univille/sendhemosc/adapter/inbound/http/controller/DescadastroApiAdapter.java) |
 
-A convocação não busca apenas o tipo exato em falta: usa a **tabela de compatibilidade
+A convocação por tipo não busca apenas o tipo exato em falta: usa a **tabela de compatibilidade
 transfusional**. Quando A+ está em falta, convoca A+, A−, O+ e O−.
+
+## Telas
+
+| Rota | Quem acessa | Para quê |
+|---|---|---|
+| `/` | Todos autenticados | Painel de estoque, cadastro de doador, interruptor de envio |
+| `/doadores` | Todos autenticados | Busca com filtros, aptidão e convocação seletiva |
+| `/usuarios` | Administrador | Criação, alteração, senha e exclusão de contas |
+| `/login`, `/cadastro`, `/termo` | Público | Entrada, autocadastro e termo de uso |
+
+## Perfis de acesso
+
+A separação segue o efeito de cada ação. Mandar e-mail sai do sistema e não se desfaz;
+alimentar dados, não.
+
+| Perfil | Pode | Como entra |
+|---|---|---|
+| **Operador** | Cadastra doadores, atualiza estoque, consulta | Autocadastro, ativo na hora |
+| **Responsável** | Tudo acima, mais disparar convocações e ligar o envio | Autocadastro, pendente até aprovação |
+| **Administrador** | Tudo acima, mais gerenciar contas | Criado na primeira subida |
+
+O cadastro de responsável dispara um e-mail ao administrador com links de aprovar e recusar.
+O token vale uma vez só.
 
 ## Rodando o projeto
 
 **Pré-requisitos:** Java 21 e Maven. Nada além disso — sem banco instalado, sem conta em
-serviço nenhum. Guia completo em
-[`docs/ambiente-de-desenvolvimento.md`](docs/ambiente-de-desenvolvimento.md).
+serviço nenhum.
 
 ```bash
 mvn spring-boot:run
 ```
 
-Abra `http://localhost:8080` e o painel de captação aparece. Sobe com H2 em memória, 120 doadores fictícios e os oito
-tipos sanguíneos já com estoque. **Nenhum e-mail é enviado** — o adapter padrão apenas registra
-a mensagem no log.
+Abra `http://localhost:8080`. Sobe com H2 em memória, migrations aplicadas, 120 doadores
+fictícios e os oito tipos com estoque. **Nenhum e-mail sai**: as mensagens vão para o log.
 
-### Experimentando
-
-```bash
-curl http://localhost:8080/api/estoque
-```
-
-```bash
-curl -X POST "http://localhost:8080/api/convocacoes/O-"
-```
-
-Resposta:
-
-```json
-{"tipoSanguineo":"O-","nivel":"CRITICO","totalElegiveis":12,"totalEnviados":12,"totalFalhas":0}
-```
-
-Convocar um tipo em nível `NORMAL` retorna zero envios — é o comportamento esperado, o sistema
-só dispara para `ATENCAO` e `CRITICO`. Para forçar, use `?ignorarNivel=true`.
-
-| Endpoint | Método | Para quê |
-|---|---|---|
-| `/api/estoque` | GET | Situação dos oito tipos, ordenada por criticidade |
-| `/api/estoque/{sigla}?quantidadeBolsas=N` | PUT | Atualiza o estoque |
-| `/api/convocacoes/{sigla}` | POST | Dispara convocação manual |
-| `/descadastro/{token}` | GET | Link de cancelamento do e-mail |
-| `/` | GET | Painel de captação (tela principal) |
-| `/h2-console` | GET | Banco em memória (perfil `dev`) |
-| `/actuator/health` | GET | Health check |
-
-### Com PostgreSQL e caixa de e-mail
-
-Requer Docker.
-
-```bash
-docker compose up -d
-```
-
-```bash
-mvn spring-boot:run -Dspring-boot.run.profiles=postgres
-```
-
-MailHog captura todo e-mail enviado em `http://localhost:8025`, sem nada sair para a internet.
+A senha do administrador aparece no console da primeira subida. Guia completo para quem entra
+no projeto: [`docs/ambiente-de-desenvolvimento.md`](docs/ambiente-de-desenvolvimento.md).
 
 ### Testes
 
@@ -99,54 +81,8 @@ MailHog captura todo e-mail enviado em `http://localhost:8025`, sem nada sair pa
 mvn clean verify
 ```
 
-104 testes. O Checkstyle roda na fase `validate` e quebra o build em violação.
-
-## Publicando a demonstração
-
-O repositório já traz o blueprint do [Render](https://render.com) em
-[`render.yaml`](render.yaml). No plano gratuito, sem cartão e **sem banco de dados**: o perfil
-`demo` usa H2 em memória com massa fictícia gerada na subida.
-
-1. Entre no Render com a conta do GitHub
-2. **New → Blueprint** e aponte para este repositório
-3. O Render lê o `render.yaml`, constrói o Dockerfile e publica
-
-Cada `git push` na `main` republica sozinho.
-
-O perfil `demo` tem três travas próprias: o envio de e-mail fica em modo log, o agendador
-automático é desligado (`cron-convocacao: "-"`) e o estado volta ao inicial a cada reinício —
-quem abrir o link sempre encontra o mesmo cenário de demonstração.
-
-### Ligando o envio de e-mail no Render
-
-Opcional, e com uma restrição embutida. No painel do serviço, em **Environment**:
-
-| Chave | Valor |
-|---|---|
-| `EMAIL_MODO` | `resend` |
-| `RESEND_API_KEY` | chave criada em resend.com/api-keys |
-| `MAIL_REMETENTE` | `onboarding@resend.dev` (sem domínio verificado) |
-| `EMAIL_DESTINATARIO_TESTE` | quem recebe **tudo**. Vários separados por vírgula |
-
-> [!WARNING]
-> **Não use `EMAIL_MODO=smtp` no Render.** A plataforma bloqueia a porta de saída do SMTP
-> para conter spam, e o envio falha com `SocketTimeoutException: Connect timed out`. O
-> Resend entrega por HTTPS na porta 443, que nenhuma hospedagem bloqueia.
-
-As chaves sensíveis estão declaradas com `sync: false` no `render.yaml`: o Render pede o valor
-pela interface e nada disso fica versionado.
-
-> [!CAUTION]
-> Com `EMAIL_MODO=smtp` e `EMAIL_DESTINATARIO_TESTE` vazio, **a aplicação recusa subir**.
-> A demonstração é pública e roda com a massa fictícia carregada: sem restringir o destino,
-> qualquer visitante conseguiria disparar e-mail para a base inteira. A verificação está em
-> [`EnvioSeguroDemoValidator`](src/main/java/br/univille/sendhemosc/config/EnvioSeguroDemoValidator.java).
-
-> [!NOTE]
-> No plano gratuito o serviço hiberna após ~15 minutos sem acesso, e o primeiro carregamento
-> depois disso leva cerca de um minuto. Se for apresentar ao vivo, abra o link alguns minutos
-> antes. O `Dockerfile` e o perfil `demo` são genéricos: o mesmo deploy funciona em Railway,
-> Fly.io ou Koyeb sem alteração.
+117 testes. O Checkstyle roda na fase `validate` e quebra o build em violação. A integração
+contínua roda o mesmo, mais as migrations contra um PostgreSQL de verdade.
 
 ## Stack
 
@@ -154,16 +90,17 @@ pela interface e nada disso fica versionado.
 |---|---|
 | Linguagem | Java 21 |
 | Framework | Spring Boot 3.5.6 |
+| Segurança | Spring Security · BCrypt |
 | Persistência | Spring Data JPA + Hibernate |
-| Banco | H2 (dev) · PostgreSQL 16 (perfil `postgres`) |
+| Banco | H2 em memória (`dev`) · PostgreSQL no Neon (`producao`) |
 | Migrations | Flyway |
-| E-mail | Resend (API HTTP) · Spring Mail (SMTP) · MailHog em desenvolvimento |
+| E-mail | Brevo, pela API HTTP |
+| Telas | Thymeleaf |
 | Agendador | `@Scheduled` |
-| Template de e-mail | Thymeleaf |
 | Testes | JUnit 5 · Mockito · AssertJ |
 | Qualidade | Checkstyle · JaCoCo |
 | Massa de dados | Datafaker |
-| Build | Maven |
+| Build | Maven · Docker |
 | CI | GitHub Actions |
 
 ## Arquitetura
@@ -174,21 +111,23 @@ Hexagonal (Ports & Adapters). Decisão registrada em
 ```
 br/univille/sendhemosc/
 ├── domain/          regras, enums, DTOs e as interfaces (ports)
-│   ├── enums/       TipoSanguineo, NivelEstoque, Sexo, StatusNotificacao
+│   ├── enums/       TipoSanguineo, NivelEstoque, PerfilUsuario, SituacaoUsuario
 │   ├── exception/   catálogos de erro por contexto
 │   └── port/        contratos que o domínio exige da infraestrutura
 ├── usecase/         um caso de uso por operação de negócio
 │   ├── doador/
 │   ├── estoque/
-│   └── notificacao/
+│   ├── notificacao/
+│   └── usuario/
 ├── adapter/
 │   ├── inbound/     HTTP e agendador
 │   └── outbound/    persistência JPA e envio de e-mail
-└── config/          parâmetros externalizados
+└── config/          segurança e parâmetros externalizados
 ```
 
-O domínio não conhece banco nem framework de e-mail. `CalcularAptidaoUseCase` recebe dados e
-devolve uma decisão — sem Spring, sem JPA.
+O domínio não conhece banco nem provedor de e-mail. `CalcularAptidaoUseCase` recebe dados e
+devolve uma decisão — sem Spring, sem JPA. Foi o que permitiu trocar o provedor de e-mail duas
+vezes sem tocar em uma linha de regra de negócio.
 
 ## Regras de negócio
 
@@ -197,7 +136,7 @@ devolve uma decisão — sem Spring, sem JPA.
 > **precisam ser validadas formalmente pela equipe do HEMOSC** antes de qualquer uso que não
 > seja demonstração. Informação errada aqui gera dano real.
 
-Ficam todas em `sendhemosc.aptidao`, fora do código, para que possam ser revisadas sem ler Java:
+Ficam em `sendhemosc.aptidao`, fora do código, para serem revisadas sem ler Java:
 
 | Regra | Masculino | Feminino |
 |---|---|---|
@@ -209,29 +148,49 @@ Ficam todas em `sendhemosc.aptidao`, fora do código, para que possam ser revisa
 Limiares de estoque: abaixo de **30%** da capacidade alvo é `CRITICO`, abaixo de **60%** é
 `ATENCAO`, o resto é `NORMAL`.
 
-## Escopo e limites
+## Envio de e-mail
 
-> [!IMPORTANT]
-> Este é um **protótipo em ambiente de testes, alimentado por dados fictícios**.
-> Não há previsão de implantação em produção.
+Duas condições precisam valer para uma mensagem sair:
 
-A decisão de manter o projeto como protótipo é deliberada e considera que:
+1. `EMAIL_MODO=brevo` com `BREVO_API_KEY` definida — configuração, muda com reinício
+2. Interruptor ligado no painel — decisão imediata do responsável, sem reinício
 
-- o sistema trataria **dados pessoais e de saúde**, sujeitos à LGPD;
-- as **regras de intervalo entre doações** precisam ser validadas pela equipe de hemoterapia
-  antes de qualquer uso real.
+Com qualquer uma delas ausente, as mensagens apenas vão para o log. Toda mudança do
+interruptor e toda convocação ficam em auditoria, com quem fez e quando.
 
-### Proteções contra envio acidental
-
-Um protótipo que dispara e-mail é um risco real. Três barreiras:
-
-1. O adapter padrão (`LogEmailAdapter`) **não envia nada** — só registra no log. Enviar de
-   verdade exige mudar `sendhemosc.email.modo` para `smtp` deliberadamente.
-2. A massa fictícia usa apenas o domínio reservado `@example.org`, que não entrega a ninguém.
-3. O perfil `postgres` aponta para MailHog, uma caixa falsa local.
+`EMAIL_DESTINATARIO_TESTE` desvia todas as mensagens para endereços conhecidos, seja qual for
+o doador. Serve para conferir um envio sem atingir ninguém.
 
 > [!WARNING]
-> Nenhum dado real de doador, paciente ou estoque deve ser commitado neste repositório.
+> **SMTP não funciona em hospedagem gratuita.** A porta de saída é bloqueada para conter spam,
+> e o envio falha com `SocketTimeoutException`. Por isso a entrega é por API HTTP.
+
+## LGPD
+
+O sistema trata **tipo sanguíneo**, que é dado pessoal sensível de saúde. O que está
+implementado:
+
+- consentimento como caixa própria, não marcada por padrão;
+- histórico do consentimento com data, hora e versão do termo aceito;
+- link de descadastro em toda mensagem, de uso imediato;
+- página de termo de uso com finalidade e forma de revogação;
+- auditoria de quem disparou cada convocação.
+
+Antes de cadastrar pessoas reais, leia
+[`docs/decisoes/envio-real-consequencias.md`](docs/decisoes/envio-real-consequencias.md).
+
+## Publicação
+
+Roda no [Render](https://render.com), com PostgreSQL no [Neon](https://neon.tech) e e-mail pelo
+[Brevo](https://brevo.com) — os três em plano gratuito. O blueprint está em
+[`render.yaml`](render.yaml); as variáveis de ambiente, documentadas em
+[`.env.example`](.env.example).
+
+Cada `git push` na `main` republica sozinho.
+
+> [!NOTE]
+> No plano gratuito o serviço hiberna após ~15 minutos sem acesso, e a primeira subida depois
+> disso leva cerca de dois minutos e meio. Se for apresentar ao vivo, abra o link antes.
 
 ## Instituição parceira
 
@@ -247,26 +206,16 @@ Jaraguá do Sul, Guaramirim, São Francisco do Sul, Araquari, Itapoá e Massaran
 
 | Integrante | Papel |
 |---|---|
-| Leonardo Dias | Desenvolvimento |
+| Leonardo Dias | Desenvolvimento e infraestrutura |
 | Eduardo da Costa | Desenvolvimento |
 | Jean Nack | Desenvolvimento |
 
 **Orientação:** Prof. Sergio Odilon Fischer
 
-## Status
-
-| # | Etapa | Planejado | Realizado | Status |
-|---|---|---|---|---|
-| 1 | Definição do tema e formação do grupo | 12/08/2026 | 12/08/2026 | Concluída |
-| 2 | Levantamento do problema junto à instituição | 12/08/2026 | 18/08/2026 | Concluída |
-| 3 | Elaboração da proposta técnica e definição do escopo | 19/08/2026 | 26/08/2026 | Concluída |
-| 4 | Definição da arquitetura e do ambiente de desenvolvimento | — | 18/09/2026 | Concluída |
-| 5 | — | — | — | Pendente |
-| 6 | — | — | — | Pendente |
-| 7 | — | — | — | Pendente |
-
 ## Documentos
 
+- [`docs/ambiente-de-desenvolvimento.md`](docs/ambiente-de-desenvolvimento.md) — como rodar
+- [`docs/decisoes/`](docs/decisoes) — consequências das decisões tomadas
+- [`docs/adr/`](docs/adr) — decisões de arquitetura
 - [`docs/base/`](docs/base) — relatório da disciplina e documento de referência interna
-- [`docs/adr/`](docs/adr) — decisões de arquitetura registradas
 - [`docs/ata/`](docs/ata) — atas de reunião e notas de entrevista
