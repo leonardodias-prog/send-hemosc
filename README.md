@@ -38,7 +38,9 @@ transfusional**. Quando A+ está em falta, convoca A+, A−, O+ e O−.
 
 ## Rodando o projeto
 
-**Pré-requisitos:** Java 21 e Maven. Nada além disso.
+**Pré-requisitos:** Java 21 e Maven. Nada além disso — sem banco instalado, sem conta em
+serviço nenhum. Guia completo em
+[`docs/ambiente-de-desenvolvimento.md`](docs/ambiente-de-desenvolvimento.md).
 
 ```bash
 mvn spring-boot:run
