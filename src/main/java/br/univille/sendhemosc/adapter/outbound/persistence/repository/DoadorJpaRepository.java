@@ -23,6 +23,7 @@ public interface DoadorJpaRepository extends JpaRepository<DoadorEntity, Long> {
      *
      * @param siglas siglas de tipo sanguineo aceitas
      * @param inicioJanela data inicial da janela de doze meses
+     * @param inicioPrazoTeto convocacoes sem resposta anteriores a este instante nao contam para o teto
      * @return projecoes dos candidatos
      */
     @Query(value = """
@@ -38,15 +39,20 @@ public interface DoadorJpaRepository extends JpaRepository<DoadorEntity, Long> {
                    (SELECT MAX(u.data_doacao) FROM doacao u WHERE u.doador_id = d.id) AS ultimaDoacao,
                    (SELECT COUNT(*) FROM doacao c WHERE c.doador_id = d.id AND c.data_doacao >= :inicioJanela) AS doacoesJanela,
                    (SELECT COUNT(*) FROM notificacao p
-                     WHERE p.doador_id = d.id AND p.status = 'ENVIADA' AND p.compareceu_em IS NULL) AS convocacoesSemResposta,
-                   (SELECT MAX(e.enviada_em) FROM notificacao e WHERE e.doador_id = d.id) AS ultimaConvocacao
+                     WHERE p.doador_id = d.id AND p.status = 'ENVIADA' AND p.compareceu_em IS NULL
+                       AND p.enviada_em >= :inicioPrazoTeto
+                       AND (d.contato_liberado_em IS NULL OR p.enviada_em > d.contato_liberado_em)) AS convocacoesSemResposta,
+                   (SELECT MAX(e.enviada_em) FROM notificacao e
+                     WHERE e.doador_id = d.id
+                       AND (d.contato_liberado_em IS NULL OR e.enviada_em > d.contato_liberado_em)) AS ultimaConvocacao
               FROM doador d
              WHERE d.ativo = TRUE
                AND d.aceita_contato = TRUE
                AND d.tipo_sanguineo IN (:siglas)
             """, nativeQuery = true)
     List<CandidatoProjection> buscarCandidatos(@Param("siglas") Set<String> siglas,
-                                               @Param("inicioJanela") LocalDate inicioJanela);
+                                               @Param("inicioJanela") LocalDate inicioJanela,
+                                               @Param("inicioPrazoTeto") LocalDateTime inicioPrazoTeto);
 
     /**
      * Candidatos que atendem aos criterios da tela de listagem. O filtro de aptidao nao entra
@@ -56,6 +62,7 @@ public interface DoadorJpaRepository extends JpaRepository<DoadorEntity, Long> {
      * @param sigla sigla do tipo sanguineo, ou nulo para todos
      * @param somenteComConsentimento quando true, descarta quem nao autorizou contato
      * @param inicioJanela data inicial da janela de doze meses
+     * @param inicioPrazoTeto convocacoes sem resposta anteriores a este instante nao contam para o teto
      * @return projecoes dos candidatos
      */
     @Query(value = """
@@ -71,8 +78,12 @@ public interface DoadorJpaRepository extends JpaRepository<DoadorEntity, Long> {
                    (SELECT MAX(u.data_doacao) FROM doacao u WHERE u.doador_id = d.id) AS ultimaDoacao,
                    (SELECT COUNT(*) FROM doacao c WHERE c.doador_id = d.id AND c.data_doacao >= :inicioJanela) AS doacoesJanela,
                    (SELECT COUNT(*) FROM notificacao p
-                     WHERE p.doador_id = d.id AND p.status = 'ENVIADA' AND p.compareceu_em IS NULL) AS convocacoesSemResposta,
-                   (SELECT MAX(e.enviada_em) FROM notificacao e WHERE e.doador_id = d.id) AS ultimaConvocacao
+                     WHERE p.doador_id = d.id AND p.status = 'ENVIADA' AND p.compareceu_em IS NULL
+                       AND p.enviada_em >= :inicioPrazoTeto
+                       AND (d.contato_liberado_em IS NULL OR p.enviada_em > d.contato_liberado_em)) AS convocacoesSemResposta,
+                   (SELECT MAX(e.enviada_em) FROM notificacao e
+                     WHERE e.doador_id = d.id
+                       AND (d.contato_liberado_em IS NULL OR e.enviada_em > d.contato_liberado_em)) AS ultimaConvocacao
               FROM doador d
              WHERE d.ativo = TRUE
                AND (:somenteComConsentimento = FALSE OR d.aceita_contato = TRUE)
@@ -83,13 +94,15 @@ public interface DoadorJpaRepository extends JpaRepository<DoadorEntity, Long> {
     List<CandidatoProjection> buscarPorFiltro(@Param("padraoBusca") String padraoBusca,
                                               @Param("sigla") String sigla,
                                               @Param("somenteComConsentimento") boolean somenteComConsentimento,
-                                              @Param("inicioJanela") LocalDate inicioJanela);
+                                              @Param("inicioJanela") LocalDate inicioJanela,
+                                              @Param("inicioPrazoTeto") LocalDateTime inicioPrazoTeto);
 
     /**
      * Candidatos escolhidos por identificador.
      *
      * @param identificadores doadores selecionados
      * @param inicioJanela data inicial da janela de doze meses
+     * @param inicioPrazoTeto convocacoes sem resposta anteriores a este instante nao contam para o teto
      * @return projecoes dos candidatos
      */
     @Query(value = """
@@ -105,15 +118,20 @@ public interface DoadorJpaRepository extends JpaRepository<DoadorEntity, Long> {
                    (SELECT MAX(u.data_doacao) FROM doacao u WHERE u.doador_id = d.id) AS ultimaDoacao,
                    (SELECT COUNT(*) FROM doacao c WHERE c.doador_id = d.id AND c.data_doacao >= :inicioJanela) AS doacoesJanela,
                    (SELECT COUNT(*) FROM notificacao p
-                     WHERE p.doador_id = d.id AND p.status = 'ENVIADA' AND p.compareceu_em IS NULL) AS convocacoesSemResposta,
-                   (SELECT MAX(e.enviada_em) FROM notificacao e WHERE e.doador_id = d.id) AS ultimaConvocacao
+                     WHERE p.doador_id = d.id AND p.status = 'ENVIADA' AND p.compareceu_em IS NULL
+                       AND p.enviada_em >= :inicioPrazoTeto
+                       AND (d.contato_liberado_em IS NULL OR p.enviada_em > d.contato_liberado_em)) AS convocacoesSemResposta,
+                   (SELECT MAX(e.enviada_em) FROM notificacao e
+                     WHERE e.doador_id = d.id
+                       AND (d.contato_liberado_em IS NULL OR e.enviada_em > d.contato_liberado_em)) AS ultimaConvocacao
               FROM doador d
              WHERE d.ativo = TRUE
                AND d.id IN (:identificadores)
              ORDER BY d.nome
             """, nativeQuery = true)
     List<CandidatoProjection> buscarPorIdentificadores(@Param("identificadores") Set<Long> identificadores,
-                                                       @Param("inicioJanela") LocalDate inicioJanela);
+                                                       @Param("inicioJanela") LocalDate inicioJanela,
+                                                       @Param("inicioPrazoTeto") LocalDateTime inicioPrazoTeto);
 
     /**
      * Revoga o consentimento de contato a partir do token de descadastro.
@@ -125,6 +143,18 @@ public interface DoadorJpaRepository extends JpaRepository<DoadorEntity, Long> {
     @Query("UPDATE DoadorEntity d SET d.aceitaContato = false, d.atualizadoEm = CURRENT_TIMESTAMP "
             + "WHERE d.tokenDescadastro = :token AND d.aceitaContato = true")
     int descadastrarPorToken(@Param("token") String token);
+
+    /**
+     * Libera o limite de contato: convocacoes enviadas ate agora deixam de contar.
+     *
+     * @param id doador a liberar
+     * @param quando instante da liberacao
+     * @return quantidade de registros afetados
+     */
+    @Modifying
+    @Query("UPDATE DoadorEntity d SET d.contatoLiberadoEm = :quando, d.atualizadoEm = :quando "
+            + "WHERE d.id = :id AND d.ativo = true")
+    int liberarContato(@Param("id") Long id, @Param("quando") LocalDateTime quando);
 
     boolean existsByEmail(String email);
 

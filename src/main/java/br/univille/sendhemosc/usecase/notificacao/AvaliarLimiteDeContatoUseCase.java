@@ -18,6 +18,10 @@ import org.springframework.stereotype.Service;
  * <p>Vale para toda convocacao, automatica ou manual. Do lado de quem recebe o e-mail e o mesmo,
  * seja qual for o botao que o disparou.</p>
  *
+ * <p>O teto nao e permanente. Desfaz-se de tres formas: uma doacao registrada fecha as pendentes;
+ * cada convocacao sem resposta deixa de contar depois do prazo configurado; e o administrador pode
+ * liberar a pessoa na hora. As duas ultimas ja chegam aplicadas na contagem que a consulta traz.</p>
+ *
  * <p>Como a regra de aptidao, e pura e sem acesso a banco: os dois limites ficam legiveis aqui,
  * e os valores, em application.yml.</p>
  */
@@ -30,7 +34,7 @@ public class AvaliarLimiteDeContatoUseCase {
     /**
      * Avalia os limites de contato.
      *
-     * @param convocacoesSemResposta convocacoes enviadas que ainda nao terminaram em doacao
+     * @param convocacoesSemResposta convocacoes sem resposta dentro do prazo, depois da ultima liberacao
      * @param ultimaConvocacao quando a ultima convocacao foi enviada, nulo se nunca foi
      * @param referencia data em que a convocacao aconteceria
      * @return se a pessoa pode ser convocada e, quando nao pode, por qual dos limites
@@ -40,7 +44,7 @@ public class AvaliarLimiteDeContatoUseCase {
         final SendHemoscProperties.Notificacao regras = properties.notificacao();
 
         // O teto vem antes: quem ja ignorou convites demais nao volta a ser chamado so porque o
-        // intervalo passou. Registrar uma doacao fecha as pendentes, e com isso desfaz o teto.
+        // intervalo passou. Ele se desfaz com doacao, com o prazo ou com a liberacao manual.
         if (convocacoesSemResposta >= regras.maxConvocacoesSemResposta()) {
             return LimiteDeContato.noTeto();
         }

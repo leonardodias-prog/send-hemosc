@@ -4,6 +4,7 @@ import br.univille.sendhemosc.domain.dto.CandidatoConvocacao;
 import br.univille.sendhemosc.domain.dto.FiltroDoador;
 import br.univille.sendhemosc.domain.dto.NovoDoador;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -73,4 +74,14 @@ public interface IDoadorRepositoryPort {
      * @return true se algum doador foi descadastrado
      */
     boolean descadastrarPorToken(String token);
+
+    /**
+     * Libera o limite de contato do doador: as convocacoes enviadas ate o instante informado
+     * deixam de contar, tanto para o teto de convocacoes sem resposta quanto para o intervalo.
+     *
+     * @param id doador a liberar
+     * @param quando instante da liberacao
+     * @return true se o doador existia e estava ativo
+     */
+    boolean liberarContato(Long id, LocalDateTime quando);
 }

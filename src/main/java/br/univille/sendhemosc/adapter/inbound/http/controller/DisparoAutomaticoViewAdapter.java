@@ -71,6 +71,7 @@ public class DisparoAutomaticoViewAdapter {
         model.addAttribute("envioReal", roteadorDeEnvio.isEntregando());
         model.addAttribute("intervaloReenvioDias", properties.notificacao().intervaloReenvioDias());
         model.addAttribute("maxConvocacoesSemResposta", properties.notificacao().maxConvocacoesSemResposta());
+        model.addAttribute("prazoTetoDias", properties.notificacao().prazoTetoDias());
         // Arredonda para cima: com conferencia abaixo de um minuto a tela diria "em ate 0 minutos".
         model.addAttribute("verificacaoMinutos",
                 Math.max(1L, (verificacaoMs + MILISSEGUNDOS_POR_MINUTO - 1) / MILISSEGUNDOS_POR_MINUTO));

@@ -34,6 +34,7 @@ sendhemosc:
   notificacao:
     intervalo-reenvio-dias: 30
     max-convocacoes-sem-resposta: 3
+    prazo-teto-dias: 180
     remetente: teste@example.org
     remetente-nome: Send Hemosc Teste
     url-base: http://localhost:8080

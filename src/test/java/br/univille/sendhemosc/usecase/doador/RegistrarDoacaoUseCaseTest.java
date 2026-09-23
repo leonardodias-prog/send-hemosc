@@ -58,7 +58,7 @@ class RegistrarDoacaoUseCaseTest {
         final var properties = new SendHemoscProperties(
                 new SendHemoscProperties.Aptidao(60, 90, 4, 3, 16, 69, BigDecimal.valueOf(50)),
                 new SendHemoscProperties.Estoque(30, 60),
-                new SendHemoscProperties.Notificacao(30, 3, "teste@example.org", "Teste", "http://localhost:8080"));
+                new SendHemoscProperties.Notificacao(30, 3, 180, "teste@example.org", "Teste", "http://localhost:8080"));
 
         useCase = new RegistrarDoacaoUseCase(doacaoRepository, doadorRepository,
                 notificacaoRepository, auditoria, new CalcularAptidaoUseCase(properties));

@@ -3,6 +3,7 @@ package br.univille.sendhemosc.adapter.outbound.persistence;
 import br.univille.sendhemosc.adapter.outbound.persistence.entity.DoadorEntity;
 import br.univille.sendhemosc.adapter.outbound.persistence.repository.DoadorJpaRepository;
 import br.univille.sendhemosc.adapter.outbound.persistence.repository.DoadorJpaRepository.CandidatoProjection;
+import br.univille.sendhemosc.config.SendHemoscProperties;
 import br.univille.sendhemosc.domain.dto.CandidatoConvocacao;
 import br.univille.sendhemosc.domain.dto.FiltroDoador;
 import br.univille.sendhemosc.domain.dto.NovoDoador;
@@ -28,11 +29,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class DoadorPersistenceAdapter implements IDoadorRepositoryPort {
 
     private final DoadorJpaRepository doadorRepository;
+    private final SendHemoscProperties properties;
 
     @Override
     @Transactional(readOnly = true)
     public List<CandidatoConvocacao> buscarCandidatos(final Set<String> siglasTipoSanguineo, final LocalDate referencia) {
-        return doadorRepository.buscarCandidatos(siglasTipoSanguineo, referencia.minusMonths(12)).stream()
+        return doadorRepository.buscarCandidatos(siglasTipoSanguineo, referencia.minusMonths(12),
+                        inicioPrazoTeto(referencia)).stream()
                 .map(this::paraCandidato)
                 .toList();
     }
@@ -43,7 +46,8 @@ public class DoadorPersistenceAdapter implements IDoadorRepositoryPort {
         final String sigla = filtro.tipoSanguineo() == null ? null : filtro.tipoSanguineo().getSigla();
 
         return doadorRepository.buscarPorFiltro(filtro.buscaComoPadrao(), sigla,
-                        filtro.apenasComConsentimento(), referencia.minusMonths(12)).stream()
+                        filtro.apenasComConsentimento(), referencia.minusMonths(12),
+                        inicioPrazoTeto(referencia)).stream()
                 .map(this::paraCandidato)
                 .toList();
     }
@@ -56,9 +60,18 @@ public class DoadorPersistenceAdapter implements IDoadorRepositoryPort {
             return List.of();
         }
 
-        return doadorRepository.buscarPorIdentificadores(identificadores, referencia.minusMonths(12)).stream()
+        return doadorRepository.buscarPorIdentificadores(identificadores, referencia.minusMonths(12),
+                        inicioPrazoTeto(referencia)).stream()
                 .map(this::paraCandidato)
                 .toList();
+    }
+
+    /**
+     * Convocacoes sem resposta anteriores a este instante deixam de contar para o teto: e o prazo
+     * que faz o limite se desfazer sozinho, sem depender de doacao nem de administrador.
+     */
+    private LocalDateTime inicioPrazoTeto(final LocalDate referencia) {
+        return referencia.minusDays(properties.notificacao().prazoTetoDias()).atStartOfDay();
     }
 
     private CandidatoConvocacao paraCandidato(final CandidatoProjection projecao) {
@@ -117,5 +130,11 @@ public class DoadorPersistenceAdapter implements IDoadorRepositoryPort {
     @Transactional
     public boolean descadastrarPorToken(final String token) {
         return doadorRepository.descadastrarPorToken(token) > 0;
+    }
+
+    @Override
+    @Transactional
+    public boolean liberarContato(final Long id, final LocalDateTime quando) {
+        return doadorRepository.liberarContato(id, quando) > 0;
     }
 }

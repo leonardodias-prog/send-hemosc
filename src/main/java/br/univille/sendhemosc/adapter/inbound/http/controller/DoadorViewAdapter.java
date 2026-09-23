@@ -1,5 +1,6 @@
 package br.univille.sendhemosc.adapter.inbound.http.controller;
 
+import br.univille.sendhemosc.config.SendHemoscProperties;
 import br.univille.sendhemosc.domain.dto.DoadorListado;
 import br.univille.sendhemosc.domain.dto.FiltroDoador;
 import br.univille.sendhemosc.domain.dto.NovaDoacao;
@@ -10,6 +11,7 @@ import br.univille.sendhemosc.domain.exception.NegocioException;
 import br.univille.sendhemosc.usecase.doador.ListarDoadoresUseCase;
 import br.univille.sendhemosc.usecase.doador.RegistrarDoacaoUseCase;
 import br.univille.sendhemosc.usecase.notificacao.ConvocarSelecionadosUseCase;
+import br.univille.sendhemosc.usecase.notificacao.LiberarContatoUseCase;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
@@ -47,6 +49,8 @@ public class DoadorViewAdapter {
     private final ListarDoadoresUseCase listarDoadores;
     private final ConvocarSelecionadosUseCase convocarSelecionados;
     private final RegistrarDoacaoUseCase registrarDoacao;
+    private final LiberarContatoUseCase liberarContato;
+    private final SendHemoscProperties properties;
     private final MessageSource messageSource;
 
     @GetMapping("/doadores")
@@ -62,6 +66,7 @@ public class DoadorViewAdapter {
         model.addAttribute("filtro", filtro);
         model.addAttribute("tiposSanguineos", TipoSanguineo.values());
         model.addAttribute("totalConvocaveis", doadores.stream().filter(DoadorListado::convocavel).count());
+        model.addAttribute("prazoTetoDias", properties.notificacao().prazoTetoDias());
 
         return "doadores";
     }
@@ -109,6 +114,26 @@ public class DoadorViewAdapter {
                     .execute(new NovaDoacao(id, dataDoacao, localColeta, null));
 
             atributos.addFlashAttribute("aviso", montarConfirmacao(resultado));
+        } catch (final NegocioException excecao) {
+            atributos.addFlashAttribute("erro", messageSource.getMessage(
+                    excecao.getErro().getChaveMensagem(), null,
+                    excecao.getErro().getChaveMensagem(), PT_BR));
+        }
+
+        return devolverParaLista(atributos, busca, tipo, apenasAptos, apenasComConsentimento);
+    }
+
+    @PostMapping("/doadores/{id}/liberar-contato")
+    public String liberarContato(@PathVariable final Long id,
+                                 @RequestParam(required = false) final String busca,
+                                 @RequestParam(required = false) final String tipo,
+                                 @RequestParam(defaultValue = "false") final boolean apenasAptos,
+                                 @RequestParam(defaultValue = "false") final boolean apenasComConsentimento,
+                                 final RedirectAttributes atributos) {
+        try {
+            final String nome = liberarContato.execute(id);
+            atributos.addFlashAttribute("aviso", "Limite de contato de %s liberado: as convocações anteriores "
+                    .formatted(nome) + "deixaram de contar, e a pessoa pode ser convocada de novo.");
         } catch (final NegocioException excecao) {
             atributos.addFlashAttribute("erro", messageSource.getMessage(
                     excecao.getErro().getChaveMensagem(), null,

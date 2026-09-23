@@ -22,8 +22,10 @@ import java.time.LocalDateTime;
  * @param pesoKg peso em quilos, pode ser nulo
  * @param ultimaDoacao data da ultima doacao, nula para quem nunca doou
  * @param doacoesUltimosDozeMeses total de doacoes nos ultimos doze meses
- * @param convocacoesSemResposta convocacoes enviadas que ainda nao terminaram em doacao
- * @param ultimaConvocacao quando a ultima convocacao foi enviada, nula para quem nunca recebeu
+ * @param convocacoesSemResposta convocacoes sem resposta dentro do prazo do teto, depois da ultima
+ *                               liberacao manual
+ * @param ultimaConvocacao quando a ultima convocacao foi enviada depois da ultima liberacao manual,
+ *                         nula para quem nunca recebeu
  */
 public record CandidatoConvocacao(
         Long id,

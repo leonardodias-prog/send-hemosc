@@ -127,8 +127,12 @@ sendhemosc:
     #   intervalo-reenvio-dias: dias mínimos entre uma convocação e a seguinte para a mesma pessoa
     #   max-convocacoes-sem-resposta: a partir de quantas convocações ignoradas a pessoa deixa de
     #     ser chamada. Registrar uma doação dela fecha as pendentes e zera a contagem.
+    #   prazo-teto-dias: por quantos dias uma convocação sem resposta conta para o teto. Depois
+    #     deixa de pesar, e a pessoa volta a poder ser chamada. O administrador também pode
+    #     liberar uma pessoa na hora, pela tela de doadores.
     intervalo-reenvio-dias: 30
     max-convocacoes-sem-resposta: 3
+    prazo-teto-dias: 180
     # Precisa ser um remetente verificado no Brevo. Sem domínio próprio, verifica-se um
     # endereço avulso; com domínio, qualquer caixa dele.
     remetente: ${MAIL_REMETENTE:nao-responda@sendhemosc.local}

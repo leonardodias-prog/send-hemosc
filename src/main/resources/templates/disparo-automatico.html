@@ -189,7 +189,12 @@
         <p>
             Cada pessoa recebe no máximo <strong th:text="${maxConvocacoesSemResposta}">3</strong>
             convocações sem resposta, com pelo menos <strong th:text="${intervaloReenvioDias}">30</strong>
-            dias entre uma e outra. Registrar uma doação dela zera a contagem.
+            dias entre uma e outra.
+        </p>
+        <p>
+            O teto não é permanente. Cada convocação sem resposta deixa de contar depois de
+            <strong th:text="${prazoTetoDias}">180</strong> dias; uma doação registrada zera a contagem;
+            e o administrador pode liberar uma pessoa na hora, pela tela de doadores.
         </p>
         <p class="dica" style="margin:0;">
             Vale também para a convocação manual, do painel e da tela de doadores: para quem recebe, o

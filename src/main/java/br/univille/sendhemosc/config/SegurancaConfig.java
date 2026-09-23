@@ -63,6 +63,9 @@ public class SegurancaConfig {
                             "/aprovacao/**", "/actuator/health", "/actuator/info", "/css/**").permitAll()
                     // Gerenciamento de contas
                     .requestMatchers("/usuarios/**").hasRole(PERFIL_MASTER)
+                    // Liberar o limite de contato de alguem e decisao do administrador. Antes de
+                    // /doadores/**, pela mesma razao das acoes de envio logo abaixo.
+                    .requestMatchers("/doadores/*/liberar-contato").hasRole(PERFIL_MASTER)
                     // Acoes que produzem e-mail de verdade. Precisam vir antes das regras
                     // gerais abaixo: a primeira correspondencia decide, e /doadores/** liberaria
                     // a convocacao seletiva para quem so deveria alimentar dados.

@@ -127,7 +127,8 @@
                         <!--/* Apto, mas os limites de contato seguram: ainda pode doar se aparecer. */-->
                         <span class="etiqueta pendente"
                               th:if="${d.aceitaContato and d.apto and d.contato.tetoAtingido}"
-                              title="Volta a ser convocado quando uma doação dele for registrada">
+                              th:title="'As convocações sem resposta deixam de contar depois de ' + ${prazoTetoDias}
+                                        + ' dias. Uma doação registrada, ou o administrador, liberam antes.'">
                             Sem resposta a <span th:text="${d.convocacoesSemResposta}">3</span> convocações
                         </span>
                         <span class="etiqueta pendente"
@@ -150,6 +151,14 @@
                         <button type="submit" class="secundario" th:if="${d.convocavel()}"
                                 th:formaction="@{'/doadores/' + ${d.id} + '/convocar'}">
                             Convocar só este
+                        </button>
+                        <!--/* Só o administrador desfaz o limite de alguém antes do prazo. */-->
+                        <button type="submit" class="secundario" sec:authorize="hasRole('MASTER')"
+                                th:if="${d.aceitaContato and d.apto and !d.contato.liberado}"
+                                th:formaction="@{'/doadores/' + ${d.id} + '/liberar-contato'}"
+                                th:title="'Zerar o limite de contato de ' + ${d.nome}
+                                          + ': as convocações anteriores deixam de contar'">
+                            Liberar contato
                         </button>
                     </td>
                 </tr>

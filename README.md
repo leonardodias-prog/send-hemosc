@@ -152,9 +152,13 @@ Limiares de estoque: abaixo de **30%** da capacidade alvo é `CRITICO`, abaixo d
 `ATENCAO`, o resto é `NORMAL`.
 
 **Limite de contato por pessoa**, em `sendhemosc.notificacao`: cada pessoa recebe no máximo
-**3** convocações sem resposta, com pelo menos **30 dias** entre uma e outra. Registrar uma
-doação dela fecha as pendentes e zera a contagem. Vale para toda convocação, manual ou
-automática — para quem recebe, o e-mail é o mesmo, seja qual for o botão que o disparou.
+**3** convocações sem resposta, com pelo menos **30 dias** entre uma e outra. Vale para toda
+convocação, manual ou automática — para quem recebe, o e-mail é o mesmo, seja qual for o botão
+que o disparou.
+
+O teto se desfaz de três formas: cada convocação sem resposta deixa de contar depois de
+**180 dias**; uma doação registrada fecha as pendentes e zera a contagem; e o administrador pode
+liberar uma pessoa na hora, pela tela de doadores, com registro em auditoria.
 
 ## Envio de e-mail
 

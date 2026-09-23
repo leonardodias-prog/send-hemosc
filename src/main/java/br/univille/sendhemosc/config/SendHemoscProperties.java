@@ -50,12 +50,14 @@ public record SendHemoscProperties(Aptidao aptidao, Estoque estoque, Notificacao
      *
      * @param intervaloReenvioDias dias minimos entre uma convocacao e a seguinte para a mesma pessoa
      * @param maxConvocacoesSemResposta convocacoes sem resposta a partir das quais a pessoa deixa de
-     *                                  ser convocada, ate que uma doacao dela seja registrada
+     *                                  ser convocada
+     * @param prazoTetoDias por quantos dias uma convocacao sem resposta conta para o teto; depois
+     *                      disso deixa de pesar, e a pessoa volta a poder ser chamada
      * @param remetente endereco de origem dos e-mails
      * @param remetenteNome nome exibido como remetente
      * @param urlBase endereco publico da aplicacao, usado para montar o link de descadastro
      */
-    public record Notificacao(int intervaloReenvioDias, int maxConvocacoesSemResposta, String remetente,
-                              String remetenteNome, String urlBase) {
+    public record Notificacao(int intervaloReenvioDias, int maxConvocacoesSemResposta, int prazoTetoDias,
+                              String remetente, String remetenteNome, String urlBase) {
     }
 }

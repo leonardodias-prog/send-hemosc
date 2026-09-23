@@ -64,6 +64,10 @@ public class DoadorEntity {
     @Column(name = "token_descadastro", nullable = false, length = 64, unique = true)
     private String tokenDescadastro;
 
+    /** Quando o administrador liberou o limite de contato; convocacoes anteriores deixam de contar. */
+    @Column(name = "contato_liberado_em")
+    private LocalDateTime contatoLiberadoEm;
+
     @Column(name = "criado_em", nullable = false)
     private LocalDateTime criadoEm;
 
