@@ -71,11 +71,9 @@ public class PainelViewAdapter {
     @PostMapping("/doadores")
     public String cadastrarDoador(@Valid @ModelAttribute("novoDoador") final NovoDoador novoDoador,
                                   final BindingResult validacao,
-                                  final Model model,
                                   final RedirectAttributes atributos) {
         if (validacao.hasErrors()) {
-            prepararModelo(model);
-            return "painel";
+            return devolverAoFormulario(novoDoador, validacao, atributos);
         }
 
         try {
@@ -84,14 +82,34 @@ public class PainelViewAdapter {
             validacao.rejectValue("email", excecao.getErro().getCodigo(),
                     messageSource.getMessage(excecao.getErro().getChaveMensagem(), null,
                             excecao.getErro().getChaveMensagem(), PT_BR));
-            prepararModelo(model);
-            return "painel";
+            return devolverAoFormulario(novoDoador, validacao, atributos);
         }
 
-        atributos.addFlashAttribute("aviso",
+        atributos.addFlashAttribute("avisoCadastro",
                 "Doador %s cadastrado com o e-mail %s.".formatted(novoDoador.nome(), novoDoador.email()));
 
-        return "redirect:/";
+        return "redirect:/#cadastro";
+    }
+
+    /**
+     * Devolve ao formulario, e nao ao topo da pagina. O cadastro fica no fim do painel: quem
+     * registra varios doadores seguidos rolava a pagina inteira a cada um. A confirmacao e os
+     * erros aparecem junto do formulario, onde a pessoa esta olhando.
+     *
+     * <p>Redirecionar em vez de renderizar tambem evita o reenvio do formulario quando a
+     * pessoa atualiza a pagina.</p>
+     *
+     * @param novoDoador dados preenchidos, preservados para nao obrigar a redigitar
+     * @param validacao erros encontrados
+     * @param atributos destino do que sobrevive ao redirecionamento
+     * @return redirecionamento para a ancora do formulario
+     */
+    private String devolverAoFormulario(final NovoDoador novoDoador, final BindingResult validacao,
+                                        final RedirectAttributes atributos) {
+        atributos.addFlashAttribute(BindingResult.MODEL_KEY_PREFIX + "novoDoador", validacao);
+        atributos.addFlashAttribute("novoDoador", novoDoador);
+
+        return "redirect:/#cadastro";
     }
 
     @PostMapping("/convocar/{sigla}")

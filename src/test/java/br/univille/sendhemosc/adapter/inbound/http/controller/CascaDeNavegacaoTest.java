@@ -6,6 +6,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
@@ -116,6 +117,41 @@ class CascaDeNavegacaoTest {
         void decisaoDesconhecidaNaoAbre() throws Exception {
             mockMvc.perform(get("/aprovacao/qualquer-token/talvez"))
                     .andExpect(status().isNotFound());
+        }
+    }
+
+    @Nested
+    @DisplayName("o cadastro de doador devolve ao formulario, nao ao topo")
+    @WithMockUser(username = "operador@example.org", roles = "OPERADOR")
+    class CadastroNoFimDoPainel {
+
+        @Test
+        @DisplayName("cadastro aceito volta para a ancora do formulario, com a confirmacao")
+        void cadastroAceito() throws Exception {
+            mockMvc.perform(post("/doadores")
+                            .param("nome", "Norberto Simoes")
+                            .param("email", "norberto.simoes@example.org")
+                            .param("tipoSanguineo", "O_NEGATIVO")
+                            .param("sexo", "MASCULINO")
+                            .param("dataNascimento", "1990-03-14")
+                            .param("aceitaContato", "true")
+                            .with(csrf()))
+                    .andExpect(status().is3xxRedirection())
+                    .andExpect(redirectedUrl("/#cadastro"))
+                    .andExpect(flash().attributeExists("avisoCadastro"));
+        }
+
+        @Test
+        @DisplayName("cadastro recusado tambem volta ao formulario, sem obrigar a redigitar")
+        void cadastroRecusado() throws Exception {
+            mockMvc.perform(post("/doadores")
+                            .param("nome", "")
+                            .param("email", "nao-e-email")
+                            .param("aceitaContato", "true")
+                            .with(csrf()))
+                    .andExpect(status().is3xxRedirection())
+                    .andExpect(redirectedUrl("/#cadastro"))
+                    .andExpect(flash().attributeExists("novoDoador"));
         }
     }
 

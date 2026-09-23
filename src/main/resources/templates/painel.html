@@ -115,13 +115,18 @@
         </div>
     </div>
 
-    <div class="cartao">
+    <!--/* A ancora e a confirmacao ficam aqui, e nao no topo: quem cadastra varios
+           doadores seguidos voltava para o inicio da pagina a cada salvamento e
+           tinha de rolar de novo ate o formulario. */-->
+    <div class="cartao" id="cadastro">
         <h2>Cadastrar doador</h2>
         <p class="dica">
             Para convocar pessoas específicas em vez da base inteira, use a
             <a th:href="@{/doadores}">tela de doadores</a>, que tem filtros e seleção.
         </p>
 
+        <div class="aviso" th:if="${avisoCadastro}" th:text="${avisoCadastro}"
+             style="margin-top:12px;">mensagem</div>
 
         <form th:action="@{/doadores}" th:object="${novoDoador}" method="post" style="display:block;">
             <div class="campos">
