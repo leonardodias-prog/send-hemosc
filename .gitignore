@@ -50,3 +50,6 @@ desktop.ini
 
 # Temporários do Office (arquivos de bloqueio ao abrir .docx)
 ~$*
+
+# Configuracao local de ferramentas de desenvolvimento
+/.claude/

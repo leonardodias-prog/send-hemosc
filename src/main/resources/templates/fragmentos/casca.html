@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+
+<!--/*
+  Casca de navegação do sistema: a mesma lateral em toda tela autenticada.
+
+  Existe para que nenhuma tela seja um beco sem saída. Acrescentar uma seção nova
+  é acrescentar uma linha aqui — as telas não repetem a lista de destinos.
+
+  O parâmetro `secao` marca o item atual. Quem chama informa o próprio nome:
+  th:replace="~{fragmentos/casca :: lateral('doadores')}"
+*/-->
+<nav class="lateral" th:fragment="lateral(secao)">
+
+    <a class="marca" th:href="@{/}">Send Hemosc</a>
+
+    <a class="secao" th:href="@{/}"
+       th:classappend="${secao == 'painel'} ? 'atual'"
+       th:aria-current="${secao == 'painel'} ? 'page' : null">
+        <span>Painel</span>
+    </a>
+
+    <a class="secao" th:href="@{/doadores}"
+       th:classappend="${secao == 'doadores'} ? 'atual'"
+       th:aria-current="${secao == 'doadores'} ? 'page' : null">
+        <span>Doadores</span>
+    </a>
+
+    <a class="secao" th:href="@{/usuarios}" sec:authorize="hasRole('MASTER')"
+       th:classappend="${secao == 'contas'} ? 'atual'"
+       th:aria-current="${secao == 'contas'} ? 'page' : null">
+        <span>Contas</span>
+        <!--/* O número de cadastros à espera aparece aqui para que ninguém precise
+               abrir a tela só para descobrir que não havia nada a decidir. */-->
+        <span class="pendencia" th:if="${aprovacoesPendentes != null and aprovacoesPendentes > 0}"
+              th:text="${aprovacoesPendentes}"
+              th:title="${aprovacoesPendentes} + ' cadastro(s) aguardando decisão'">1</span>
+    </a>
+
+    <a class="secao" th:href="@{/termo}"
+       th:classappend="${secao == 'termo'} ? 'atual'"
+       th:aria-current="${secao == 'termo'} ? 'page' : null">
+        <span>Termo de uso</span>
+    </a>
+
+    <div class="rodape-lateral">
+        <span sec:authentication="name">usuario</span>
+        <form th:action="@{/sair}" method="post">
+            <button type="submit" class="secundario">Sair</button>
+        </form>
+    </div>
+
+</nav>
+
+</body>
+</html>

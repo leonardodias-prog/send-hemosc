@@ -13,11 +13,11 @@
 }
 * { box-sizing: border-box; }
 body {
-    margin: 0; padding: 0 16px 48px; background: var(--fundo); color: var(--texto);
+    margin: 0; padding: 0; background: var(--fundo); color: var(--texto);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
     line-height: 1.5;
 }
-.container { max-width: 900px; margin: 0 auto; }
+.container { max-width: 900px; margin: 0 auto; padding: 0 16px 48px; }
 .estreito { max-width: 420px; }
 header { padding: 32px 0 24px; border-bottom: 1px solid var(--borda); margin-bottom: 24px; }
 h1 { margin: 0 0 4px; font-size: 24px; }
@@ -48,6 +48,9 @@ button {
 button:hover { opacity: .9; }
 button.secundario { background: transparent; color: var(--texto); border: 1px solid var(--borda); }
 button.largo { width: 100%; }
+/* Tabela larga rola dentro do proprio quadro. Quando e a pagina inteira que corre
+   de lado, a casca sai da tela junto e a pessoa perde a referencia de onde esta. */
+.tabela-rolavel { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
 th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--borda); }
 th { font-size: 12px; color: var(--suave); font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
@@ -58,13 +61,58 @@ th { font-size: 12px; color: var(--suave); font-weight: 600; text-transform: upp
 .etiqueta.pendente { background: var(--atencao-bg); color: var(--atencao); }
 .etiqueta.ativo { background: var(--normal-bg); color: var(--normal); }
 .etiqueta.recusado, .etiqueta.inativo { background: var(--critico-bg); color: var(--critico); }
-nav.topo {
-    display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
-    font-size: 13px; margin-top: 12px;
+
+/* --- Casca de navegacao ---
+   Lateral fixa presente em toda tela autenticada. Uma unica origem: incluir uma secao
+   nova significa acrescentar uma linha em fragmentos/casca.html, e nada mais. */
+.app { display: flex; align-items: flex-start; }
+.conteudo { flex: 1; min-width: 0; }
+.lateral {
+    position: sticky; top: 0; width: 208px; flex: none; height: 100vh;
+    display: flex; flex-direction: column; gap: 2px;
+    padding: 20px 12px; background: var(--cartao);
+    border-right: 1px solid var(--borda);
 }
-nav.topo a { color: var(--suave); text-decoration: none; }
-nav.topo a:hover { color: var(--texto); }
-nav.topo .usuario { margin-left: auto; color: var(--suave); }
+.lateral .marca {
+    font-size: 15px; font-weight: 700; color: var(--texto); text-decoration: none;
+    padding: 0 10px 18px;
+}
+.lateral a.secao {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: 8px 10px; border-radius: 6px; font-size: 14px;
+    color: var(--suave); text-decoration: none;
+}
+.lateral a.secao:hover { color: var(--texto); background: var(--fundo); }
+.lateral a.secao.atual { color: var(--texto); background: var(--fundo); font-weight: 600; }
+.pendencia {
+    background: var(--critico); color: #fff; border-radius: 999px;
+    font-size: 11px; font-weight: 700; padding: 1px 7px; line-height: 1.6;
+}
+.rodape-lateral {
+    margin-top: auto; padding: 14px 10px 0; border-top: 1px solid var(--borda);
+    font-size: 12px; color: var(--suave); overflow-wrap: anywhere;
+}
+.rodape-lateral button { margin-top: 8px; padding: 6px 12px; font-size: 13px; }
+
+/* Em tela estreita a lateral vira uma faixa rolavel no topo: a mesma ordem de
+   secoes, sem roubar largura da tabela de doadores. */
+@media (max-width: 760px) {
+    .app { display: block; }
+    .lateral {
+        position: static; width: auto; height: auto;
+        flex-direction: row; align-items: center; gap: 4px;
+        overflow-x: auto; padding: 10px 12px;
+        border-right: 0; border-bottom: 1px solid var(--borda);
+    }
+    .lateral .marca { padding: 0 10px 0 0; white-space: nowrap; }
+    .lateral a.secao { white-space: nowrap; }
+    .rodape-lateral {
+        margin-top: 0; margin-left: auto; padding: 0 0 0 12px;
+        border-top: 0; border-left: 1px solid var(--borda);
+        display: flex; align-items: center; gap: 8px; white-space: nowrap;
+    }
+    .rodape-lateral button { margin-top: 0; }
+}
 footer {
     margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--borda);
     font-size: 12px; color: var(--suave);

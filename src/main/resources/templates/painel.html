@@ -8,23 +8,16 @@
     <link rel="stylesheet" th:href="@{/css/sendhemosc.css}"/>
 </head>
 <body>
+<div class="app">
+
+<nav th:replace="~{fragmentos/casca :: lateral('painel')}"></nav>
+
+<main class="conteudo">
 <div class="container">
 
     <header>
         <h1>Send Hemosc</h1>
         <p class="subtitulo">Painel de captação &middot; Agência Transfusional &middot; Joinville/SC</p>
-        <nav class="topo">
-            <a th:href="@{/}">Painel</a>
-            <a th:href="@{/doadores}">Doadores</a>
-            <a th:href="@{/usuarios}" sec:authorize="hasRole('MASTER')">Contas</a>
-            <a th:href="@{/termo}">Termo de uso</a>
-            <span class="usuario">
-                <span sec:authentication="name">usuario</span>
-                <form th:action="@{/sair}" method="post" style="display:inline;margin-left:8px;">
-                    <button type="submit" class="secundario">Sair</button>
-                </form>
-            </span>
-        </nav>
     </header>
 
     <div class="faixa">
@@ -207,6 +200,9 @@
             &middot; API em <a href="/api/estoque">/api/estoque</a>
         </p>
     </footer>
+
+</div>
+</main>
 
 </div>
 </body>

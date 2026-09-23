@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Decisão de cadastro — Send Hemosc</title>
+    <link rel="stylesheet" th:href="@{/css/sendhemosc.css}"/>
+</head>
+<body>
+<!--/*
+  Desfecho do link de aprovação enviado ao administrador por e-mail. Quem clica pode
+  já estar autenticado ou não: no primeiro caso ganha a casca e segue trabalhando,
+  no segundo recebe o caminho explícito para entrar.
+*/-->
+<div class="app">
+
+<th:block sec:authorize="isAuthenticated()">
+<nav th:replace="~{fragmentos/casca :: lateral('contas')}"></nav>
+</th:block>
+
+<main class="conteudo">
+<div class="container estreito">
+
+    <header>
+        <h1 th:text="${titulo}">Cadastro aprovado</h1>
+        <p class="subtitulo">Gerenciamento de contas &middot; Send Hemosc</p>
+    </header>
+
+    <div th:class="${sucesso} ? 'aviso' : 'faixa'" th:text="${mensagem}">mensagem</div>
+
+    <div class="cartao">
+        <h2>Próximo passo</h2>
+        <p sec:authorize="isAuthenticated()">
+            A tela de contas mostra todas as solicitações e permite rever perfil, situação e
+            senha de qualquer conta.
+        </p>
+        <p sec:authorize="isAnonymous()">
+            Você decidiu pelo link do e-mail, sem precisar entrar no sistema. Para ver as
+            demais solicitações, entre com sua conta de administrador.
+        </p>
+        <a th:href="@{/usuarios}"><button type="button">Ir para o gerenciamento de contas</button></a>
+    </div>
+
+    <footer>
+        <p>
+            Cada link de aprovação vale uma única vez. Toda decisão fica registrada com
+            data, hora e quem decidiu.
+        </p>
+    </footer>
+
+</div>
+</main>
+
+</div>
+</body>
+</html>

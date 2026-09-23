@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -7,6 +8,13 @@
     <link rel="stylesheet" th:href="@{/css/sendhemosc.css}"/>
 </head>
 <body>
+<div class="app">
+
+<th:block sec:authorize="isAuthenticated()">
+<nav th:replace="~{fragmentos/casca :: lateral('termo')}"></nav>
+</th:block>
+
+<main class="conteudo">
 <div class="container">
 
     <header>
@@ -66,8 +74,17 @@
     </div>
 
     <footer>
-        <p><a th:href="@{/login}">Voltar</a></p>
+        <p sec:authorize="isAnonymous()">
+            <a th:href="@{/login}">Voltar para a tela de entrada</a>
+        </p>
+        <p sec:authorize="isAuthenticated()">
+            Esta é a versão vigente. O consentimento de cada doador guarda a versão que
+            estava valendo no momento em que ele autorizou o contato.
+        </p>
     </footer>
+
+</div>
+</main>
 
 </div>
 </body>

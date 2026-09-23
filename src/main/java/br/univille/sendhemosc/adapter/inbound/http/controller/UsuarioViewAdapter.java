@@ -13,21 +13,20 @@ import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  * Gerenciamento de contas, restrito ao administrador, e os links de decisao enviados por
  * e-mail. Os links ficam publicos porque quem os recebe ainda nao esta autenticado ao clicar;
  * o que os protege e o token, aleatorio e de uso unico.
+ *
+ * <p>Toda tela daqui devolve o proximo passo em vez de terminar em si mesma.</p>
  */
 @Slf4j
 @Controller
@@ -147,40 +146,43 @@ public class UsuarioViewAdapter {
         return "redirect:/usuarios";
     }
 
-    @GetMapping(value = "/aprovacao/{token}/{decisao}", produces = MediaType.TEXT_HTML_VALUE)
-    @ResponseBody
-    public ResponseEntity<String> decidirPorLink(@PathVariable final String token,
-                                                 @PathVariable final String decisao) {
-        final boolean aprovado = "aprovar".equals(decisao);
+    @GetMapping("/aprovacao/{token}/aprovar")
+    public String aprovarPorLink(@PathVariable final String token, final Model model) {
+        return decidirPorLink(token, true, model);
+    }
 
-        if (!aprovado && !"recusar".equals(decisao)) {
-            return ResponseEntity.badRequest().body(pagina("Link inválido",
-                    "O endereço acessado não corresponde a uma decisão válida."));
-        }
+    @GetMapping("/aprovacao/{token}/recusar")
+    public String recusarPorLink(@PathVariable final String token, final Model model) {
+        return decidirPorLink(token, false, model);
+    }
 
+    /**
+     * Desfecho do link de decisao recebido por e-mail. Um endereco por decisao: o que nao
+     * corresponde a nenhum dos dois nao chega ate aqui, entao nao sobra validacao a fazer.
+     *
+     * @param token token de uso unico recebido no e-mail
+     * @param aprovado true para liberar a conta, false para recusar
+     * @param model destino do texto exibido
+     * @return pagina de desfecho
+     */
+    private String decidirPorLink(final String token, final boolean aprovado, final Model model) {
         try {
             final UsuarioResumo usuario = resolverAprovacao.porToken(token, aprovado);
 
-            return ResponseEntity.ok(pagina(
-                    aprovado ? "Cadastro aprovado" : "Cadastro recusado",
-                    "%s (%s) foi %s como %s.".formatted(usuario.nome(), usuario.email(),
-                            aprovado ? "liberado" : "recusado", usuario.perfil().getDescricao())));
+            model.addAttribute("sucesso", true);
+            model.addAttribute("titulo", aprovado ? "Cadastro aprovado" : "Cadastro recusado");
+            model.addAttribute("mensagem", "%s (%s) foi %s como %s.".formatted(usuario.nome(),
+                    usuario.email(), aprovado ? "liberado" : "recusado", usuario.perfil().getDescricao()));
         } catch (final NegocioException excecao) {
-            return ResponseEntity.status(excecao.getErro().getStatus()).body(pagina("Link já utilizado",
-                    "Este cadastro já foi decidido. Cada link de aprovação vale uma vez só."));
-        }
-    }
+            log.debug("Link de aprovacao ja utilizado ou invalido: {}", excecao.getErro().getCodigo());
 
-    private String pagina(final String titulo, final String mensagem) {
-        return """
-                <!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1">
-                <title>Send Hemosc</title>
-                <style>body{font-family:system-ui,Arial,sans-serif;max-width:32rem;margin:4rem auto;
-                padding:0 1rem;line-height:1.6;color:#18181b}h1{font-size:1.3rem}
-                a{color:#b91c1c}</style></head><body>
-                <h1>%s</h1><p>%s</p><p><a href="/usuarios">Ir para o gerenciamento de contas</a></p>
-                </body></html>""".formatted(titulo, mensagem);
+            model.addAttribute("sucesso", false);
+            model.addAttribute("titulo", "Link já utilizado");
+            model.addAttribute("mensagem",
+                    "Este cadastro já foi decidido. Cada link de aprovação vale uma vez só.");
+        }
+
+        return "aprovacao";
     }
 
     /**

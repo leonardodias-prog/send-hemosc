@@ -8,23 +8,16 @@
     <link rel="stylesheet" th:href="@{/css/sendhemosc.css}"/>
 </head>
 <body>
+<div class="app">
+
+<nav th:replace="~{fragmentos/casca :: lateral('contas')}"></nav>
+
+<main class="conteudo">
 <div class="container">
 
     <header>
         <h1>Contas de acesso</h1>
         <p class="subtitulo">Criação, alteração, senha e exclusão de contas</p>
-        <nav class="topo">
-            <a th:href="@{/}">Painel</a>
-            <a th:href="@{/doadores}">Doadores</a>
-            <a th:href="@{/usuarios}">Contas</a>
-            <a th:href="@{/termo}">Termo de uso</a>
-            <span class="usuario">
-                <span sec:authentication="name">usuario</span>
-                <form th:action="@{/sair}" method="post" style="display:inline;margin-left:8px;">
-                    <button type="submit" class="secundario">Sair</button>
-                </form>
-            </span>
-        </nav>
     </header>
 
     <div class="aviso" th:if="${aviso}" th:text="${aviso}">mensagem</div>
@@ -135,6 +128,9 @@
             sistema sem ninguém capaz de gerenciar contas.
         </p>
     </footer>
+
+</div>
+</main>
 
 </div>
 </body>

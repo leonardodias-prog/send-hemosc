@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Cancelamento de convocações — Send Hemosc</title>
+    <link rel="stylesheet" th:href="@{/css/sendhemosc.css}"/>
+</head>
+<body>
+<!--/*
+  Tela que o doador vê ao clicar no link de cancelamento do e-mail. Sem casca de
+  navegação: quem chega aqui não é da equipe e não tem sistema para percorrer.
+  O que ela precisa ter é o que fazer em seguida, que antes não havia.
+*/-->
+<div class="container estreito">
+
+    <header>
+        <h1 th:if="${efetivado}">Convocações canceladas</h1>
+        <h1 th:unless="${efetivado}">Nada a fazer aqui</h1>
+        <p class="subtitulo">Send Hemosc &middot; Agência Transfusional &middot; Joinville/SC</p>
+    </header>
+
+    <div class="aviso" th:if="${efetivado}">
+        Pronto. Você não receberá mais convocações de doação por e-mail.
+    </div>
+
+    <div class="faixa" th:unless="${efetivado}">
+        Este link já foi usado ou não é mais válido. Se você continuar recebendo mensagens,
+        use o link de cancelamento do e-mail mais recente.
+    </div>
+
+    <div class="cartao">
+        <h2>O que acontece com seus dados</h2>
+        <p th:if="${efetivado}">
+            Seu cadastro continua no sistema, mas sem autorização para contato: nenhuma
+            convocação é enviada a quem não autorizou. Se quiser voltar a ser avisado quando
+            seu tipo sanguíneo estiver em falta, peça à equipe da unidade no próximo
+            comparecimento.
+        </p>
+        <p th:unless="${efetivado}">
+            Cada link de cancelamento vale uma vez só. Se o seu já havia sido usado, a
+            autorização de contato já está desligada e nada mais precisa ser feito.
+        </p>
+        <p style="margin-bottom:0;">
+            Os critérios de tratamento estão no
+            <a th:href="@{/termo}">termo de uso e privacidade</a>.
+        </p>
+    </div>
+
+    <footer>
+        <p>
+            Protótipo acadêmico &middot; Projeto de Extensão da UNIVILLE &middot;
+            Vivências de Extensão III
+        </p>
+    </footer>
+
+</div>
+</body>
+</html>

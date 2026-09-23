@@ -32,6 +32,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
  * <p>Complementa a convocacao por tipo sanguineo do painel. Convocar sempre a base inteira
  * atende o caso principal, mas nao os demais: um doador raro que a equipe conhece, um grupo
  * que ja se dispos, um reforco pontual.</p>
+ *
+ * <p>Toda acao devolve a lista com o filtro que estava valendo. Os formularios carregam os
+ * mesmos parametros da busca e o redirecionamento os recompoe: sem isso, quem filtrasse por
+ * um tipo raro perderia o recorte a cada convocacao e teria de refiltrar.</p>
  */
 @Slf4j
 @Controller
@@ -51,11 +55,7 @@ public class DoadorViewAdapter {
                          @RequestParam(defaultValue = "false") final boolean apenasAptos,
                          @RequestParam(defaultValue = "false") final boolean apenasComConsentimento,
                          final Model model) {
-        final TipoSanguineo tipoSanguineo = tipo == null || tipo.isBlank()
-                ? null
-                : TipoSanguineo.doSigla(tipo);
-
-        final FiltroDoador filtro = new FiltroDoador(busca, tipoSanguineo, apenasAptos, apenasComConsentimento);
+        final FiltroDoador filtro = montarFiltro(busca, tipo, apenasAptos, apenasComConsentimento);
         final List<DoadorListado> doadores = listarDoadores.execute(filtro);
 
         model.addAttribute("doadores", doadores);
@@ -68,13 +68,30 @@ public class DoadorViewAdapter {
 
     @PostMapping("/doadores/convocar")
     public String convocarSelecao(@RequestParam(required = false) final Set<Long> selecionados,
+                                  @RequestParam(required = false) final String busca,
+                                  @RequestParam(required = false) final String tipo,
+                                  @RequestParam(defaultValue = "false") final boolean apenasAptos,
+                                  @RequestParam(defaultValue = "false") final boolean apenasComConsentimento,
                                   final RedirectAttributes atributos) {
         if (selecionados == null || selecionados.isEmpty()) {
             atributos.addFlashAttribute("erro", "Selecione ao menos um doador.");
-            return "redirect:/doadores";
+        } else {
+            informar(convocarSelecionados.execute(selecionados), selecionados.size(), atributos);
         }
 
-        return responder(convocarSelecionados.execute(selecionados), selecionados.size(), atributos);
+        return devolverParaLista(atributos, busca, tipo, apenasAptos, apenasComConsentimento);
+    }
+
+    @PostMapping("/doadores/{id}/convocar")
+    public String convocarUm(@PathVariable final Long id,
+                             @RequestParam(required = false) final String busca,
+                             @RequestParam(required = false) final String tipo,
+                             @RequestParam(defaultValue = "false") final boolean apenasAptos,
+                             @RequestParam(defaultValue = "false") final boolean apenasComConsentimento,
+                             final RedirectAttributes atributos) {
+        informar(convocarSelecionados.execute(Set.of(id)), 1, atributos);
+
+        return devolverParaLista(atributos, busca, tipo, apenasAptos, apenasComConsentimento);
     }
 
     @PostMapping("/doadores/{id}/doacao")
@@ -82,6 +99,10 @@ public class DoadorViewAdapter {
                                   @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
                                   final LocalDate dataDoacao,
                                   @RequestParam(required = false) final String localColeta,
+                                  @RequestParam(required = false) final String busca,
+                                  @RequestParam(required = false) final String tipo,
+                                  @RequestParam(defaultValue = "false") final boolean apenasAptos,
+                                  @RequestParam(defaultValue = "false") final boolean apenasComConsentimento,
                                   final RedirectAttributes atributos) {
         try {
             final ResultadoRegistroDoacao resultado = registrarDoacao
@@ -92,6 +113,46 @@ public class DoadorViewAdapter {
             atributos.addFlashAttribute("erro", messageSource.getMessage(
                     excecao.getErro().getChaveMensagem(), null,
                     excecao.getErro().getChaveMensagem(), PT_BR));
+        }
+
+        return devolverParaLista(atributos, busca, tipo, apenasAptos, apenasComConsentimento);
+    }
+
+    private FiltroDoador montarFiltro(final String busca, final String tipo,
+                                      final boolean apenasAptos, final boolean apenasComConsentimento) {
+        final TipoSanguineo tipoSanguineo = tipo == null || tipo.isBlank()
+                ? null
+                : TipoSanguineo.doSigla(tipo);
+
+        return new FiltroDoador(busca, tipoSanguineo, apenasAptos, apenasComConsentimento);
+    }
+
+    /**
+     * Recompoe a consulta no endereco de volta, para que a acao devolva a lista como ela
+     * estava. So entram os criterios em uso: sem filtro algum o destino continua sendo
+     * /doadores, sem cauda de parametros vazios.
+     *
+     * @param atributos destino dos parametros do redirecionamento
+     * @param busca trecho de nome ou e-mail em uso
+     * @param tipo sigla do tipo sanguineo em uso
+     * @param apenasAptos recorte de quem pode doar hoje
+     * @param apenasComConsentimento recorte de quem autorizou contato
+     * @return redirecionamento para a listagem, com o filtro recomposto
+     */
+    private String devolverParaLista(final RedirectAttributes atributos, final String busca,
+                                     final String tipo, final boolean apenasAptos,
+                                     final boolean apenasComConsentimento) {
+        if (busca != null && !busca.isBlank()) {
+            atributos.addAttribute("busca", busca);
+        }
+        if (tipo != null && !tipo.isBlank()) {
+            atributos.addAttribute("tipo", tipo);
+        }
+        if (apenasAptos) {
+            atributos.addAttribute("apenasAptos", true);
+        }
+        if (apenasComConsentimento) {
+            atributos.addAttribute("apenasComConsentimento", true);
         }
 
         return "redirect:/doadores";
@@ -123,13 +184,8 @@ public class DoadorViewAdapter {
         return texto.toString();
     }
 
-    @PostMapping("/doadores/{id}/convocar")
-    public String convocarUm(@PathVariable final Long id, final RedirectAttributes atributos) {
-        return responder(convocarSelecionados.execute(Set.of(id)), 1, atributos);
-    }
-
-    private String responder(final ResultadoConvocacao resultado, final int selecionados,
-                             final RedirectAttributes atributos) {
+    private void informar(final ResultadoConvocacao resultado, final int selecionados,
+                          final RedirectAttributes atributos) {
         if (resultado.totalElegiveis() == 0) {
             atributos.addFlashAttribute("erro", selecionados == 1
                     ? "Este doador não está apto ou não autorizou receber convocações."
@@ -143,7 +199,5 @@ public class DoadorViewAdapter {
             atributos.addFlashAttribute("aviso",
                     "%d convocação(ões) enviada(s).".formatted(resultado.totalEnviados()));
         }
-
-        return "redirect:/doadores";
     }
 }

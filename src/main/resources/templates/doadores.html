@@ -8,23 +8,16 @@
     <link rel="stylesheet" th:href="@{/css/sendhemosc.css}"/>
 </head>
 <body>
+<div class="app">
+
+<nav th:replace="~{fragmentos/casca :: lateral('doadores')}"></nav>
+
+<main class="conteudo">
 <div class="container">
 
     <header>
         <h1>Doadores</h1>
         <p class="subtitulo">Busca, aptidão e convocação individual ou em grupo</p>
-        <nav class="topo">
-            <a th:href="@{/}">Painel</a>
-            <a th:href="@{/doadores}">Doadores</a>
-            <a th:href="@{/usuarios}" sec:authorize="hasRole('MASTER')">Contas</a>
-            <a th:href="@{/termo}">Termo de uso</a>
-            <span class="usuario">
-                <span sec:authentication="name">usuario</span>
-                <form th:action="@{/sair}" method="post" style="display:inline;margin-left:8px;">
-                    <button type="submit" class="secundario">Sair</button>
-                </form>
-            </span>
-        </nav>
     </header>
 
     <div class="aviso" th:if="${aviso}" th:text="${aviso}">mensagem</div>
@@ -78,6 +71,15 @@
     <form th:action="@{/doadores/convocar}" method="post">
         <input type="hidden" name="dataDoacao"
                th:value="${#temporals.format(#temporals.createToday(), 'yyyy-MM-dd')}"/>
+
+        <!--/* O filtro em uso viaja junto com a ação para que a lista volte como estava.
+               Vale para os três botões abaixo, que compartilham este formulário. */-->
+        <input type="hidden" name="busca" th:if="${filtro.temBusca()}" th:value="${filtro.busca}"/>
+        <input type="hidden" name="tipo" th:if="${filtro.tipoSanguineo != null}"
+               th:value="${filtro.tipoSanguineo.sigla}"/>
+        <input type="hidden" name="apenasAptos" th:if="${filtro.apenasAptos}" value="true"/>
+        <input type="hidden" name="apenasComConsentimento"
+               th:if="${filtro.apenasComConsentimento}" value="true"/>
         <div class="cartao">
             <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
                 <h2 style="margin:0;flex:1;">Resultado</h2>
@@ -90,6 +92,7 @@
                 Seu perfil consulta e cadastra. A convocação é atribuição do responsável.
             </p>
 
+            <div class="tabela-rolavel">
             <table>
                 <thead>
                 <tr>
@@ -145,6 +148,7 @@
                 </tr>
                 </tbody>
             </table>
+            </div>
         </div>
     </form>
 
@@ -158,6 +162,9 @@
             quando ela volta a poder doar — é o que impede que ela seja chamada de novo.
         </p>
     </footer>
+
+</div>
+</main>
 
 </div>
 

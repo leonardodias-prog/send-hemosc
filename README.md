@@ -32,7 +32,7 @@ depois que o estoque já caiu.
 | Convocação por tipo sanguíneo + aptidão | [`ConvocarDoadoresUseCase`](src/main/java/br/univille/sendhemosc/usecase/notificacao/ConvocarDoadoresUseCase.java) |
 | Convocação de uma seleção específica | [`ConvocarSelecionadosUseCase`](src/main/java/br/univille/sendhemosc/usecase/notificacao/ConvocarSelecionadosUseCase.java) |
 | Interruptor de envio, acionável na tela | [`EnvioDeEmailRouter`](src/main/java/br/univille/sendhemosc/adapter/outbound/email/EnvioDeEmailRouter.java) |
-| Descadastro exigido pela LGPD | [`DescadastroApiAdapter`](src/main/java/br/univille/sendhemosc/adapter/inbound/http/controller/DescadastroApiAdapter.java) |
+| Descadastro exigido pela LGPD | [`DescadastroViewAdapter`](src/main/java/br/univille/sendhemosc/adapter/inbound/http/controller/DescadastroViewAdapter.java) |
 
 A convocação por tipo não busca apenas o tipo exato em falta: usa a **tabela de compatibilidade
 transfusional**. Quando A+ está em falta, convoca A+, A−, O+ e O−.
