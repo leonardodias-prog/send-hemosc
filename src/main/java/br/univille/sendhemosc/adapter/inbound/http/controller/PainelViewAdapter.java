@@ -117,11 +117,38 @@ public class PainelViewAdapter {
         final TipoSanguineo tipo = TipoSanguineo.doSigla(sigla);
         final ResultadoConvocacao resultado = convocarDoadores.execute(tipo, OrigemNotificacao.MANUAL, true);
 
-        atributos.addFlashAttribute("aviso", resultado.totalEnviados() == 0
-                ? "Nenhum doador apto encontrado para %s no momento.".formatted(tipo.getSigla())
-                : "%d doador(es) apto(s) convocado(s) para %s.".formatted(resultado.totalEnviados(), tipo.getSigla()));
+        atributos.addFlashAttribute("aviso", descreverConvocacao(tipo, resultado));
 
         return "redirect:/";
+    }
+
+    /**
+     * Explica o resultado incluindo quem os limites de contato deixaram de fora. Sem isso, convocar
+     * duas vezes seguidas e ver zero na segunda pareceria defeito, e nao a regra funcionando.
+     *
+     * @param tipo tipo convocado
+     * @param resultado desfecho da rodada
+     * @return texto exibido no painel
+     */
+    private String descreverConvocacao(final TipoSanguineo tipo, final ResultadoConvocacao resultado) {
+        if (resultado.totalEnviados() == 0 && resultado.totalRetidos() == 0) {
+            return "Nenhum doador apto encontrado para %s no momento.".formatted(tipo.getSigla());
+        }
+
+        if (resultado.totalEnviados() == 0) {
+            return "Nenhum doador convocado para %s: os %d aptos foram convocados há pouco tempo ou não "
+                    .formatted(tipo.getSigla(), resultado.totalRetidos())
+                    + "responderam às últimas convocações.";
+        }
+
+        final String convocados = "%d doador(es) apto(s) convocado(s) para %s."
+                .formatted(resultado.totalEnviados(), tipo.getSigla());
+
+        return resultado.totalRetidos() == 0
+                ? convocados
+                : convocados + " Outros %d ficaram de fora por terem sido convocados há pouco tempo ou por "
+                        .formatted(resultado.totalRetidos())
+                        + "não responderem às últimas convocações.";
     }
 
     @PostMapping("/estoque/{sigla}")

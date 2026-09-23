@@ -29,7 +29,7 @@ class RenderizarConvocacaoUseCaseTest {
 
     private static final CandidatoConvocacao DOADOR = new CandidatoConvocacao(
             1L, "Maria Silva", "maria@example.org", TipoSanguineo.O_NEGATIVO, "tok-123", true,
-            Sexo.FEMININO, LocalDate.now().minusYears(30), BigDecimal.valueOf(65), null, 0);
+            Sexo.FEMININO, LocalDate.now().minusYears(30), BigDecimal.valueOf(65), null, 0, 0, null);
 
     private static final SituacaoEstoque SITUACAO = new SituacaoEstoque(
             TipoSanguineo.O_NEGATIVO, 11, 60, 18, NivelEstoque.CRITICO);

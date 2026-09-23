@@ -187,10 +187,7 @@ public class DoadorViewAdapter {
     private void informar(final ResultadoConvocacao resultado, final int selecionados,
                           final RedirectAttributes atributos) {
         if (resultado.totalElegiveis() == 0) {
-            atributos.addFlashAttribute("erro", selecionados == 1
-                    ? "Este doador não está apto ou não autorizou receber convocações."
-                    : "Nenhum dos %d selecionados está apto e com autorização para receber."
-                            .formatted(selecionados));
+            atributos.addFlashAttribute("erro", recusaSemElegiveis(resultado, selecionados));
         } else if (resultado.totalFalhas() > 0) {
             atributos.addFlashAttribute("erro",
                     "%d convocação(ões) enviada(s), %d falhou(aram). Verifique o envio de e-mail."
@@ -199,5 +196,18 @@ public class DoadorViewAdapter {
             atributos.addFlashAttribute("aviso",
                     "%d convocação(ões) enviada(s).".formatted(resultado.totalEnviados()));
         }
+    }
+
+    private String recusaSemElegiveis(final ResultadoConvocacao resultado, final int selecionados) {
+        if (resultado.totalRetidos() > 0) {
+            return selecionados == 1
+                    ? "Este doador foi convocado há pouco tempo ou não respondeu às últimas convocações."
+                    : "Nenhum dos %d selecionados pode ser convocado agora: os aptos foram convocados há "
+                            .formatted(selecionados) + "pouco tempo ou não responderam às últimas convocações.";
+        }
+
+        return selecionados == 1
+                ? "Este doador não está apto ou não autorizou receber convocações."
+                : "Nenhum dos %d selecionados está apto e com autorização para receber.".formatted(selecionados);
     }
 }

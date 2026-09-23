@@ -24,7 +24,7 @@ class ClassificarNivelEstoqueUseCaseTest {
     void preparar() {
         final var aptidao = new SendHemoscProperties.Aptidao(60, 90, 4, 3, 16, 69, BigDecimal.valueOf(50));
         final var estoque = new SendHemoscProperties.Estoque(30, 60);
-        final var notificacao = new SendHemoscProperties.Notificacao(30, "teste@example.org", "Teste", "http://localhost:8080");
+        final var notificacao = new SendHemoscProperties.Notificacao(30, 3, "teste@example.org", "Teste", "http://localhost:8080");
 
         useCase = new ClassificarNivelEstoqueUseCase(new SendHemoscProperties(aptidao, estoque, notificacao));
     }

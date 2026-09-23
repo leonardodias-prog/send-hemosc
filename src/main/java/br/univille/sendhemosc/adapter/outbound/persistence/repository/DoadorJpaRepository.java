@@ -3,6 +3,7 @@ package br.univille.sendhemosc.adapter.outbound.persistence.repository;
 import br.univille.sendhemosc.adapter.outbound.persistence.entity.DoadorEntity;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,8 +17,9 @@ import org.springframework.data.repository.query.Param;
 public interface DoadorJpaRepository extends JpaRepository<DoadorEntity, Long> {
 
     /**
-     * Retorna os candidatos a convocacao com os dados brutos necessarios a avaliacao de aptidao.
-     * O filtro aqui e apenas de consentimento e tipo sanguineo; a regra de aptidao e aplicada no dominio.
+     * Retorna os candidatos a convocacao com os dados brutos necessarios a avaliacao de aptidao e
+     * dos limites de contato. O filtro aqui e apenas de consentimento e tipo sanguineo; as duas
+     * regras sao aplicadas no dominio.
      *
      * @param siglas siglas de tipo sanguineo aceitas
      * @param inicioJanela data inicial da janela de doze meses
@@ -34,7 +36,10 @@ public interface DoadorJpaRepository extends JpaRepository<DoadorEntity, Long> {
                    d.peso_kg           AS pesoKg,
                    d.aceita_contato    AS aceitaContato,
                    (SELECT MAX(u.data_doacao) FROM doacao u WHERE u.doador_id = d.id) AS ultimaDoacao,
-                   (SELECT COUNT(*) FROM doacao c WHERE c.doador_id = d.id AND c.data_doacao >= :inicioJanela) AS doacoesJanela
+                   (SELECT COUNT(*) FROM doacao c WHERE c.doador_id = d.id AND c.data_doacao >= :inicioJanela) AS doacoesJanela,
+                   (SELECT COUNT(*) FROM notificacao p
+                     WHERE p.doador_id = d.id AND p.status = 'ENVIADA' AND p.compareceu_em IS NULL) AS convocacoesSemResposta,
+                   (SELECT MAX(e.enviada_em) FROM notificacao e WHERE e.doador_id = d.id) AS ultimaConvocacao
               FROM doador d
              WHERE d.ativo = TRUE
                AND d.aceita_contato = TRUE
@@ -64,7 +69,10 @@ public interface DoadorJpaRepository extends JpaRepository<DoadorEntity, Long> {
                    d.peso_kg           AS pesoKg,
                    d.aceita_contato    AS aceitaContato,
                    (SELECT MAX(u.data_doacao) FROM doacao u WHERE u.doador_id = d.id) AS ultimaDoacao,
-                   (SELECT COUNT(*) FROM doacao c WHERE c.doador_id = d.id AND c.data_doacao >= :inicioJanela) AS doacoesJanela
+                   (SELECT COUNT(*) FROM doacao c WHERE c.doador_id = d.id AND c.data_doacao >= :inicioJanela) AS doacoesJanela,
+                   (SELECT COUNT(*) FROM notificacao p
+                     WHERE p.doador_id = d.id AND p.status = 'ENVIADA' AND p.compareceu_em IS NULL) AS convocacoesSemResposta,
+                   (SELECT MAX(e.enviada_em) FROM notificacao e WHERE e.doador_id = d.id) AS ultimaConvocacao
               FROM doador d
              WHERE d.ativo = TRUE
                AND (:somenteComConsentimento = FALSE OR d.aceita_contato = TRUE)
@@ -95,7 +103,10 @@ public interface DoadorJpaRepository extends JpaRepository<DoadorEntity, Long> {
                    d.peso_kg           AS pesoKg,
                    d.aceita_contato    AS aceitaContato,
                    (SELECT MAX(u.data_doacao) FROM doacao u WHERE u.doador_id = d.id) AS ultimaDoacao,
-                   (SELECT COUNT(*) FROM doacao c WHERE c.doador_id = d.id AND c.data_doacao >= :inicioJanela) AS doacoesJanela
+                   (SELECT COUNT(*) FROM doacao c WHERE c.doador_id = d.id AND c.data_doacao >= :inicioJanela) AS doacoesJanela,
+                   (SELECT COUNT(*) FROM notificacao p
+                     WHERE p.doador_id = d.id AND p.status = 'ENVIADA' AND p.compareceu_em IS NULL) AS convocacoesSemResposta,
+                   (SELECT MAX(e.enviada_em) FROM notificacao e WHERE e.doador_id = d.id) AS ultimaConvocacao
               FROM doador d
              WHERE d.ativo = TRUE
                AND d.id IN (:identificadores)
@@ -143,5 +154,9 @@ public interface DoadorJpaRepository extends JpaRepository<DoadorEntity, Long> {
         boolean getAceitaContato();
 
         long getDoacoesJanela();
+
+        long getConvocacoesSemResposta();
+
+        LocalDateTime getUltimaConvocacao();
     }
 }

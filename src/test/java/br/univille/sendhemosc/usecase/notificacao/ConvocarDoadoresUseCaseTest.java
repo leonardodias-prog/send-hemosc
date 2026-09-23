@@ -29,6 +29,7 @@ import br.univille.sendhemosc.usecase.doador.CalcularAptidaoUseCase;
 import br.univille.sendhemosc.usecase.estoque.ClassificarNivelEstoqueUseCase;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -63,20 +64,26 @@ class ConvocarDoadoresUseCaseTest {
         final var properties = new SendHemoscProperties(
                 new SendHemoscProperties.Aptidao(60, 90, 4, 3, 16, 69, BigDecimal.valueOf(50)),
                 new SendHemoscProperties.Estoque(30, 60),
-                new SendHemoscProperties.Notificacao(30, "teste@example.org", "Teste", "http://localhost:8080"));
+                new SendHemoscProperties.Notificacao(30, 3, "teste@example.org", "Teste", "http://localhost:8080"));
 
         useCase = new ConvocarDoadoresUseCase(
                 estoqueRepository, doadorRepository, notificacaoRepository, emailPort,
                 new ClassificarNivelEstoqueUseCase(properties), new CalcularAptidaoUseCase(properties),
-                renderizarConvocacao);
+                new AvaliarLimiteDeContatoUseCase(properties), renderizarConvocacao);
 
         ReflectionTestUtils.setField(useCase, "maxFalhasConsecutivas", 5);
     }
 
     private CandidatoConvocacao candidato(final long id, final LocalDate ultimaDoacao) {
+        return comHistorico(id, ultimaDoacao, 0, null);
+    }
+
+    private CandidatoConvocacao comHistorico(final long id, final LocalDate ultimaDoacao,
+                                             final long semResposta, final LocalDateTime ultimaConvocacao) {
         return new CandidatoConvocacao(id, "Doador " + id, "doador" + id + "@example.org",
                 TipoSanguineo.O_NEGATIVO, "token-" + id, true, Sexo.MASCULINO,
-                LocalDate.now().minusYears(30), BigDecimal.valueOf(75), ultimaDoacao, 0);
+                LocalDate.now().minusYears(30), BigDecimal.valueOf(75), ultimaDoacao, 0,
+                semResposta, ultimaConvocacao);
     }
 
     private void estoqueEm(final int quantidade, final int capacidade) {
@@ -190,6 +197,9 @@ class ConvocarDoadoresUseCaseTest {
         assertThat(resultado.totalFalhas())
                 .as("deve parar no limite e nao tentar os 40")
                 .isEqualTo(5);
+        assertThat(resultado.interrompida())
+                .as("quem chama precisa saber que a rodada nao terminou, para nao insistir no tipo seguinte")
+                .isTrue();
         verify(emailPort, times(5)).enviar(any());
     }
 
@@ -218,5 +228,58 @@ class ConvocarDoadoresUseCaseTest {
         assertThat(resultado.totalEnviados()).isEqualTo(5);
         assertThat(resultado.totalFalhas()).isEqualTo(5);
         verify(emailPort, times(10)).enviar(any());
+    }
+
+    @Test
+    @DisplayName("quem foi convocado ha menos que o intervalo fica de fora, e conta como retido")
+    void intervaloRetem() {
+        estoqueEm(10, 100);
+        when(doadorRepository.buscarCandidatos(anySet(), any())).thenReturn(List.of(
+                comHistorico(1L, null, 1, LocalDateTime.now().minusDays(5)),
+                comHistorico(2L, null, 1, LocalDateTime.now().minusDays(45))));
+        when(renderizarConvocacao.execute(any(), any()))
+                .thenReturn(new MensagemEmail("doador2@example.org", "assunto", "<p>corpo</p>"));
+
+        final ResultadoConvocacao resultado = useCase.execute(
+                TipoSanguineo.O_NEGATIVO, OrigemNotificacao.MANUAL, true);
+
+        assertThat(resultado.totalEnviados()).isEqualTo(1);
+        assertThat(resultado.totalRetidos())
+                .as("convocado ha 5 dias, com intervalo de 30: nao recebe de novo")
+                .isEqualTo(1);
+        verify(renderizarConvocacao).execute(org.mockito.ArgumentMatchers.argThat(c -> c.id() == 2L), any());
+    }
+
+    @Test
+    @DisplayName("quem nao respondeu ao teto de convocacoes fica de fora, mesmo com o intervalo cumprido")
+    void tetoRetem() {
+        estoqueEm(10, 100);
+        when(doadorRepository.buscarCandidatos(anySet(), any())).thenReturn(List.of(
+                comHistorico(1L, null, 3, LocalDateTime.now().minusDays(90))));
+
+        final ResultadoConvocacao resultado = useCase.execute(
+                TipoSanguineo.O_NEGATIVO, OrigemNotificacao.AUTOMATICA, false);
+
+        assertThat(resultado.totalElegiveis()).isZero();
+        assertThat(resultado.totalRetidos()).isEqualTo(1);
+        verify(emailPort, never()).enviar(any());
+    }
+
+    @Test
+    @DisplayName("na selecao, quem nunca foi convocado vem antes de quem foi ha mais tempo")
+    void prioridadeParaQuemNuncaFoiConvocado() {
+        final var situacao = new br.univille.sendhemosc.domain.dto.SituacaoEstoque(
+                TipoSanguineo.O_NEGATIVO, 10, 100, 10, NivelEstoque.CRITICO);
+        when(doadorRepository.buscarCandidatos(anySet(), any())).thenReturn(List.of(
+                comHistorico(1L, null, 1, LocalDateTime.now().minusDays(40)),
+                comHistorico(2L, null, 1, LocalDateTime.now().minusDays(90)),
+                comHistorico(3L, null, 0, null)));
+
+        final var selecao = useCase.selecionar(situacao, LocalDate.now());
+
+        assertThat(selecao.elegiveis())
+                .extracting(CandidatoConvocacao::id)
+                .as("nunca convocado, depois o de 90 dias, depois o de 40")
+                .containsExactly(3L, 2L, 1L);
     }
 }

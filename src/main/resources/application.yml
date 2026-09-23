@@ -112,9 +112,23 @@ sendhemosc:
     brevo:
       api-key: ${BREVO_API_KEY:}
 
+  disparo-automatico:
+    # De quanto em quanto tempo o agendador confere se a rodada automática é devida. Se há
+    # rodada, para quais tipos e em que horário é decisão da tela /disparo-automatico, que
+    # nasce desligada.
+    verificacao-ms: 600000
+    # Primeira conferência depois da subida. Na hospedagem gratuita o serviço acorda quando
+    # alguém o acessa; conferir logo em seguida aproveita esse momento.
+    primeira-verificacao-ms: 60000
+
   notificacao:
-    # Reenvio para quem não compareceu, enquanto o tipo seguir em nível baixo
+    # Limites de contato por pessoa. Valem para toda convocação, manual ou automática: para
+    # quem recebe, o e-mail é o mesmo, seja qual for o botão que o disparou.
+    #   intervalo-reenvio-dias: dias mínimos entre uma convocação e a seguinte para a mesma pessoa
+    #   max-convocacoes-sem-resposta: a partir de quantas convocações ignoradas a pessoa deixa de
+    #     ser chamada. Registrar uma doação dela fecha as pendentes e zera a contagem.
     intervalo-reenvio-dias: 30
+    max-convocacoes-sem-resposta: 3
     # Precisa ser um remetente verificado no Brevo. Sem domínio próprio, verifica-se um
     # endereço avulso; com domínio, qualquer caixa dele.
     remetente: ${MAIL_REMETENTE:nao-responda@sendhemosc.local}

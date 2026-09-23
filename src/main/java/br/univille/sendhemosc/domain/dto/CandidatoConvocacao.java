@@ -4,11 +4,12 @@ import br.univille.sendhemosc.domain.enums.Sexo;
 import br.univille.sendhemosc.domain.enums.TipoSanguineo;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
- * Doador candidato a receber uma convocacao, com os dados necessarios para avaliar sua aptidao.
- * A avaliacao em si nao acontece aqui: e feita por CalcularAptidaoUseCase, que e a unica fonte
- * da regra de intervalo entre doacoes.
+ * Doador candidato a receber uma convocacao, com os dados necessarios para avaliar sua aptidao e
+ * os limites de contato. A avaliacao em si nao acontece aqui: aptidao e com CalcularAptidaoUseCase,
+ * limite de contato com AvaliarLimiteDeContatoUseCase, cada regra em um lugar so.
  *
  * @param id identificador do doador
  * @param nome nome do doador
@@ -21,6 +22,8 @@ import java.time.LocalDate;
  * @param pesoKg peso em quilos, pode ser nulo
  * @param ultimaDoacao data da ultima doacao, nula para quem nunca doou
  * @param doacoesUltimosDozeMeses total de doacoes nos ultimos doze meses
+ * @param convocacoesSemResposta convocacoes enviadas que ainda nao terminaram em doacao
+ * @param ultimaConvocacao quando a ultima convocacao foi enviada, nula para quem nunca recebeu
  */
 public record CandidatoConvocacao(
         Long id,
@@ -33,5 +36,7 @@ public record CandidatoConvocacao(
         LocalDate dataNascimento,
         BigDecimal pesoKg,
         LocalDate ultimaDoacao,
-        long doacoesUltimosDozeMeses) {
+        long doacoesUltimosDozeMeses,
+        long convocacoesSemResposta,
+        LocalDateTime ultimaConvocacao) {
 }

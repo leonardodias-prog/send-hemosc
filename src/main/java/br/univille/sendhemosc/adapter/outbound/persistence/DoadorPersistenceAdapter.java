@@ -73,7 +73,9 @@ public class DoadorPersistenceAdapter implements IDoadorRepositoryPort {
                 projecao.getDataNascimento(),
                 projecao.getPesoKg(),
                 projecao.getUltimaDoacao(),
-                projecao.getDoacoesJanela());
+                projecao.getDoacoesJanela(),
+                projecao.getConvocacoesSemResposta(),
+                projecao.getUltimaConvocacao());
     }
 
     @Override

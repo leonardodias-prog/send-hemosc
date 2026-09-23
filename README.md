@@ -31,6 +31,8 @@ depois que o estoque já caiu.
 | Cálculo da data estimada da próxima doação | [`CalcularAptidaoUseCase`](src/main/java/br/univille/sendhemosc/usecase/doador/CalcularAptidaoUseCase.java) |
 | Convocação por tipo sanguíneo + aptidão | [`ConvocarDoadoresUseCase`](src/main/java/br/univille/sendhemosc/usecase/notificacao/ConvocarDoadoresUseCase.java) |
 | Convocação de uma seleção específica | [`ConvocarSelecionadosUseCase`](src/main/java/br/univille/sendhemosc/usecase/notificacao/ConvocarSelecionadosUseCase.java) |
+| Limite de contato por pessoa: intervalo e teto de convocações sem resposta | [`AvaliarLimiteDeContatoUseCase`](src/main/java/br/univille/sendhemosc/usecase/notificacao/AvaliarLimiteDeContatoUseCase.java) |
+| Disparo automático configurável na tela | [`ExecutarDisparoAutomaticoUseCase`](src/main/java/br/univille/sendhemosc/usecase/notificacao/ExecutarDisparoAutomaticoUseCase.java) |
 | Interruptor de envio, acionável na tela | [`EnvioDeEmailRouter`](src/main/java/br/univille/sendhemosc/adapter/outbound/email/EnvioDeEmailRouter.java) |
 | Descadastro exigido pela LGPD | [`DescadastroViewAdapter`](src/main/java/br/univille/sendhemosc/adapter/inbound/http/controller/DescadastroViewAdapter.java) |
 
@@ -43,6 +45,7 @@ transfusional**. Quando A+ está em falta, convoca A+, A−, O+ e O−.
 |---|---|---|
 | `/` | Todos autenticados | Painel de estoque, cadastro de doador, interruptor de envio |
 | `/doadores` | Todos autenticados | Busca com filtros, aptidão e convocação seletiva |
+| `/disparo-automatico` | Responsável e administrador | Liga, desliga e configura a rodada automática, com prévia de quem ela convocaria |
 | `/usuarios` | Administrador | Criação, alteração, senha e exclusão de contas |
 | `/login`, `/cadastro`, `/termo` | Público | Entrada, autocadastro e termo de uso |
 
@@ -54,7 +57,7 @@ alimentar dados, não.
 | Perfil | Pode | Como entra |
 |---|---|---|
 | **Operador** | Cadastra doadores, atualiza estoque, consulta | Autocadastro, ativo na hora |
-| **Responsável** | Tudo acima, mais disparar convocações e ligar o envio | Autocadastro, pendente até aprovação |
+| **Responsável** | Tudo acima, mais disparar convocações, ligar o envio e o disparo automático | Autocadastro, pendente até aprovação |
 | **Administrador** | Tudo acima, mais gerenciar contas | Criado na primeira subida |
 
 O cadastro de responsável dispara um e-mail ao administrador com links de aprovar e recusar.
@@ -148,6 +151,11 @@ Ficam em `sendhemosc.aptidao`, fora do código, para serem revisadas sem ler Jav
 Limiares de estoque: abaixo de **30%** da capacidade alvo é `CRITICO`, abaixo de **60%** é
 `ATENCAO`, o resto é `NORMAL`.
 
+**Limite de contato por pessoa**, em `sendhemosc.notificacao`: cada pessoa recebe no máximo
+**3** convocações sem resposta, com pelo menos **30 dias** entre uma e outra. Registrar uma
+doação dela fecha as pendentes e zera a contagem. Vale para toda convocação, manual ou
+automática — para quem recebe, o e-mail é o mesmo, seja qual for o botão que o disparou.
+
 ## Envio de e-mail
 
 Duas condições precisam valer para uma mensagem sair:
@@ -160,6 +168,12 @@ interruptor e toda convocação ficam em auditoria, com quem fez e quando.
 
 `EMAIL_DESTINATARIO_TESTE` desvia todas as mensagens para endereços conhecidos, seja qual for
 o doador. Serve para conferir um envio sem atingir ninguém.
+
+O **disparo automático** nasce desligado e é configurado em `/disparo-automatico`: tipos
+sanguíneos considerados, limite de envios por rodada, janela de horário e frequência. A rotina
+confere a cada dez minutos se a rodada é devida, e não em hora fixa: na hospedagem gratuita o
+serviço hiberna sem acesso, e a conferência aproveita o momento em que ele acorda. A rodada usa o
+mesmo envio do painel — com o interruptor desligado, as convocações só vão para o log.
 
 > [!WARNING]
 > **SMTP não funciona em hospedagem gratuita.** A porta de saída é bloqueada para conter spam,

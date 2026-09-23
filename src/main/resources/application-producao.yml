@@ -36,9 +36,6 @@ sendhemosc:
     # Ligar uma vez basta, porque o seed nao repete em base ja preenchida.
     habilitado: ${SEED_HABILITADO:false}
     quantidade-doadores: ${SEED_DOADORES:120}
-  scheduler:
-    # Varredura automatica desligada por padrao: o disparo fica sob decisao do responsavel.
-    cron-convocacao: ${CRON_CONVOCACAO:-}
 
 logging:
   level:

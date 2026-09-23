@@ -124,6 +124,18 @@
                               th:title="${#strings.listJoin(d.motivosInaptidao, ', ')}">
                             Apto em <span th:text="${#temporals.format(d.proximaDataApta, 'dd/MM/yyyy')}">data</span>
                         </span>
+                        <!--/* Apto, mas os limites de contato seguram: ainda pode doar se aparecer. */-->
+                        <span class="etiqueta pendente"
+                              th:if="${d.aceitaContato and d.apto and d.contato.tetoAtingido}"
+                              title="Volta a ser convocado quando uma doação dele for registrada">
+                            Sem resposta a <span th:text="${d.convocacoesSemResposta}">3</span> convocações
+                        </span>
+                        <span class="etiqueta pendente"
+                              th:if="${d.aceitaContato and d.apto and !d.contato.liberado and !d.contato.tetoAtingido}"
+                              th:title="'Pode ser convocado de novo a partir de '
+                                        + ${#temporals.format(d.contato.liberadoEm, 'dd/MM/yyyy')}">
+                            Convocado em <span th:text="${#temporals.format(d.ultimaConvocacao, 'dd/MM/yyyy')}">data</span>
+                        </span>
                     </td>
                     <td th:text="${d.ultimaDoacao != null
                             ? #temporals.format(d.ultimaDoacao, 'dd/MM/yyyy') : 'nunca doou'}">nunca</td>
@@ -154,8 +166,8 @@
 
     <footer>
         <p>
-            Quem não autorizou o contato ou não cumpriu o intervalo mínimo não pode ser
-            selecionado: escolher a quem oferecer não dispensa a regra de aptidão.
+            Quem não autorizou o contato, não cumpriu o intervalo mínimo ou atingiu o limite de
+            convocações não pode ser selecionado: escolher a quem oferecer não dispensa a regra.
         </p>
         <p>
             Registrar a doação fecha as convocações que a pessoa tinha em aberto e recalcula

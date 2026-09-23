@@ -67,7 +67,7 @@ public class SegurancaConfig {
                     // gerais abaixo: a primeira correspondencia decide, e /doadores/** liberaria
                     // a convocacao seletiva para quem so deveria alimentar dados.
                     .requestMatchers("/convocar/**", "/api/convocacoes/**", "/envio/**",
-                            "/doadores/convocar", "/doadores/*/convocar")
+                            "/doadores/convocar", "/doadores/*/convocar", "/disparo-automatico/**")
                             .hasAnyRole(PERFIL_RESPONSAVEL, PERFIL_MASTER)
                     // Alimentacao de dados e consulta
                     .requestMatchers("/", "/doadores/**", "/estoque/**", "/api/**")

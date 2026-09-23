@@ -2,13 +2,18 @@ package br.univille.sendhemosc;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import br.univille.sendhemosc.domain.dto.FiltroDoador;
 import br.univille.sendhemosc.domain.dto.SituacaoEstoque;
 import br.univille.sendhemosc.domain.enums.PerfilUsuario;
+import br.univille.sendhemosc.domain.enums.TipoSanguineo;
+import br.univille.sendhemosc.domain.port.outbound.IDisparoAutomaticoRepositoryPort;
+import br.univille.sendhemosc.domain.port.outbound.IDoadorRepositoryPort;
 import br.univille.sendhemosc.domain.port.outbound.IUsuarioRepositoryPort;
 import br.univille.sendhemosc.usecase.estoque.ListarSituacaoEstoqueUseCase;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import javax.sql.DataSource;
@@ -45,6 +50,12 @@ class MigracaoPostgresTest {
     @Autowired
     private IUsuarioRepositoryPort usuarioRepository;
 
+    @Autowired
+    private IDoadorRepositoryPort doadorRepository;
+
+    @Autowired
+    private IDisparoAutomaticoRepositoryPort disparoRepository;
+
     @Test
     @DisplayName("o banco realmente e PostgreSQL, e nao H2 por engano")
     void bancoEPostgres() throws Exception {
@@ -70,7 +81,7 @@ class MigracaoPostgresTest {
 
         assertThat(tabelas).contains(
                 "doador", "doacao", "estoque_hemocomponente", "notificacao",
-                "usuario", "consentimento", "auditoria");
+                "usuario", "consentimento", "auditoria", "disparo_automatico");
     }
 
     @Test
@@ -88,8 +99,24 @@ class MigracaoPostgresTest {
     }
 
     @Test
-    @DisplayName("a consulta nativa de candidatos funciona no dialeto do PostgreSQL")
-    void consultaNativaFunciona() {
+    @DisplayName("a listagem de contas funciona no PostgreSQL")
+    void listagemDeContasFunciona() {
         assertThat(usuarioRepository.listarTodos()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("as consultas nativas de candidatos, com o historico de contato, rodam no PostgreSQL")
+    void consultasDeCandidatosFuncionam() {
+        final LocalDate hoje = LocalDate.now();
+
+        assertThat(doadorRepository.buscarCandidatos(TipoSanguineo.A_POSITIVO.siglasDoadoresCompativeis(), hoje))
+                .isNotNull();
+        assertThat(doadorRepository.buscarPorFiltro(FiltroDoador.vazio(), hoje)).isNotNull();
+    }
+
+    @Test
+    @DisplayName("o disparo automatico nasce desligado")
+    void disparoNasceDesligado() {
+        assertThat(disparoRepository.buscar().ativo()).isFalse();
     }
 }

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Disparo automático — Send Hemosc</title>
+    <link rel="stylesheet" th:href="@{/css/sendhemosc.css}"/>
+</head>
+<body>
+<div class="app">
+
+<nav th:replace="~{fragmentos/casca :: lateral('disparo')}"></nav>
+
+<main class="conteudo">
+<div class="container">
+
+    <header>
+        <h1>Disparo automático</h1>
+        <p class="subtitulo">Convocação por rotina agendada, sem depender de alguém no painel</p>
+    </header>
+
+    <div class="aviso" th:if="${aviso}" th:text="${aviso}">mensagem</div>
+    <div class="erro-caixa" th:if="${erro}" th:text="${erro}">mensagem</div>
+
+    <!--/* O efeito de ligar depende do envio de e-mail: a tela diz qual dos dois cenários vale aqui. */-->
+    <div class="faixa" th:unless="${envioReal}">
+        O envio de e-mail está desligado neste ambiente: as rodadas acontecem e ficam registradas,
+        mas ninguém recebe mensagem. É o modo certo para testar esta configuração.
+    </div>
+    <div class="erro-caixa" th:if="${envioReal}">
+        <strong>O envio de e-mail está ligado.</strong> Com o disparo automático ligado, as rodadas
+        mandam e-mail de verdade aos doadores, sem ninguém clicar em nada.
+    </div>
+
+    <div class="cartao" th:classappend="${configuracao.ativo} ? 'estado-envio ligado' : ''">
+        <h2>
+            Situação:
+            <span th:if="${configuracao.ativo}" class="critico">ligado</span>
+            <span th:unless="${configuracao.ativo}" class="normal">desligado</span>
+        </h2>
+
+        <p class="dica">
+            <strong>Próxima rodada:</strong>
+            <span th:unless="${configuracao.ativo}">nenhuma, enquanto estiver desligado</span>
+            <span th:if="${configuracao.ativo and !proximaRodada.isAfter(agora)}">
+                na próxima conferência, em até <span th:text="${verificacaoMinutos}">10</span> minutos
+            </span>
+            <span th:if="${configuracao.ativo and proximaRodada.isAfter(agora)}">
+                a partir de <span th:text="${#temporals.format(proximaRodada, 'dd/MM')}">24/09</span>
+                às <span th:text="${proximaRodada.hour}">8</span>h
+            </span>
+        </p>
+        <p class="dica">
+            <strong>Última rodada:</strong>
+            <span th:if="${configuracao.ultimaRodadaEm == null}">nenhuma ainda</span>
+            <span th:unless="${configuracao.ultimaRodadaEm == null}">
+                <span th:text="${#temporals.format(configuracao.ultimaRodadaEm, 'dd/MM/yyyy HH:mm')}">data</span>
+                &mdash; <span th:text="${configuracao.ultimaRodadaResumo}">resumo</span>
+            </span>
+        </p>
+        <p class="dica">
+            <strong>Alterado por:</strong>
+            <span th:if="${configuracao.atualizadoPor == null}">ninguém, é a configuração inicial</span>
+            <span th:unless="${configuracao.atualizadoPor == null}">
+                <span th:text="${configuracao.atualizadoPor}">email</span> em
+                <span th:text="${#temporals.format(configuracao.atualizadoEm, 'dd/MM/yyyy HH:mm')}">data</span>
+            </span>
+        </p>
+    </div>
+
+    <div class="cartao">
+        <h2>Configuração</h2>
+        <form th:action="@{/disparo-automatico}" method="post" style="display:block;">
+
+            <label class="consentimento">
+                <input type="checkbox" name="ativo" value="true" th:checked="${ajuste.ativo}"/>
+                <span>
+                    <strong>Ligar o disparo automático.</strong> Dentro da janela, a primeira rodada
+                    acontece na próxima conferência, em até
+                    <span th:text="${verificacaoMinutos}">10</span> minutos.
+                </span>
+            </label>
+
+            <fieldset class="tipos">
+                <legend>Tipos sanguíneos considerados</legend>
+                <label th:each="t : ${tiposSanguineos}">
+                    <input type="checkbox" name="tipos" th:value="${t.sigla}" th:checked="${ajuste.incluiTipo(t)}"/>
+                    <span th:text="${t.sigla}">A+</span>
+                </label>
+            </fieldset>
+            <p class="dica" style="margin:-8px 0 16px;">
+                A rodada só convoca para os tipos marcados que estiverem em nível de atenção ou crítico.
+            </p>
+
+            <div class="campos">
+                <div class="campo">
+                    <label for="limitePorRodada">Limite de envios por rodada</label>
+                    <input type="number" id="limitePorRodada" name="limitePorRodada" min="1" max="1000"
+                           th:value="${ajuste.limitePorRodada}" required/>
+                </div>
+                <div class="campo">
+                    <label for="horaInicio">Janela: a partir das</label>
+                    <select id="horaInicio" name="horaInicio">
+                        <option th:each="h : ${#numbers.sequence(0, 23)}" th:value="${h}" th:text="${h} + 'h'"
+                                th:selected="${h == ajuste.horaInicio}">8h</option>
+                    </select>
+                </div>
+                <div class="campo">
+                    <label for="horaFim">até as</label>
+                    <select id="horaFim" name="horaFim">
+                        <option th:each="h : ${#numbers.sequence(1, 24)}" th:value="${h}" th:text="${h} + 'h'"
+                                th:selected="${h == ajuste.horaFim}">18h</option>
+                    </select>
+                </div>
+                <div class="campo">
+                    <label for="intervaloDias">Frequência</label>
+                    <select id="intervaloDias" name="intervaloDias">
+                        <option th:each="f : ${frequencias}" th:value="${f}" th:selected="${f == ajuste.intervaloDias}"
+                                th:text="${f == 1 ? 'Todo dia' : (f == 7 ? 'Uma vez por semana' : 'A cada ' + f + ' dias')}">
+                            Todo dia
+                        </option>
+                    </select>
+                </div>
+            </div>
+            <p class="dica" style="margin-bottom:16px;">
+                O limite soma todos os tipos. Antes de aumentá-lo, confira o limite diário de envio do
+                plano do Brevo: estourá-lo bloqueia o envio até o dia seguinte.
+            </p>
+
+            <button type="submit">Salvar</button>
+        </form>
+    </div>
+
+    <div class="cartao">
+        <h2>Se a rodada acontecesse agora</h2>
+        <p class="dica" style="margin-bottom:12px;">
+            Com a configuração salva e o estoque de agora. A rodada envia exatamente este plano.
+        </p>
+
+        <p th:if="${#lists.isEmpty(plano.itens)}" style="margin:0;">
+            Nenhum dos tipos marcados está em nível baixo: a rodada não convocaria ninguém.
+        </p>
+
+        <div class="tabela-rolavel" th:unless="${#lists.isEmpty(plano.itens)}">
+            <table>
+                <thead>
+                <tr>
+                    <th>Tipo</th>
+                    <th>Nível</th>
+                    <th>Estoque</th>
+                    <th>Convocaria</th>
+                    <th>Retidos pelo limite de contato</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="item : ${plano.itens}">
+                    <td><strong th:text="${item.selecao.situacao.tipoSanguineo.sigla}">O-</strong></td>
+                    <td>
+                        <span class="etiqueta" th:classappend="${item.selecao.situacao.nivel.name().toLowerCase()}"
+                              th:text="${item.selecao.situacao.nivel.descricao}">Crítico</span>
+                    </td>
+                    <td th:text="${item.selecao.situacao.quantidadeBolsas} + ' de ' + ${item.selecao.situacao.capacidadeAlvo}">
+                        11 de 60
+                    </td>
+                    <td th:text="${#lists.size(item.destinatarios)}">7</td>
+                    <td th:text="${#lists.size(item.selecao.retidos)}">3</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <p class="dica" th:unless="${#lists.isEmpty(plano.itens)}" style="margin-top:12px;">
+            <strong th:text="${plano.totalDestinatarios}">12</strong> pessoa(s) no total, cada uma com
+            um convite só, pelo tipo mais crítico com que é compatível.
+            <span th:if="${plano.totalRetidos > 0}">
+                <strong th:text="${plano.totalRetidos}">4</strong> apta(s) ficariam de fora pelo limite de
+                contato &mdash; na tabela, quem é compatível com vários tipos aparece em cada um deles.
+            </span>
+            <span th:if="${plano.totalAdiados > 0}">
+                <strong th:text="${plano.totalAdiados}">3</strong> ficariam para a rodada seguinte pelo limite
+                de <span th:text="${configuracao.limitePorRodada}">50</span> por rodada.
+            </span>
+        </p>
+    </div>
+
+    <div class="cartao">
+        <h2>Limite de contato por pessoa</h2>
+        <p>
+            Cada pessoa recebe no máximo <strong th:text="${maxConvocacoesSemResposta}">3</strong>
+            convocações sem resposta, com pelo menos <strong th:text="${intervaloReenvioDias}">30</strong>
+            dias entre uma e outra. Registrar uma doação dela zera a contagem.
+        </p>
+        <p class="dica" style="margin:0;">
+            Vale também para a convocação manual, do painel e da tela de doadores: para quem recebe, o
+            e-mail é o mesmo, seja qual for o botão que o disparou. Os valores ficam em
+            <code>application.yml</code>, junto das demais regras.
+        </p>
+    </div>
+
+    <footer>
+        <p>
+            A rotina confere a cada <span th:text="${verificacaoMinutos}">10</span> minutos se a rodada
+            é devida, e só enquanto o serviço está no ar. Na hospedagem gratuita ele hiberna após quinze
+            minutos sem acesso: se ninguém abrir o sistema dentro da janela no dia previsto, a rodada
+            acontece na primeira oportunidade seguinte.
+        </p>
+        <p>
+            Toda alteração desta tela e toda rodada ficam em auditoria. A rodada registra também quem
+            ligou o disparo: o envio é do sistema, mas a decisão foi de alguém.
+        </p>
+    </footer>
+
+</div>
+</main>
+
+</div>
+</body>
+</html>

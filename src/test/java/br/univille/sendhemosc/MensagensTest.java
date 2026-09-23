@@ -2,10 +2,13 @@ package br.univille.sendhemosc;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import br.univille.sendhemosc.domain.exception.DisparoErrorsMessage;
+import br.univille.sendhemosc.domain.exception.DoacaoErrorsMessage;
 import br.univille.sendhemosc.domain.exception.DoadorErrorsMessage;
 import br.univille.sendhemosc.domain.exception.ErrorsMessage;
 import br.univille.sendhemosc.domain.exception.EstoqueErrorsMessage;
 import br.univille.sendhemosc.domain.exception.NotificacaoErrorsMessage;
+import br.univille.sendhemosc.domain.exception.UsuarioErrorsMessage;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Stream;
@@ -42,7 +45,10 @@ class MensagensTest {
         final Stream<ErrorsMessage> catalogos = Stream.of(
                         DoadorErrorsMessage.values(),
                         EstoqueErrorsMessage.values(),
-                        NotificacaoErrorsMessage.values())
+                        NotificacaoErrorsMessage.values(),
+                        DoacaoErrorsMessage.values(),
+                        UsuarioErrorsMessage.values(),
+                        DisparoErrorsMessage.values())
                 .flatMap(Stream::of);
 
         catalogos.forEach(erro -> {

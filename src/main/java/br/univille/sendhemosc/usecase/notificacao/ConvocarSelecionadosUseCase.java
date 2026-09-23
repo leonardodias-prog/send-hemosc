@@ -29,8 +29,9 @@ import org.springframework.stereotype.Service;
  * Um doador raro que a equipe conhece, um grupo que ja se dispos, um reforco pontual: nesses
  * casos disparar para a base inteira e desproporcional. Aqui quem escolhe e quem opera.</p>
  *
- * <p>Escolher nao dispensa a regra: quem nao esta apto ou nao autorizou contato continua fora,
- * mesmo selecionado na tela. Selecao decide a quem oferecer, nao a quem a regra se aplica.</p>
+ * <p>Escolher nao dispensa a regra: quem nao esta apto, nao autorizou contato ou atingiu os
+ * limites de contato continua fora, mesmo selecionado na tela. Selecao decide a quem oferecer,
+ * nao a quem a regra se aplica.</p>
  */
 @Slf4j
 @Service
@@ -44,6 +45,7 @@ public class ConvocarSelecionadosUseCase {
     private final IAuditoriaPort auditoria;
     private final ClassificarNivelEstoqueUseCase classificarNivel;
     private final CalcularAptidaoUseCase calcularAptidao;
+    private final AvaliarLimiteDeContatoUseCase avaliarLimiteDeContato;
     private final RenderizarConvocacaoUseCase renderizarConvocacao;
 
     /**
@@ -63,13 +65,18 @@ public class ConvocarSelecionadosUseCase {
                 .filter(candidato -> estaApto(candidato, hoje))
                 .toList();
 
-        log.info("[m=execute] Convocacao seletiva: {} escolhidos, {} aptos e com consentimento",
-                selecionados.size(), aptos.size());
+        final List<CandidatoConvocacao> liberados = aptos.stream()
+                .filter(candidato -> dentroDoLimite(candidato, hoje))
+                .toList();
+        final int retidos = aptos.size() - liberados.size();
+
+        log.info("[m=execute] Convocacao seletiva: {} escolhidos, {} aptos e com consentimento, "
+                + "{} retidos pelo limite de contato", selecionados.size(), aptos.size(), retidos);
 
         int enviados = 0;
         int falhas = 0;
 
-        for (final CandidatoConvocacao doador : aptos) {
+        for (final CandidatoConvocacao doador : liberados) {
             final TipoSanguineo tipo = doador.tipoSanguineo();
             final SituacaoEstoque situacao = situacaoDoTipo(tipo);
             final int tentativa = notificacaoRepository.proximaTentativa(doador.id(), tipo);
@@ -88,11 +95,11 @@ public class ConvocarSelecionadosUseCase {
         }
 
         auditoria.registrar("CONVOCACAO_SELETIVA",
-                "%d selecionado(s), %d apto(s), %d enviado(s), %d falha(s)"
-                        .formatted(identificadores.size(), aptos.size(), enviados, falhas));
+                "%d selecionado(s), %d apto(s), %d retido(s) pelo limite de contato, %d enviado(s), %d falha(s)"
+                        .formatted(identificadores.size(), aptos.size(), retidos, enviados, falhas));
 
         // O tipo sanguineo nao se aplica a uma selecao mista; o resumo reporta apenas os totais.
-        return new ResultadoConvocacao(null, null, aptos.size(), enviados, falhas);
+        return new ResultadoConvocacao(null, null, liberados.size(), enviados, falhas, retidos, false);
     }
 
     private boolean estaApto(final CandidatoConvocacao candidato, final LocalDate referencia) {
@@ -103,6 +110,11 @@ public class ConvocarSelecionadosUseCase {
                 candidato.ultimaDoacao(),
                 candidato.doacoesUltimosDozeMeses(),
                 referencia)).apto();
+    }
+
+    private boolean dentroDoLimite(final CandidatoConvocacao candidato, final LocalDate referencia) {
+        return avaliarLimiteDeContato.execute(candidato.convocacoesSemResposta(),
+                candidato.ultimaConvocacao(), referencia).liberado();
     }
 
     private SituacaoEstoque situacaoDoTipo(final TipoSanguineo tipo) {

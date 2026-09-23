@@ -5,6 +5,7 @@ import br.univille.sendhemosc.domain.dto.CandidatoConvocacao;
 import br.univille.sendhemosc.domain.dto.DoadorListado;
 import br.univille.sendhemosc.domain.dto.FiltroDoador;
 import br.univille.sendhemosc.domain.port.outbound.IDoadorRepositoryPort;
+import br.univille.sendhemosc.usecase.notificacao.AvaliarLimiteDeContatoUseCase;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class ListarDoadoresUseCase {
 
     private final IDoadorRepositoryPort doadorRepository;
     private final CalcularAptidaoUseCase calcularAptidao;
+    private final AvaliarLimiteDeContatoUseCase avaliarLimiteDeContato;
 
     /**
      * Executa a listagem.
@@ -62,6 +64,10 @@ public class ListarDoadoresUseCase {
                 candidato.ultimaDoacao(),
                 aptidao.apto(),
                 aptidao.proximaDataApta(),
-                aptidao.motivosInaptidao());
+                aptidao.motivosInaptidao(),
+                candidato.convocacoesSemResposta(),
+                candidato.ultimaConvocacao() == null ? null : candidato.ultimaConvocacao().toLocalDate(),
+                avaliarLimiteDeContato.execute(candidato.convocacoesSemResposta(),
+                        candidato.ultimaConvocacao(), referencia));
     }
 }

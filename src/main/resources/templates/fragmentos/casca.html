@@ -28,6 +28,16 @@
         <span>Doadores</span>
     </a>
 
+    <a class="secao" th:href="@{/disparo-automatico}" sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')"
+       th:classappend="${secao == 'disparo'} ? 'atual'"
+       th:aria-current="${secao == 'disparo'} ? 'page' : null">
+        <span>Disparo automático</span>
+        <!--/* Ligado, ele manda e-mail sem ninguém clicar: precisa ser visível de qualquer tela,
+               e não só de quem abre a configuração. */-->
+        <span class="estado" th:if="${disparoAutomaticoLigado}"
+              title="As rodadas automáticas de convocação estão ligadas">ligado</span>
+    </a>
+
     <a class="secao" th:href="@{/usuarios}" sec:authorize="hasRole('MASTER')"
        th:classappend="${secao == 'contas'} ? 'atual'"
        th:aria-current="${secao == 'contas'} ? 'page' : null">
