@@ -1,5 +1,6 @@
 package br.univille.sendhemosc.adapter.inbound.http.controller;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -11,6 +12,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
+import br.univille.sendhemosc.domain.dto.MovimentacaoEstoque;
+import br.univille.sendhemosc.domain.enums.TipoSanguineo;
+import java.util.List;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -77,6 +81,38 @@ class PainelViewAdapterTest {
                     .andExpect(status().is3xxRedirection())
                     .andExpect(redirectedUrl("/"))
                     .andExpect(flash().attributeExists("aviso"));
+        }
+
+        @Test
+        @DisplayName("edita a capacidade alvo e a alteracao aparece no historico com o autor")
+        void editaCapacidadeEFicaNoHistorico() throws Exception {
+            mockMvc.perform(post("/estoque/AB-").param("quantidadeBolsas", "7").param("capacidadeAlvo", "25")
+                            .with(csrf()))
+                    .andExpect(status().is3xxRedirection())
+                    .andExpect(flash().attribute("aviso", "Estoque de AB- atualizado."));
+
+            final var painel = mockMvc.perform(get("/"))
+                    .andExpect(content().string(Matchers.containsString("Últimas movimentações")))
+                    .andReturn();
+
+            @SuppressWarnings("unchecked")
+            final var movimentacoes = (List<MovimentacaoEstoque>) painel.getModelAndView().getModel().get("movimentacoes");
+
+            assertThat(movimentacoes).anySatisfy(movimentacao -> {
+                assertThat(movimentacao.tipoSanguineo()).isEqualTo(TipoSanguineo.AB_NEGATIVO);
+                assertThat(movimentacao.quantidadeNova()).isEqualTo(7);
+                assertThat(movimentacao.capacidadeNova()).isEqualTo(25);
+                assertThat(movimentacao.responsavel()).isEqualTo("operador@example.org");
+            });
+        }
+
+        @Test
+        @DisplayName("recusa capacidade alvo zero e explica o motivo")
+        void recusaCapacidadeZero() throws Exception {
+            mockMvc.perform(post("/estoque/A-").param("quantidadeBolsas", "10").param("capacidadeAlvo", "0")
+                            .with(csrf()))
+                    .andExpect(status().is3xxRedirection())
+                    .andExpect(flash().attribute("erro", "A capacidade alvo deve ser maior que zero."));
         }
 
         @Test

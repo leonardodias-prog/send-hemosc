@@ -6,8 +6,6 @@ import br.univille.sendhemosc.domain.port.outbound.IAuditoriaPort;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,14 +18,13 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AuditoriaPersistenceAdapter implements IAuditoriaPort {
 
-    private static final String AUTOR_SISTEMA = "sistema";
-
     private final AuditoriaJpaRepository auditoriaRepository;
+    private final AutorDaAcao autorDaAcao;
 
     @Override
     @Transactional
     public void registrar(final String acao, final String detalhe) {
-        final String autor = autorAtual();
+        final String autor = autorDaAcao.atual();
 
         auditoriaRepository.save(AuditoriaEntity.builder()
                 .usuarioEmail(autor)
@@ -37,16 +34,5 @@ public class AuditoriaPersistenceAdapter implements IAuditoriaPort {
                 .build());
 
         log.info("[m=registrar] {} por {}: {}", acao, autor, detalhe);
-    }
-
-    private String autorAtual() {
-        final Authentication autenticacao = SecurityContextHolder.getContext().getAuthentication();
-
-        if (autenticacao == null || !autenticacao.isAuthenticated()
-                || "anonymousUser".equals(autenticacao.getName())) {
-            return AUTOR_SISTEMA;
-        }
-
-        return autenticacao.getName();
     }
 }

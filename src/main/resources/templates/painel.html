@@ -103,8 +103,13 @@
 
         <div class="acoes">
             <form th:action="@{'/estoque/' + ${s.tipoSanguineo.sigla}}" method="post">
-                <input type="number" name="quantidadeBolsas" min="0"
-                       th:value="${s.quantidadeBolsas}" aria-label="Quantidade de bolsas"/>
+                <input type="number" name="quantidadeBolsas" min="0" required
+                       th:value="${s.quantidadeBolsas}" aria-label="Quantidade de bolsas"
+                       title="Quantidade de bolsas"/>
+                <span class="dica" style="margin:0;">de</span>
+                <input type="number" name="capacidadeAlvo" min="1" required
+                       th:value="${s.capacidadeAlvo}" aria-label="Capacidade alvo"
+                       title="Capacidade alvo"/>
                 <button type="submit" class="secundario">Salvar</button>
             </form>
 
@@ -113,6 +118,47 @@
                 <button type="submit">Convocar doadores</button>
             </form>
         </div>
+    </div>
+
+    <div class="cartao" id="movimentacoes">
+        <h2>Últimas movimentações do estoque</h2>
+        <p class="dica">
+            Cada alteração de quantidade ou de capacidade alvo, com o valor anterior e quem alterou.
+        </p>
+
+        <p class="dica" th:if="${#lists.isEmpty(movimentacoes)}" style="margin-top:12px;">
+            Nenhuma movimentação registrada ainda.
+        </p>
+
+        <table th:unless="${#lists.isEmpty(movimentacoes)}" style="margin-top:12px;">
+            <thead>
+            <tr>
+                <th>Quando</th>
+                <th>Tipo</th>
+                <th>Bolsas</th>
+                <th>Capacidade alvo</th>
+                <th>Quem</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="m : ${movimentacoes}">
+                <td th:text="${#temporals.format(m.ocorridoEm, 'dd/MM/yyyy HH:mm')}">24/09/2026 10:15</td>
+                <td><strong th:text="${m.tipoSanguineo.sigla}">O-</strong></td>
+                <td>
+                    <span th:text="${m.quantidadeAnterior} + ' → ' + ${m.quantidadeNova}">11 → 15</span>
+                    <span class="dica" th:if="${m.variacaoBolsas() != 0}"
+                          th:text="'(' + (${m.variacaoBolsas() > 0} ? '+' : '') + ${m.variacaoBolsas()} + ')'">(+4)</span>
+                </td>
+                <td>
+                    <span th:if="${m.capacidadeAlterada()}"
+                          th:text="${m.capacidadeAnterior} + ' → ' + ${m.capacidadeNova}">60 → 80</span>
+                    <span th:unless="${m.capacidadeAlterada()}" class="dica" style="margin:0;"
+                          th:text="${m.capacidadeNova}">60</span>
+                </td>
+                <td th:text="${m.responsavel}">operador@example.org</td>
+            </tr>
+            </tbody>
+        </table>
     </div>
 
     <!--/* A ancora e a confirmacao ficam aqui, e nao no topo: quem cadastra varios

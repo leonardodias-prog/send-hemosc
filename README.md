@@ -28,6 +28,7 @@ depois que o estoque já caiu.
 | Funcionalidade | Onde está no código |
 |---|---|
 | Classificação do estoque em **normal / atenção / crítico** | [`ClassificarNivelEstoqueUseCase`](src/main/java/br/univille/sendhemosc/usecase/estoque/ClassificarNivelEstoqueUseCase.java) |
+| Edição da quantidade e da capacidade alvo, com histórico de movimentação | [`AtualizarEstoqueUseCase`](src/main/java/br/univille/sendhemosc/usecase/estoque/AtualizarEstoqueUseCase.java) |
 | Cálculo da data estimada da próxima doação | [`CalcularAptidaoUseCase`](src/main/java/br/univille/sendhemosc/usecase/doador/CalcularAptidaoUseCase.java) |
 | Convocação por tipo sanguíneo + aptidão | [`ConvocarDoadoresUseCase`](src/main/java/br/univille/sendhemosc/usecase/notificacao/ConvocarDoadoresUseCase.java) |
 | Convocação de uma seleção específica | [`ConvocarSelecionadosUseCase`](src/main/java/br/univille/sendhemosc/usecase/notificacao/ConvocarSelecionadosUseCase.java) |
@@ -43,7 +44,7 @@ transfusional**. Quando A+ está em falta, convoca A+, A−, O+ e O−.
 
 | Rota | Quem acessa | Para quê |
 |---|---|---|
-| `/` | Todos autenticados | Painel de estoque, cadastro de doador, interruptor de envio |
+| `/` | Todos autenticados | Painel de estoque (quantidade, capacidade alvo e últimas movimentações), cadastro de doador, interruptor de envio |
 | `/doadores` | Todos autenticados | Busca com filtros, aptidão e convocação seletiva |
 | `/disparo-automatico` | Responsável e administrador | Liga, desliga e configura a rodada automática, com prévia de quem ela convocaria |
 | `/usuarios` | Administrador | Criação, alteração, senha e exclusão de contas |

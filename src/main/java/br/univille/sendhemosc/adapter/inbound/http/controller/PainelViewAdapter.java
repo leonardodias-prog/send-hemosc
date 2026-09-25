@@ -12,6 +12,7 @@ import br.univille.sendhemosc.domain.exception.NegocioException;
 import br.univille.sendhemosc.domain.port.outbound.IDoadorRepositoryPort;
 import br.univille.sendhemosc.domain.port.outbound.IEstoqueRepositoryPort;
 import br.univille.sendhemosc.usecase.doador.CriarDoadorUseCase;
+import br.univille.sendhemosc.usecase.estoque.AtualizarEstoqueUseCase;
 import br.univille.sendhemosc.usecase.estoque.ListarSituacaoEstoqueUseCase;
 import br.univille.sendhemosc.usecase.notificacao.ConvocarDoadoresUseCase;
 import jakarta.validation.Valid;
@@ -42,10 +43,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class PainelViewAdapter {
 
     private static final Locale PT_BR = Locale.of("pt", "BR");
+    private static final int MOVIMENTACOES_NO_PAINEL = 15;
 
     private final ListarSituacaoEstoqueUseCase listarSituacaoEstoque;
     private final ConvocarDoadoresUseCase convocarDoadores;
     private final CriarDoadorUseCase criarDoador;
+    private final AtualizarEstoqueUseCase atualizarEstoque;
     private final IEstoqueRepositoryPort estoqueRepository;
     private final IDoadorRepositoryPort doadorRepository;
     private final MessageSource messageSource;
@@ -154,12 +157,20 @@ public class PainelViewAdapter {
     @PostMapping("/estoque/{sigla}")
     public String atualizarEstoque(@PathVariable final String sigla,
                                    @RequestParam final int quantidadeBolsas,
+                                   @RequestParam(required = false) final Integer capacidadeAlvo,
                                    final RedirectAttributes atributos) {
         final TipoSanguineo tipo = TipoSanguineo.doSigla(sigla);
-        estoqueRepository.atualizarQuantidade(tipo, Math.max(0, quantidadeBolsas));
 
-        atributos.addFlashAttribute("aviso",
-                "Estoque de %s atualizado para %d bolsas.".formatted(tipo.getSigla(), quantidadeBolsas));
+        try {
+            final boolean alterou = atualizarEstoque.execute(tipo, quantidadeBolsas, capacidadeAlvo).isPresent();
+
+            atributos.addFlashAttribute("aviso", alterou
+                    ? "Estoque de %s atualizado.".formatted(tipo.getSigla())
+                    : "Estoque de %s sem alteração: os valores já eram esses.".formatted(tipo.getSigla()));
+        } catch (final NegocioException excecao) {
+            atributos.addFlashAttribute("erro", messageSource.getMessage(excecao.getErro().getChaveMensagem(),
+                    null, excecao.getErro().getChaveMensagem(), PT_BR));
+        }
 
         return "redirect:/";
     }
@@ -172,6 +183,7 @@ public class PainelViewAdapter {
                 .filter(situacao -> situacao.nivel().isExigeConvocacao())
                 .count());
         model.addAttribute("totalDoadores", doadorRepository.contar());
+        model.addAttribute("movimentacoes", estoqueRepository.listarMovimentacoes(MOVIMENTACOES_NO_PAINEL));
         model.addAttribute("tiposSanguineos", TipoSanguineo.values());
         model.addAttribute("sexos", Sexo.values());
         model.addAttribute("envioReal", roteadorDeEnvio.isEntregando());

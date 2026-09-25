@@ -1,5 +1,6 @@
 package br.univille.sendhemosc.domain.port.outbound;
 
+import br.univille.sendhemosc.domain.dto.MovimentacaoEstoque;
 import br.univille.sendhemosc.domain.enums.TipoSanguineo;
 import java.util.List;
 import java.util.Optional;
@@ -25,12 +26,23 @@ public interface IEstoqueRepositoryPort {
     Optional<RegistroEstoque> buscarPorTipo(TipoSanguineo tipoSanguineo);
 
     /**
-     * Atualiza a quantidade de bolsas em estoque.
+     * Atualiza a quantidade de bolsas e a capacidade alvo, registrando a movimentacao com o
+     * antes e o depois. Quando nada muda, nada e gravado.
      *
      * @param tipoSanguineo tipo a atualizar
      * @param quantidadeBolsas nova quantidade
+     * @param capacidadeAlvo nova capacidade alvo
+     * @return movimentacao registrada, ou vazio quando os valores ja eram esses
      */
-    void atualizarQuantidade(TipoSanguineo tipoSanguineo, int quantidadeBolsas);
+    Optional<MovimentacaoEstoque> atualizar(TipoSanguineo tipoSanguineo, int quantidadeBolsas, int capacidadeAlvo);
+
+    /**
+     * Lista as movimentacoes mais recentes, da mais nova para a mais antiga.
+     *
+     * @param limite quantidade maxima de registros
+     * @return movimentacoes de todos os tipos sanguineos
+     */
+    List<MovimentacaoEstoque> listarMovimentacoes(int limite);
 
     /**
      * Registro bruto de estoque, sem a classificacao de nivel aplicada.
