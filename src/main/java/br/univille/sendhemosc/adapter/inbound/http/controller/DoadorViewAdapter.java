@@ -8,6 +8,7 @@ import br.univille.sendhemosc.domain.dto.ResultadoConvocacao;
 import br.univille.sendhemosc.domain.dto.ResultadoRegistroDoacao;
 import br.univille.sendhemosc.domain.enums.TipoSanguineo;
 import br.univille.sendhemosc.domain.exception.NegocioException;
+import br.univille.sendhemosc.domain.port.outbound.IDoadorRepositoryPort;
 import br.univille.sendhemosc.usecase.doador.ListarDoadoresUseCase;
 import br.univille.sendhemosc.usecase.doador.RegistrarDoacaoUseCase;
 import br.univille.sendhemosc.usecase.notificacao.ConvocarSelecionadosUseCase;
@@ -50,6 +51,7 @@ public class DoadorViewAdapter {
     private final ConvocarSelecionadosUseCase convocarSelecionados;
     private final RegistrarDoacaoUseCase registrarDoacao;
     private final LiberarContatoUseCase liberarContato;
+    private final IDoadorRepositoryPort doadorRepository;
     private final SendHemoscProperties properties;
     private final MessageSource messageSource;
 
@@ -67,6 +69,7 @@ public class DoadorViewAdapter {
         model.addAttribute("tiposSanguineos", TipoSanguineo.values());
         model.addAttribute("totalConvocaveis", doadores.stream().filter(DoadorListado::convocavel).count());
         model.addAttribute("prazoTetoDias", properties.notificacao().prazoTetoDias());
+        model.addAttribute("inativos", doadorRepository.listarInativos());
 
         return "doadores";
     }

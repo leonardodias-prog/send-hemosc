@@ -59,13 +59,18 @@ public class SegurancaConfig {
         http
                 .authorizeHttpRequests(regras -> regras
                     // Publico: entrar, cadastrar-se, termo de uso, descadastro do doador e saude
-                    .requestMatchers("/login", "/cadastro", "/termo", "/descadastro/**",
+                    // /meus-dados/** e do doador, que nao tem conta: ele se identifica pelo token
+                    // do link dos e-mails, o mesmo do descadastro.
+                    .requestMatchers("/login", "/cadastro", "/termo", "/descadastro/**", "/meus-dados/**",
                             "/aprovacao/**", "/actuator/health", "/actuator/info", "/css/**").permitAll()
                     // Gerenciamento de contas
                     .requestMatchers("/usuarios/**").hasRole(PERFIL_MASTER)
                     // Liberar o limite de contato de alguem e decisao do administrador. Antes de
                     // /doadores/**, pela mesma razao das acoes de envio logo abaixo.
                     .requestMatchers("/doadores/*/liberar-contato").hasRole(PERFIL_MASTER)
+                    // Excluir apaga tambem doacoes e convocacoes e nao tem volta: fica com quem
+                    // responde pela captacao. O operador edita e desativa, que se desfaz.
+                    .requestMatchers("/doadores/*/excluir").hasAnyRole(PERFIL_RESPONSAVEL, PERFIL_MASTER)
                     // Acoes que produzem e-mail de verdade. Precisam vir antes das regras
                     // gerais abaixo: a primeira correspondencia decide, e /doadores/** liberaria
                     // a convocacao seletiva para quem so deveria alimentar dados.

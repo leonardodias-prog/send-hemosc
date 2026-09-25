@@ -41,6 +41,11 @@
             Cada link de cancelamento vale uma vez só. Se o seu já havia sido usado, a
             autorização de contato já está desligada e nada mais precisa ser feito.
         </p>
+        <p>
+            Parar de receber e-mails não apaga o cadastro. Para baixar uma cópia dos seus dados
+            ou pedir que sejam excluídos, acesse
+            <a th:href="@{'/meus-dados/' + ${token}}">seus dados</a>.
+        </p>
         <p style="margin-bottom:0;">
             Os critérios de tratamento estão no
             <a th:href="@{/termo}">termo de uso e privacidade</a>.

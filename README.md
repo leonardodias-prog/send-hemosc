@@ -36,6 +36,8 @@ depois que o estoque já caiu.
 | Disparo automático configurável na tela | [`ExecutarDisparoAutomaticoUseCase`](src/main/java/br/univille/sendhemosc/usecase/notificacao/ExecutarDisparoAutomaticoUseCase.java) |
 | Interruptor de envio, acionável na tela | [`EnvioDeEmailRouter`](src/main/java/br/univille/sendhemosc/adapter/outbound/email/EnvioDeEmailRouter.java) |
 | Descadastro exigido pela LGPD | [`DescadastroViewAdapter`](src/main/java/br/univille/sendhemosc/adapter/inbound/http/controller/DescadastroViewAdapter.java) |
+| Edição, desativação e exclusão de doador | [`CadastroDoadorViewAdapter`](src/main/java/br/univille/sendhemosc/adapter/inbound/http/controller/CadastroDoadorViewAdapter.java) |
+| Direitos do titular (LGPD): cópia dos dados e exclusão, sem login | [`TitularViewAdapter`](src/main/java/br/univille/sendhemosc/adapter/inbound/http/controller/TitularViewAdapter.java) |
 
 A convocação por tipo não busca apenas o tipo exato em falta: usa a **tabela de compatibilidade
 transfusional**. Quando A+ está em falta, convoca A+, A−, O+ e O−.
@@ -46,9 +48,11 @@ transfusional**. Quando A+ está em falta, convoca A+, A−, O+ e O−.
 |---|---|---|
 | `/` | Todos autenticados | Painel de estoque (quantidade, capacidade alvo e últimas movimentações), cadastro de doador, interruptor de envio |
 | `/doadores` | Todos autenticados | Busca com filtros, aptidão e convocação seletiva |
+| `/doadores/{id}/editar` | Todos autenticados (excluir: responsável e administrador) | Edição, desativação, exportação dos dados e exclusão do doador |
 | `/disparo-automatico` | Responsável e administrador | Liga, desliga e configura a rodada automática, com prévia de quem ela convocaria |
 | `/usuarios` | Administrador | Criação, alteração, senha e exclusão de contas |
 | `/login`, `/cadastro`, `/termo` | Público | Entrada, autocadastro e termo de uso |
+| `/meus-dados/{token}` | Público, pelo link dos e-mails | O doador baixa uma cópia dos próprios dados ou pede a exclusão |
 
 ## Perfis de acesso
 

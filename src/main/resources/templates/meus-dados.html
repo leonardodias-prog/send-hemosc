@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Seus dados — Send Hemosc</title>
+    <link rel="stylesheet" th:href="@{/css/sendhemosc.css}"/>
+</head>
+<body>
+<!--/*
+  Pagina do doador, aberta pelo link dos e-mails. Como a do descadastro, fica sem casca de
+  navegacao: quem chega aqui nao e da equipe. Reune os dois direitos que o doador nao tinha
+  como exercer sozinho: obter uma copia dos dados e pedir que sejam apagados.
+*/-->
+<div class="container estreito">
+
+    <header>
+        <h1 th:if="${excluido}">Dados excluídos</h1>
+        <h1 th:if="${excluido == null and doador != null}">Seus dados</h1>
+        <h1 th:if="${excluido == null and doador == null}">Link inválido</h1>
+        <p class="subtitulo">Send Hemosc &middot; Agência Transfusional &middot; Joinville/SC</p>
+    </header>
+
+    <div class="erro-caixa" th:if="${erro}" th:text="${erro}">mensagem</div>
+
+    <th:block th:if="${excluido}">
+        <div class="aviso">
+            Pronto. Seu cadastro foi apagado, junto com o histórico de doações, convocações e
+            autorizações de contato. Você não receberá mais nenhuma mensagem.
+        </div>
+        <div class="cartao">
+            <p style="margin:0;">
+                Se um dia quiser voltar a ser avisado quando seu tipo sanguíneo estiver em falta,
+                basta pedir um novo cadastro à equipe da unidade.
+            </p>
+        </div>
+    </th:block>
+
+    <div class="faixa" th:if="${excluido == null and doador == null}">
+        Não encontramos cadastro para este link. Ele pode ter sido usado para excluir os dados,
+        ou ter sido copiado pela metade. Use o link do e-mail mais recente que você recebeu.
+    </div>
+
+    <th:block th:if="${excluido == null and doador != null}">
+        <div class="cartao">
+            <h2>O que guardamos</h2>
+            <p>
+                Cadastro de <strong th:text="${doador.nome}">Nome</strong>, tipo sanguíneo
+                <strong th:text="${doador.tipoSanguineo.sigla}">O-</strong>, com o histórico das
+                suas doações, das convocações que você recebeu e das vezes em que autorizou ou
+                cancelou o contato.
+            </p>
+            <p class="dica" style="margin:0;">
+                Os critérios de tratamento estão no
+                <a th:href="@{/termo}">termo de uso e privacidade</a>.
+            </p>
+        </div>
+
+        <div class="cartao">
+            <h2>Baixar uma cópia</h2>
+            <p>
+                Um arquivo com tudo o que o sistema guarda sobre você, em formato aberto (JSON),
+                que pode ser lido ou levado para outro serviço.
+            </p>
+            <a th:href="@{'/meus-dados/' + ${token} + '/exportar'}">
+                <button type="button" class="secundario">Baixar meus dados</button>
+            </a>
+        </div>
+
+        <div class="cartao">
+            <h2>Excluir meus dados</h2>
+            <p>
+                Apaga o seu cadastro e todo o histórico. É diferente de apenas parar de receber
+                e-mails, que mantém o cadastro. <strong>Não tem volta.</strong>
+            </p>
+            <form th:action="@{'/meus-dados/' + ${token} + '/excluir'}" method="post" style="display:block;">
+                <label class="consentimento">
+                    <input type="checkbox" name="confirmacao" value="true" required/>
+                    <span>Entendo que meus dados serão apagados definitivamente.</span>
+                </label>
+                <button type="submit">Excluir meus dados</button>
+            </form>
+        </div>
+    </th:block>
+
+    <footer>
+        <p>
+            Protótipo acadêmico &middot; Projeto de Extensão da UNIVILLE &middot;
+            Vivências de Extensão III
+        </p>
+    </footer>
+
+</div>
+</body>
+</html>

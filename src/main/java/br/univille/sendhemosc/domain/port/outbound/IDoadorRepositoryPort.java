@@ -1,11 +1,13 @@
 package br.univille.sendhemosc.domain.port.outbound;
 
 import br.univille.sendhemosc.domain.dto.CandidatoConvocacao;
+import br.univille.sendhemosc.domain.dto.DoadorCadastrado;
 import br.univille.sendhemosc.domain.dto.FiltroDoador;
 import br.univille.sendhemosc.domain.dto.NovoDoador;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -84,4 +86,62 @@ public interface IDoadorRepositoryPort {
      * @return true se o doador existia e estava ativo
      */
     boolean liberarContato(Long id, LocalDateTime quando);
+
+    /**
+     * Busca o cadastro completo, ativo ou nao.
+     *
+     * @param id doador
+     * @return cadastro, se existir
+     */
+    Optional<DoadorCadastrado> buscarPorId(Long id);
+
+    /**
+     * Busca o cadastro pelo token do link enviado nos e-mails. E como o titular se identifica
+     * sem ter conta no sistema.
+     *
+     * @param token token de descadastro
+     * @return cadastro, se o token corresponder a algum doador
+     */
+    Optional<DoadorCadastrado> buscarPorToken(String token);
+
+    /**
+     * Lista os doadores desativados, que a busca normal nao mostra.
+     *
+     * @return cadastros desativados, por nome
+     */
+    List<DoadorCadastrado> listarInativos();
+
+    /**
+     * Indica se o e-mail ja pertence a outro doador, para a edicao nao colidir com um cadastro existente.
+     *
+     * @param email endereco a verificar
+     * @param id doador em edicao, que pode manter o proprio e-mail
+     * @return true se outro doador ja usa o e-mail
+     */
+    boolean existeComEmailEmOutro(String email, Long id);
+
+    /**
+     * Grava os dados editados.
+     *
+     * @param id doador
+     * @param dados novos dados cadastrais
+     */
+    void atualizar(Long id, NovoDoador dados);
+
+    /**
+     * Ativa ou desativa o cadastro.
+     *
+     * @param id doador
+     * @param ativo nova situacao
+     * @return true se o doador existia
+     */
+    boolean definirAtivo(Long id, boolean ativo);
+
+    /**
+     * Remove o doador e, em cascata, as doacoes, convocacoes e consentimentos dele.
+     *
+     * @param id doador
+     * @return true se o doador existia
+     */
+    boolean excluir(Long id);
 }

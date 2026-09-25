@@ -26,6 +26,7 @@ public class DescadastroViewAdapter {
     @GetMapping("/descadastro/{token}")
     public String descadastrar(@PathVariable final String token, final Model model) {
         model.addAttribute("efetivado", descadastrarDoador.execute(token));
+        model.addAttribute("token", token);
 
         return "descadastro";
     }

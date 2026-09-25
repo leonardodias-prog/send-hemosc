@@ -40,6 +40,8 @@ public class RenderizarConvocacaoUseCase {
         contexto.setVariable("percentual", situacao.percentualOcupacao());
         contexto.setVariable("linkDescadastro",
                 properties.notificacao().urlBase() + "/descadastro/" + doador.tokenDescadastro());
+        contexto.setVariable("linkMeusDados",
+                properties.notificacao().urlBase() + "/meus-dados/" + doador.tokenDescadastro());
 
         final String corpo = templateEngine.process(TEMPLATE_CONVOCACAO, contexto);
         final String assunto = "Estoque de sangue %s em nivel %s - sua doacao faz diferenca"

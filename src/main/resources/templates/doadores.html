@@ -105,6 +105,7 @@
                     <th>Situação</th>
                     <th>Última doação</th>
                     <th>Doação</th>
+                    <th>Cadastro</th>
                     <th sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')"></th>
                 </tr>
                 </thead>
@@ -147,6 +148,9 @@
                             Doou hoje
                         </button>
                     </td>
+                    <td>
+                        <a th:href="@{'/doadores/' + ${d.id} + '/editar'}" th:title="'Editar, desativar ou excluir ' + ${d.nome}">Editar</a>
+                    </td>
                     <td sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')">
                         <button type="submit" class="secundario" th:if="${d.convocavel()}"
                                 th:formaction="@{'/doadores/' + ${d.id} + '/convocar'}">
@@ -163,7 +167,7 @@
                     </td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(doadores)}">
-                    <td colspan="8" style="color:var(--suave);">
+                    <td colspan="9" style="color:var(--suave);">
                         Nenhum doador encontrado com esses filtros.
                     </td>
                 </tr>
@@ -172,6 +176,37 @@
             </div>
         </div>
     </form>
+
+    <!--/* Desativados nao entram na busca nem nas convocacoes, mas precisam continuar
+           alcancaveis: sem esta lista nao haveria como reativar ninguem. */-->
+    <div class="cartao" id="desativados" th:unless="${#lists.isEmpty(inativos)}">
+        <h2>Doadores desativados</h2>
+        <p class="dica" style="margin-bottom:12px;">
+            Não aparecem na busca acima nem recebem convocações. O histórico continua guardado.
+        </p>
+        <div class="tabela-rolavel">
+            <table>
+                <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>E-mail</th>
+                    <th>Tipo</th>
+                    <th>Desde</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="i : ${inativos}">
+                    <td th:text="${i.nome}">Nome</td>
+                    <td th:text="${i.email}">email</td>
+                    <td><strong th:text="${i.tipoSanguineo.sigla}">O-</strong></td>
+                    <td th:text="${#temporals.format(i.atualizadoEm, 'dd/MM/yyyy')}">data</td>
+                    <td><a th:href="@{'/doadores/' + ${i.id} + '/editar'}">Abrir</a></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
     <footer>
         <p>

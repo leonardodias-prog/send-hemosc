@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -157,6 +158,12 @@ public interface DoadorJpaRepository extends JpaRepository<DoadorEntity, Long> {
     int liberarContato(@Param("id") Long id, @Param("quando") LocalDateTime quando);
 
     boolean existsByEmail(String email);
+
+    boolean existsByEmailAndIdNot(String email, Long id);
+
+    Optional<DoadorEntity> findByTokenDescadastro(String tokenDescadastro);
+
+    List<DoadorEntity> findByAtivoFalseOrderByNome();
 
     /**
      * Projecao usada pela consulta de candidatos.

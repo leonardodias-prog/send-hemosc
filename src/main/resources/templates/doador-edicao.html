@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title th:text="${doador.nome} + ' — Send Hemosc'">Doador — Send Hemosc</title>
+    <link rel="stylesheet" th:href="@{/css/sendhemosc.css}"/>
+</head>
+<body>
+<div class="app">
+
+<nav th:replace="~{fragmentos/casca :: lateral('doadores')}"></nav>
+
+<main class="conteudo">
+<div class="container">
+
+    <header>
+        <h1 th:text="${doador.nome}">Nome do doador</h1>
+        <p class="subtitulo">
+            <a th:href="@{/doadores}">&larr; Doadores</a> &middot;
+            cadastrado em <span th:text="${#temporals.format(doador.criadoEm, 'dd/MM/yyyy')}">data</span>
+            &middot;
+            <span class="etiqueta ativo" th:if="${doador.ativo}">Ativo</span>
+            <span class="etiqueta recusado" th:unless="${doador.ativo}">Desativado</span>
+        </p>
+    </header>
+
+    <div class="aviso" th:if="${aviso}" th:text="${aviso}">mensagem</div>
+    <div class="erro-caixa" th:if="${erro}" th:text="${erro}">mensagem</div>
+
+    <div class="cartao">
+        <h2>Dados cadastrais</h2>
+
+        <form th:action="@{'/doadores/' + ${doador.id} + '/editar'}" th:object="${dadosDoador}" method="post"
+              style="display:block;">
+            <div class="campos">
+                <div class="campo">
+                    <label for="nome">Nome completo</label>
+                    <input type="text" id="nome" th:field="*{nome}"/>
+                    <span class="erro" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></span>
+                </div>
+
+                <div class="campo">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" th:field="*{email}"/>
+                    <span class="erro" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+                </div>
+
+                <div class="campo">
+                    <label for="tipoSanguineo">Tipo sanguíneo</label>
+                    <select id="tipoSanguineo" th:field="*{tipoSanguineo}">
+                        <option value="">Selecione</option>
+                        <option th:each="t : ${tiposSanguineos}" th:value="${t}" th:text="${t.sigla}">A+</option>
+                    </select>
+                    <span class="erro" th:if="${#fields.hasErrors('tipoSanguineo')}" th:errors="*{tipoSanguineo}"></span>
+                </div>
+
+                <div class="campo">
+                    <label for="sexo">Sexo</label>
+                    <select id="sexo" th:field="*{sexo}">
+                        <option value="">Selecione</option>
+                        <option th:each="sx : ${sexos}" th:value="${sx}"
+                                th:text="${sx == T(br.univille.sendhemosc.domain.enums.Sexo).MASCULINO
+                                          ? 'Masculino' : 'Feminino'}">Masculino</option>
+                    </select>
+                    <span class="erro" th:if="${#fields.hasErrors('sexo')}" th:errors="*{sexo}"></span>
+                </div>
+
+                <div class="campo">
+                    <label for="dataNascimento">Data de nascimento</label>
+                    <input type="date" id="dataNascimento" th:field="*{dataNascimento}"/>
+                    <span class="erro" th:if="${#fields.hasErrors('dataNascimento')}"
+                          th:errors="*{dataNascimento}"></span>
+                </div>
+
+                <div class="campo">
+                    <label for="pesoKg">Peso (kg) &mdash; opcional</label>
+                    <input type="number" id="pesoKg" step="0.1" min="0" th:field="*{pesoKg}"/>
+                </div>
+
+                <div class="campo">
+                    <label for="telefone">Telefone &mdash; opcional</label>
+                    <input type="text" id="telefone" th:field="*{telefone}"/>
+                </div>
+            </div>
+
+            <label class="consentimento">
+                <input type="checkbox" th:field="*{aceitaContato}"/>
+                <span>
+                    Autoriza o recebimento de convocações por e-mail. Mudar esta opção fica
+                    registrado no histórico de consentimento, como no cadastro.
+                </span>
+            </label>
+
+            <button type="submit">Salvar alterações</button>
+        </form>
+    </div>
+
+    <div class="cartao">
+        <h2>Situação do cadastro</h2>
+        <th:block th:if="${doador.ativo}">
+            <p class="dica">
+                Desativar tira o doador da busca e das convocações sem apagar nada. Serve para quem
+                deixou de doar ou mudou de cidade, e pode ser desfeito.
+            </p>
+            <form th:action="@{'/doadores/' + ${doador.id} + '/desativar'}" method="post" style="margin-top:12px;">
+                <button type="submit" class="secundario">Desativar doador</button>
+            </form>
+        </th:block>
+        <th:block th:unless="${doador.ativo}">
+            <p class="dica">
+                Este doador está desativado: não aparece na busca nem recebe convocações.
+            </p>
+            <form th:action="@{'/doadores/' + ${doador.id} + '/reativar'}" method="post" style="margin-top:12px;">
+                <button type="submit">Reativar doador</button>
+            </form>
+        </th:block>
+    </div>
+
+    <div class="cartao">
+        <h2>Dados do titular (LGPD)</h2>
+        <p class="dica">
+            Cópia de tudo o que o sistema guarda sobre esta pessoa — cadastro, consentimentos,
+            doações e convocações —, para atender a um pedido de acesso ou portabilidade feito à
+            equipe. O próprio doador também consegue baixar pelo link dos e-mails. Fica registrado
+            em auditoria.
+        </p>
+        <p style="margin:12px 0 0;">
+            <a th:href="@{'/doadores/' + ${doador.id} + '/exportar'}">
+                <button type="button" class="secundario">Baixar dados (JSON)</button>
+            </a>
+        </p>
+    </div>
+
+    <div class="cartao" sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')">
+        <h2>Excluir doador</h2>
+        <p class="dica">
+            Apaga o cadastro e, junto, as doações, convocações e consentimentos. <strong>Não tem
+            volta.</strong> Para só tirar a pessoa das convocações, prefira desativar.
+        </p>
+        <form th:action="@{'/doadores/' + ${doador.id} + '/excluir'}" method="post"
+              style="display:block;margin-top:12px;">
+            <label class="consentimento">
+                <input type="checkbox" name="confirmacao" value="true" required/>
+                <span>Confirmo a exclusão definitiva de <strong th:text="${doador.nome}">nome</strong>.</span>
+            </label>
+            <button type="submit">Excluir definitivamente</button>
+        </form>
+    </div>
+
+</div>
+</main>
+
+</div>
+</body>
+</html>

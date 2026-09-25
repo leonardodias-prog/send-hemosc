@@ -5,14 +5,18 @@ import br.univille.sendhemosc.adapter.outbound.persistence.repository.DoadorJpaR
 import br.univille.sendhemosc.adapter.outbound.persistence.repository.DoadorJpaRepository.CandidatoProjection;
 import br.univille.sendhemosc.config.SendHemoscProperties;
 import br.univille.sendhemosc.domain.dto.CandidatoConvocacao;
+import br.univille.sendhemosc.domain.dto.DoadorCadastrado;
 import br.univille.sendhemosc.domain.dto.FiltroDoador;
 import br.univille.sendhemosc.domain.dto.NovoDoador;
 import br.univille.sendhemosc.domain.enums.Sexo;
 import br.univille.sendhemosc.domain.enums.TipoSanguineo;
+import br.univille.sendhemosc.domain.exception.DoadorErrorsMessage;
+import br.univille.sendhemosc.domain.exception.NegocioException;
 import br.univille.sendhemosc.domain.port.outbound.IDoadorRepositoryPort;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -136,5 +140,93 @@ public class DoadorPersistenceAdapter implements IDoadorRepositoryPort {
     @Transactional
     public boolean liberarContato(final Long id, final LocalDateTime quando) {
         return doadorRepository.liberarContato(id, quando) > 0;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<DoadorCadastrado> buscarPorId(final Long id) {
+        return doadorRepository.findById(id).map(this::paraCadastrado);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<DoadorCadastrado> buscarPorToken(final String token) {
+        return doadorRepository.findByTokenDescadastro(token).map(this::paraCadastrado);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<DoadorCadastrado> listarInativos() {
+        return doadorRepository.findByAtivoFalseOrderByNome().stream()
+                .map(this::paraCadastrado)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existeComEmailEmOutro(final String email, final Long id) {
+        return doadorRepository.existsByEmailAndIdNot(email, id);
+    }
+
+    @Override
+    @Transactional
+    public void atualizar(final Long id, final NovoDoador dados) {
+        final DoadorEntity entidade = doadorRepository.findById(id)
+                .orElseThrow(() -> new NegocioException(DoadorErrorsMessage.NAO_ENCONTRADO));
+
+        entidade.setNome(dados.nome());
+        entidade.setEmail(dados.email());
+        entidade.setTelefone(dados.telefone());
+        entidade.setTipoSanguineo(dados.tipoSanguineo().getSigla());
+        entidade.setSexo(dados.sexo());
+        entidade.setDataNascimento(dados.dataNascimento());
+        entidade.setPesoKg(dados.pesoKg());
+        entidade.setAceitaContato(dados.aceitaContato());
+        entidade.setAtualizadoEm(LocalDateTime.now());
+        doadorRepository.save(entidade);
+    }
+
+    @Override
+    @Transactional
+    public boolean definirAtivo(final Long id, final boolean ativo) {
+        return doadorRepository.findById(id)
+                .map(entidade -> {
+                    entidade.setAtivo(ativo);
+                    entidade.setAtualizadoEm(LocalDateTime.now());
+                    doadorRepository.save(entidade);
+                    return true;
+                })
+                .orElse(false);
+    }
+
+    /**
+     * Doacoes, convocacoes e consentimentos saem junto pela chave estrangeira com ON DELETE
+     * CASCADE, definida no schema: nao ficam registros orfaos com o id de quem pediu para sair.
+     */
+    @Override
+    @Transactional
+    public boolean excluir(final Long id) {
+        if (!doadorRepository.existsById(id)) {
+            return false;
+        }
+
+        doadorRepository.deleteById(id);
+        return true;
+    }
+
+    private DoadorCadastrado paraCadastrado(final DoadorEntity entidade) {
+        return new DoadorCadastrado(
+                entidade.getId(),
+                entidade.getNome(),
+                entidade.getEmail(),
+                entidade.getTelefone(),
+                TipoSanguineo.doSigla(entidade.getTipoSanguineo()),
+                entidade.getSexo(),
+                entidade.getDataNascimento(),
+                entidade.getPesoKg(),
+                entidade.isAceitaContato(),
+                entidade.isAtivo(),
+                entidade.getCriadoEm(),
+                entidade.getAtualizadoEm());
     }
 }
