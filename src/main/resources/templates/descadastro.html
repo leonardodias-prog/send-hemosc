@@ -10,40 +10,55 @@
 <!--/*
   Tela que o doador vê ao clicar no link de cancelamento do e-mail. Sem casca de
   navegação: quem chega aqui não é da equipe e não tem sistema para percorrer.
-  O que ela precisa ter é o que fazer em seguida, que antes não havia.
+
+  Abrir o link não cancela nada; o botão cancela, com um clique. Filtros de e-mail abrem
+  links sozinhos para inspecionar, e isso descadastrava doadores sem eles saberem.
 */-->
-<div class="container estreito">
+<div class="container estreito"
+     th:with="cancelouAgora=${efetivado != null and efetivado}, estado=${situacao.name()}">
 
     <header>
-        <h1 th:if="${efetivado}">Convocações canceladas</h1>
-        <h1 th:unless="${efetivado}">Nada a fazer aqui</h1>
+        <h1 th:if="${cancelouAgora}">Convocações canceladas</h1>
+        <h1 th:if="${!cancelouAgora and estado == 'RECEBE_CONVOCACOES'}">Parar de receber convocações?</h1>
+        <h1 th:if="${!cancelouAgora and estado == 'JA_CANCELADO'}">Convocações já canceladas</h1>
+        <h1 th:if="${estado == 'INVALIDO'}">Link inválido</h1>
         <p class="subtitulo">Send Hemosc &middot; Agência Transfusional &middot; Joinville/SC</p>
     </header>
 
-    <div class="aviso" th:if="${efetivado}">
+    <div class="aviso" th:if="${cancelouAgora}">
         Pronto. Você não receberá mais convocações de doação por e-mail.
     </div>
 
-    <div class="faixa" th:unless="${efetivado}">
-        Este link já foi usado ou não é mais válido. Se você continuar recebendo mensagens,
-        use o link de cancelamento do e-mail mais recente.
+    <div class="cartao" th:if="${!cancelouAgora and estado == 'RECEBE_CONVOCACOES'}">
+        <p>
+            Você recebe um e-mail quando o seu tipo sanguíneo está em falta na unidade. Cancelar
+            interrompe essas convocações na hora, sem precisar falar com ninguém.
+        </p>
+        <form th:action="@{'/descadastro/' + ${token}}" method="post" style="display:block;">
+            <button type="submit">Cancelar as convocações</button>
+        </form>
+    </div>
+
+    <div class="faixa" th:if="${!cancelouAgora and estado == 'JA_CANCELADO'}">
+        A autorização de contato deste cadastro já está desligada. Nenhuma convocação é enviada a
+        quem não autorizou, e nada mais precisa ser feito.
+    </div>
+
+    <div class="faixa" th:if="${estado == 'INVALIDO'}">
+        Nenhum cadastro corresponde a este link: ele pode ter chegado incompleto, ou os dados já
+        foram excluídos. Se você continuar recebendo mensagens, use o link de cancelamento do
+        e-mail mais recente.
     </div>
 
     <div class="cartao">
         <h2>O que acontece com seus dados</h2>
-        <p th:if="${efetivado}">
-            Seu cadastro continua no sistema, mas sem autorização para contato: nenhuma
-            convocação é enviada a quem não autorizou. Se quiser voltar a ser avisado quando
-            seu tipo sanguíneo estiver em falta, peça à equipe da unidade no próximo
-            comparecimento.
-        </p>
-        <p th:unless="${efetivado}">
-            Cada link de cancelamento vale uma vez só. Se o seu já havia sido usado, a
-            autorização de contato já está desligada e nada mais precisa ser feito.
-        </p>
         <p>
-            Parar de receber e-mails não apaga o cadastro. Para baixar uma cópia dos seus dados
-            ou pedir que sejam excluídos, acesse
+            Parar de receber e-mails não apaga o cadastro: ele continua no sistema, sem
+            autorização de contato. Se quiser voltar a ser avisado quando seu tipo sanguíneo
+            estiver em falta, peça à equipe da unidade no próximo comparecimento.
+        </p>
+        <p th:unless="${estado == 'INVALIDO'}">
+            Para baixar uma cópia dos seus dados ou pedir que sejam excluídos, acesse
             <a th:href="@{'/meus-dados/' + ${token}}">seus dados</a>.
         </p>
         <p style="margin-bottom:0;">

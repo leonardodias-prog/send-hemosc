@@ -21,6 +21,13 @@
         a conta só funciona depois que um administrador aprovar.
     </div>
 
+    <!--/* A mesma mensagem para e-mail com conta ou sem: o bloqueio não revela quem tem cadastro. */-->
+    <div class="erro-caixa" th:if="${param.bloqueado}">
+        Muitas tentativas seguidas com este e-mail. Espere
+        <span th:text="${bloqueioMinutos}">15</span> minutos para tentar de novo, ou crie uma
+        senha nova em "Esqueci minha senha".
+    </div>
+
     <div class="aviso" th:if="${param.saiu}">Você saiu do sistema.</div>
 
     <div class="cartao">
@@ -36,6 +43,7 @@
             </div>
             <button type="submit" class="largo">Entrar</button>
         </form>
+        <p class="dica" style="margin:12px 0 0;"><a th:href="@{/senha/esqueci}">Esqueci minha senha</a></p>
     </div>
 
     <div class="cartao">

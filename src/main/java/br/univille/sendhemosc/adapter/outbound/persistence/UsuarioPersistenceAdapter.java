@@ -2,12 +2,14 @@ package br.univille.sendhemosc.adapter.outbound.persistence;
 
 import br.univille.sendhemosc.adapter.outbound.persistence.entity.UsuarioEntity;
 import br.univille.sendhemosc.adapter.outbound.persistence.repository.UsuarioJpaRepository;
+import br.univille.sendhemosc.domain.dto.CadastroPendente;
 import br.univille.sendhemosc.domain.dto.UsuarioAutenticavel;
 import br.univille.sendhemosc.domain.dto.UsuarioResumo;
 import br.univille.sendhemosc.domain.enums.PerfilUsuario;
 import br.univille.sendhemosc.domain.enums.SituacaoUsuario;
 import br.univille.sendhemosc.domain.port.outbound.IUsuarioRepositoryPort;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -154,6 +156,35 @@ public class UsuarioPersistenceAdapter implements IUsuarioRepositoryPort {
 
     @Override
     @Transactional(readOnly = true)
+    public Optional<CadastroPendente> buscarPendentePorToken(final String token) {
+        return usuarioRepository.findByTokenAprovacaoAndSituacao(token, SituacaoUsuario.PENDENTE)
+                .map(this::paraPendente);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<LocalDateTime> ultimoAvisoDeCadastros() {
+        return usuarioRepository.ultimoAvisoDeCadastros();
+    }
+
+    @Override
+    @Transactional
+    public List<CadastroPendente> reservarPendentesParaAviso(final LocalDateTime quando) {
+        // O momento marca o lote: a busca seguinte encontra exatamente o que esta chamada marcou.
+        // Truncado a microssegundos, a precisao que H2 e PostgreSQL guardam, para que o valor
+        // gravado e o procurado sejam o mesmo.
+        final LocalDateTime lote = quando.truncatedTo(ChronoUnit.MICROS);
+
+        if (usuarioRepository.marcarPendentesComoAvisados(lote, SituacaoUsuario.PENDENTE) == 0) {
+            return List.of();
+        }
+
+        return usuarioRepository.findBySituacaoAndAprovacaoAvisadaEmOrderByCriadoEmAsc(SituacaoUsuario.PENDENTE, lote)
+                .stream().map(this::paraPendente).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<UsuarioResumo> listarTodos() {
         return usuarioRepository.findAllByOrderByCriadoEmDesc().stream().map(this::paraResumo).toList();
     }
@@ -191,5 +222,10 @@ public class UsuarioPersistenceAdapter implements IUsuarioRepositoryPort {
         return new UsuarioResumo(entidade.getId(), entidade.getNome(), entidade.getEmail(),
                 entidade.getPerfil(), entidade.getSituacao(), entidade.getCriadoEm(),
                 entidade.getUltimoAcessoEm());
+    }
+
+    private CadastroPendente paraPendente(final UsuarioEntity entidade) {
+        return new CadastroPendente(entidade.getId(), entidade.getNome(), entidade.getEmail(),
+                entidade.getPerfil(), entidade.getTokenAprovacao(), entidade.getCriadoEm());
     }
 }

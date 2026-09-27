@@ -7,6 +7,7 @@ import br.univille.sendhemosc.domain.exception.NegocioException;
 import br.univille.sendhemosc.domain.exception.UsuarioErrorsMessage;
 import br.univille.sendhemosc.domain.port.outbound.IAuditoriaPort;
 import br.univille.sendhemosc.domain.port.outbound.IUsuarioRepositoryPort;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +27,7 @@ import org.springframework.stereotype.Service;
 public class CriarUsuarioUseCase {
 
     private final IUsuarioRepositoryPort usuarioRepository;
-    private final NotificarAprovacaoUseCase notificarAprovacao;
+    private final AvisarCadastrosPendentesUseCase avisarCadastrosPendentes;
     private final IAuditoriaPort auditoria;
     private final PasswordEncoder passwordEncoder;
 
@@ -64,13 +65,27 @@ public class CriarUsuarioUseCase {
                 "%s (%s) como %s".formatted(novoUsuario.nome(), email, novoUsuario.perfil()));
 
         if (dependeDeAprovacao) {
-            notificarAprovacao.execute(novoUsuario.nome(), email, novoUsuario.perfil(), token);
+            avisarAdministradores();
         }
 
         log.info("[m=execute] Conta criada para {} com perfil {}, aguardando aprovacao={}",
                 email, novoUsuario.perfil(), dependeDeAprovacao);
 
         return new Resultado(dependeDeAprovacao, novoUsuario.perfil());
+    }
+
+    /**
+     * Pede o aviso aos administradores. Falha aqui nao derruba o cadastro: a conta ja existe como
+     * pendente, aparece na tela de contas, e o agendador tenta o aviso de novo na conferencia
+     * seguinte. Perder o aviso atrasa a aprovacao; perder o cadastro obrigaria a pessoa a se
+     * inscrever de novo.
+     */
+    private void avisarAdministradores() {
+        try {
+            avisarCadastrosPendentes.executarSeDevido(LocalDateTime.now());
+        } catch (final RuntimeException excecao) {
+            log.error("[m=execute] Falha ao avisar os administradores do cadastro pendente", excecao);
+        }
     }
 
     /**

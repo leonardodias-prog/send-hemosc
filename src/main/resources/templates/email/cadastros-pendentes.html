@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/><title>Cadastros aguardando aprovação</title></head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;color:#18181b;">
+<!--/*
+  Aviso agrupado aos administradores: todos os cadastros pendentes ainda não avisados, num
+  e-mail só, no máximo uma vez por período. A lista tem teto; o que passa dele aparece só
+  como contagem, com o caminho para a tela de contas.
+*/-->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:24px 12px;">
+    <tr><td align="center">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+               style="max-width:560px;background:#ffffff;border-radius:8px;overflow:hidden;">
+            <tr>
+                <td style="background:#18181b;padding:20px 24px;color:#ffffff;">
+                    <h1 style="margin:0;font-size:18px;"
+                        th:text="${#lists.size(cadastros) + naoListados == 1} ? 'Cadastro aguardando aprovação' : 'Cadastros aguardando aprovação'">
+                        Cadastros aguardando aprovação
+                    </h1>
+                    <p style="margin:4px 0 0;font-size:13px;opacity:.85;">Send Hemosc &middot; controle de acesso</p>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding:24px;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                           style="background:#fffbeb;border:1px solid #b45309;border-radius:6px;margin-bottom:20px;">
+                        <tr><td style="padding:12px 16px;font-size:13px;line-height:1.6;">
+                            <strong th:text="${cadastros[0].perfil}">Responsável</strong>:
+                            <span th:text="${cadastros[0].atribuicoes}">Dispara convocações e controla o envio de e-mail</span>.
+                            Aprovar libera o envio de e-mail para a base de doadores, e mensagem enviada
+                            não se desfaz. Confirme que cada pessoa tem essa atribuição na unidade.
+                        </td></tr>
+                    </table>
+
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                           th:each="cadastro : ${cadastros}"
+                           style="border:1px solid #e4e4e7;border-radius:6px;margin-bottom:12px;">
+                        <tr><td style="padding:14px 16px;">
+                            <p style="margin:0 0 4px;font-size:15px;">
+                                <strong th:text="${cadastro.nome}">Nome</strong>
+                            </p>
+                            <p style="margin:0 0 12px;font-size:13px;color:#52525b;">
+                                <span th:text="${cadastro.email}">email</span> &middot;
+                                <span th:text="${cadastro.perfil}">Responsável</span>
+                            </p>
+                            <table role="presentation" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td style="background:#15803d;border-radius:6px;">
+                                        <a th:href="${cadastro.linkAprovar}" href="#"
+                                           style="display:inline-block;padding:9px 18px;color:#ffffff;
+                                                  text-decoration:none;font-size:14px;font-weight:bold;">
+                                            Aprovar
+                                        </a>
+                                    </td>
+                                    <td style="width:10px;"></td>
+                                    <td style="border:1px solid #e4e4e7;border-radius:6px;">
+                                        <a th:href="${cadastro.linkRecusar}" href="#"
+                                           style="display:inline-block;padding:8px 16px;color:#18181b;
+                                                  text-decoration:none;font-size:14px;">
+                                            Recusar
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td></tr>
+                    </table>
+
+                    <p th:if="${naoListados > 0}" style="margin:8px 0 0;font-size:14px;line-height:1.6;">
+                        E mais <strong th:text="${naoListados}">3</strong> cadastro(s), que estão na
+                        <a th:href="${linkContas}" href="#" style="color:#18181b;">tela de contas</a>.
+                    </p>
+
+                    <p style="margin:20px 0 0;font-size:12px;color:#71717a;line-height:1.6;">
+                        Cada botão abre uma página de confirmação: a decisão sai do botão de lá. Os
+                        links valem uma vez só e por <span th:text="${validadeDias}">7</span> dias a
+                        partir do cadastro. Depois disso, ou para ver todos os pendentes, use a
+                        <a th:href="${linkContas}" href="#" style="color:#71717a;">tela de contas</a>.
+                    </p>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding:16px 24px;background:#fafafa;border-top:1px solid #e4e4e7;">
+                    <p style="margin:0;font-size:12px;color:#71717a;">
+                        Mensagem automática do Send Hemosc, protótipo acadêmico da UNIVILLE.
+                    </p>
+                </td>
+            </tr>
+        </table>
+    </td></tr>
+</table>
+</body>
+</html>

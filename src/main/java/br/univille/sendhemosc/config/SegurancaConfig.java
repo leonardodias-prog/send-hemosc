@@ -2,6 +2,7 @@ package br.univille.sendhemosc.config;
 
 import br.univille.sendhemosc.domain.enums.PerfilUsuario;
 import br.univille.sendhemosc.domain.port.outbound.IUsuarioRepositoryPort;
+import br.univille.sendhemosc.usecase.usuario.LimiteDeTentativasDeLogin;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,6 +11,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
  * Regras de acesso do sistema.
@@ -28,6 +30,7 @@ public class SegurancaConfig {
     private static final String PERFIL_MASTER = PerfilUsuario.MASTER.name();
 
     private final IUsuarioRepositoryPort usuarioRepository;
+    private final LimiteDeTentativasDeLogin limiteDeTentativas;
 
     /**
      * Fator de custo acima do padrao do Spring, que e 10. A base e pequena e o login e
@@ -41,13 +44,15 @@ public class SegurancaConfig {
     }
 
     /**
-     * Registra o momento do acesso apos autenticacao bem sucedida.
+     * Registra o momento do acesso apos autenticacao bem sucedida, e esquece as falhas anteriores
+     * do e-mail no limite de tentativas.
      *
      * @return tratador de sucesso
      */
     @Bean
     public AuthenticationSuccessHandler sucessoAoEntrar() {
         return (requisicao, resposta, autenticacao) -> {
+            limiteDeTentativas.liberar(autenticacao.getName());
             usuarioRepository.registrarAcesso(autenticacao.getName());
             resposta.sendRedirect(requisicao.getContextPath() + "/");
         };
@@ -55,14 +60,16 @@ public class SegurancaConfig {
 
     @Bean
     public SecurityFilterChain filtros(final HttpSecurity http,
-                                       final AuthenticationSuccessHandler sucessoAoEntrar) throws Exception {
+                                       final AuthenticationSuccessHandler sucessoAoEntrar,
+                                       final FalhaAoEntrar falhaAoEntrar) throws Exception {
         http
                 .authorizeHttpRequests(regras -> regras
-                    // Publico: entrar, cadastrar-se, termo de uso, descadastro do doador e saude
-                    // /meus-dados/** e do doador, que nao tem conta: ele se identifica pelo token
-                    // do link dos e-mails, o mesmo do descadastro.
-                    .requestMatchers("/login", "/cadastro", "/termo", "/descadastro/**", "/meus-dados/**",
-                            "/aprovacao/**", "/actuator/health", "/actuator/info", "/css/**").permitAll()
+                    // Publico: entrar, cadastrar-se, recuperar a senha, termo de uso, descadastro
+                    // do doador e saude. /meus-dados/** e do doador, que nao tem conta: ele se
+                    // identifica pelo token do link dos e-mails, o mesmo do descadastro.
+                    .requestMatchers("/login", "/cadastro", "/senha/esqueci", "/senha/redefinir/**", "/termo",
+                            "/descadastro/**", "/meus-dados/**", "/aprovacao/**",
+                            "/actuator/health", "/actuator/info", "/css/**").permitAll()
                     // Gerenciamento de contas
                     .requestMatchers("/usuarios/**").hasRole(PERFIL_MASTER)
                     // Liberar o limite de contato de alguem e decisao do administrador. Antes de
@@ -86,8 +93,10 @@ public class SegurancaConfig {
                     .usernameParameter("email")
                     .passwordParameter("senha")
                     .successHandler(sucessoAoEntrar)
-                    .failureUrl("/login?erro")
+                    .failureHandler(falhaAoEntrar)
                     .permitAll())
+                // Antes da conferencia da senha: e-mail bloqueado nao chega a ela.
+                .addFilterBefore(new BloqueioDeLoginFilter(limiteDeTentativas), UsernamePasswordAuthenticationFilter.class)
                 .logout(saida -> saida
                     .logoutUrl("/sair")
                     .logoutSuccessUrl("/login?saiu")

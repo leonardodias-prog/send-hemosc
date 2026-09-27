@@ -4,6 +4,7 @@ import br.univille.sendhemosc.domain.dto.NovoUsuario;
 import br.univille.sendhemosc.domain.enums.PerfilUsuario;
 import br.univille.sendhemosc.domain.exception.NegocioException;
 import br.univille.sendhemosc.usecase.usuario.CriarUsuarioUseCase;
+import br.univille.sendhemosc.usecase.usuario.LimiteDeTentativasDeLogin;
 import jakarta.validation.Valid;
 import java.util.Arrays;
 import java.util.Locale;
@@ -29,10 +30,13 @@ public class AutenticacaoViewAdapter {
     private static final Locale PT_BR = Locale.of("pt", "BR");
 
     private final CriarUsuarioUseCase criarUsuario;
+    private final LimiteDeTentativasDeLogin limiteDeTentativas;
     private final MessageSource messageSource;
 
     @GetMapping("/login")
-    public String login() {
+    public String login(final Model model) {
+        model.addAttribute("bloqueioMinutos", limiteDeTentativas.getBloqueioMinutos());
+
         return "login";
     }
 
@@ -72,7 +76,7 @@ public class AutenticacaoViewAdapter {
 
         atributos.addFlashAttribute("aviso", resultado.aguardandoAprovacao()
                 ? "Cadastro recebido. O perfil de responsável precisa ser liberado por um "
-                        + "administrador, e você receberá aviso quando isso acontecer."
+                        + "administrador. Até lá, a entrada é recusada mesmo com a senha certa."
                 : "Cadastro concluído. Você já pode entrar.");
 
         return "redirect:/login";

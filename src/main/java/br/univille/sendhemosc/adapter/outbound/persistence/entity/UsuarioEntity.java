@@ -60,6 +60,10 @@ public class UsuarioEntity {
     @Column(name = "aprovado_em")
     private LocalDateTime aprovadoEm;
 
+    /** Quando o cadastro pendente entrou num aviso aos administradores; nulo antes disso. */
+    @Column(name = "aprovacao_avisada_em")
+    private LocalDateTime aprovacaoAvisadaEm;
+
     @Column(name = "ultimo_acesso_em")
     private LocalDateTime ultimoAcessoEm;
 

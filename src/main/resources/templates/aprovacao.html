@@ -35,17 +35,23 @@
             A tela de contas mostra todas as solicitações e permite rever perfil, situação e
             senha de qualquer conta.
         </p>
-        <p sec:authorize="isAnonymous()">
-            Você decidiu pelo link do e-mail, sem precisar entrar no sistema. Para ver as
-            demais solicitações, entre com sua conta de administrador.
-        </p>
+        <th:block sec:authorize="isAnonymous()">
+            <p th:if="${sucesso}">
+                Você decidiu pelo link do e-mail, sem precisar entrar no sistema. Para ver as
+                demais solicitações, entre com sua conta de administrador.
+            </p>
+            <p th:unless="${sucesso}">
+                Nada foi decidido agora. Para ver os cadastros que ainda aguardam decisão, entre
+                com sua conta de administrador.
+            </p>
+        </th:block>
         <a th:href="@{/usuarios}"><button type="button">Ir para o gerenciamento de contas</button></a>
     </div>
 
     <footer>
         <p>
-            Cada link de aprovação vale uma única vez. Toda decisão fica registrada com
-            data, hora e quem decidiu.
+            Cada link de aprovação vale uma única vez, e por prazo limitado. Toda decisão fica
+            registrada com data, hora e quem decidiu.
         </p>
     </footer>
 

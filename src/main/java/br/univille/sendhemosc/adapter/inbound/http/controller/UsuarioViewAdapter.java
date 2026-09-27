@@ -1,15 +1,19 @@
 package br.univille.sendhemosc.adapter.inbound.http.controller;
 
+import br.univille.sendhemosc.config.SegurancaProperties;
+import br.univille.sendhemosc.domain.dto.CadastroPendente;
 import br.univille.sendhemosc.domain.dto.UsuarioResumo;
 import br.univille.sendhemosc.domain.enums.PerfilUsuario;
 import br.univille.sendhemosc.domain.enums.SituacaoUsuario;
 import br.univille.sendhemosc.domain.exception.NegocioException;
+import br.univille.sendhemosc.domain.exception.UsuarioErrorsMessage;
 import br.univille.sendhemosc.domain.port.outbound.IUsuarioRepositoryPort;
 import br.univille.sendhemosc.usecase.usuario.GerenciarUsuarioUseCase;
 import br.univille.sendhemosc.usecase.usuario.ResolverAprovacaoUseCase;
 import java.security.Principal;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
@@ -24,7 +28,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 /**
  * Gerenciamento de contas, restrito ao administrador, e os links de decisao enviados por
  * e-mail. Os links ficam publicos porque quem os recebe ainda nao esta autenticado ao clicar;
- * o que os protege e o token, aleatorio e de uso unico.
+ * o que os protege e o token, aleatorio, de uso unico e com prazo. Abrir o link mostra o
+ * cadastro; a decisao sai do botao da pagina.
  *
  * <p>Toda tela daqui devolve o proximo passo em vez de terminar em si mesma.</p>
  */
@@ -38,6 +43,7 @@ public class UsuarioViewAdapter {
     private final IUsuarioRepositoryPort usuarioRepository;
     private final ResolverAprovacaoUseCase resolverAprovacao;
     private final GerenciarUsuarioUseCase gerenciarUsuario;
+    private final SegurancaProperties seguranca;
     private final MessageSource messageSource;
 
     @GetMapping("/usuarios")
@@ -147,20 +153,62 @@ public class UsuarioViewAdapter {
     }
 
     @GetMapping("/aprovacao/{token}/aprovar")
+    public String confirmarAprovacao(@PathVariable final String token, final Model model) {
+        return confirmarPorLink(token, true, model);
+    }
+
+    @GetMapping("/aprovacao/{token}/recusar")
+    public String confirmarRecusa(@PathVariable final String token, final Model model) {
+        return confirmarPorLink(token, false, model);
+    }
+
+    @PostMapping("/aprovacao/{token}/aprovar")
     public String aprovarPorLink(@PathVariable final String token, final Model model) {
         return decidirPorLink(token, true, model);
     }
 
-    @GetMapping("/aprovacao/{token}/recusar")
+    @PostMapping("/aprovacao/{token}/recusar")
     public String recusarPorLink(@PathVariable final String token, final Model model) {
         return decidirPorLink(token, false, model);
     }
 
     /**
-     * Desfecho do link de decisao recebido por e-mail. Um endereco por decisao: o que nao
-     * corresponde a nenhum dos dois nao chega ate aqui, entao nao sobra validacao a fazer.
+     * Pagina que o link do e-mail abre. Mostra o cadastro e o botao da decisao, e nao decide
+     * nada: filtros de e-mail abrem links sozinhos, e abrir nao pode bastar para aprovar. Um
+     * endereco por decisao; o que nao corresponde a nenhum dos dois nao chega ate aqui.
      *
-     * @param token token de uso unico recebido no e-mail
+     * @param token token recebido no e-mail
+     * @param aprovar true quando o link e o de aprovar
+     * @param model destino do que a pagina mostra
+     * @return pagina de confirmacao, ou de desfecho quando o link nao serve mais
+     */
+    private String confirmarPorLink(final String token, final boolean aprovar, final Model model) {
+        final Optional<CadastroPendente> pendente = resolverAprovacao.consultarPorToken(token);
+
+        if (pendente.isEmpty()) {
+            return desfecho(model, "Link já utilizado",
+                    "Este cadastro já foi decidido, ou o link não existe. Cada link de aprovação vale uma vez só.");
+        }
+
+        if (resolverAprovacao.linkVencido(pendente.get())) {
+            return desfecho(model, "Link vencido", messageSource.getMessage(
+                    UsuarioErrorsMessage.APROVACAO_VENCIDA.getChaveMensagem(), null, PT_BR));
+        }
+
+        model.addAttribute("cadastro", pendente.get());
+        model.addAttribute("aprovar", aprovar);
+        model.addAttribute("acao", aprovar ? "aprovar" : "recusar");
+        model.addAttribute("outraAcao", aprovar ? "recusar" : "aprovar");
+        model.addAttribute("token", token);
+        model.addAttribute("validadeDias", seguranca.aprovacao().validadeDias());
+
+        return "aprovacao-confirmacao";
+    }
+
+    /**
+     * Decisao pelo botao da pagina de confirmacao.
+     *
+     * @param token token recebido no e-mail
      * @param aprovado true para liberar a conta, false para recusar
      * @param model destino do texto exibido
      * @return pagina de desfecho
@@ -173,14 +221,23 @@ public class UsuarioViewAdapter {
             model.addAttribute("titulo", aprovado ? "Cadastro aprovado" : "Cadastro recusado");
             model.addAttribute("mensagem", "%s (%s) foi %s como %s.".formatted(usuario.nome(),
                     usuario.email(), aprovado ? "liberado" : "recusado", usuario.perfil().getDescricao()));
-        } catch (final NegocioException excecao) {
-            log.debug("Link de aprovacao ja utilizado ou invalido: {}", excecao.getErro().getCodigo());
 
-            model.addAttribute("sucesso", false);
-            model.addAttribute("titulo", "Link já utilizado");
-            model.addAttribute("mensagem",
-                    "Este cadastro já foi decidido. Cada link de aprovação vale uma vez só.");
+            return "aprovacao";
+        } catch (final NegocioException excecao) {
+            log.debug("Link de aprovacao ja utilizado, vencido ou invalido: {}", excecao.getErro().getCodigo());
+
+            return excecao.getErro() == UsuarioErrorsMessage.APROVACAO_VENCIDA
+                    ? desfecho(model, "Link vencido", messageSource.getMessage(
+                            UsuarioErrorsMessage.APROVACAO_VENCIDA.getChaveMensagem(), null, PT_BR))
+                    : desfecho(model, "Link já utilizado",
+                            "Este cadastro já foi decidido. Cada link de aprovação vale uma vez só.");
         }
+    }
+
+    private String desfecho(final Model model, final String titulo, final String mensagem) {
+        model.addAttribute("sucesso", false);
+        model.addAttribute("titulo", titulo);
+        model.addAttribute("mensagem", mensagem);
 
         return "aprovacao";
     }

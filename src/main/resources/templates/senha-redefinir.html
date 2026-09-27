@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Senha nova — Send Hemosc</title>
+    <link rel="stylesheet" th:href="@{/css/sendhemosc.css}"/>
+</head>
+<body>
+<!--/*
+  Página que o link de recuperação abre. Abrir não muda nada: só mostra o formulário.
+  A troca acontece no envio, que só a pessoa faz.
+*/-->
+<div class="container estreito">
+
+    <header>
+        <h1 th:if="${conta}">Criar senha nova</h1>
+        <h1 th:unless="${conta}">Link sem validade</h1>
+        <p class="subtitulo">Painel de captação &middot; Joinville/SC</p>
+    </header>
+
+    <div class="erro-caixa" th:if="${erro}" th:text="${erro}">mensagem</div>
+
+    <div class="cartao" th:if="${conta}">
+        <p>Senha nova para <strong th:text="${conta.email}">email</strong>.</p>
+        <form th:action="@{'/senha/redefinir/' + ${token}}" method="post" style="display:block;">
+            <div class="campo">
+                <label for="novaSenha">Senha nova</label>
+                <input type="password" id="novaSenha" name="novaSenha" autocomplete="new-password"
+                       minlength="8" required autofocus/>
+                <p class="dica">Entre 8 e 72 caracteres.</p>
+            </div>
+
+            <div class="campo">
+                <label for="confirmacao">Repita a senha nova</label>
+                <input type="password" id="confirmacao" name="confirmacao" autocomplete="new-password"
+                       minlength="8" required/>
+            </div>
+
+            <button type="submit" class="largo">Criar senha nova</button>
+        </form>
+    </div>
+
+    <th:block th:unless="${conta}">
+        <div class="faixa">
+            Este link já foi usado, venceu, ou foi substituído por um pedido mais recente. Só o
+            último link enviado vale.
+        </div>
+
+        <div class="cartao">
+            <h2>Próximo passo</h2>
+            <p>Peça um link novo. Ele chega no mesmo e-mail.</p>
+            <a th:href="@{/senha/esqueci}"><button type="button">Pedir um link novo</button></a>
+        </div>
+    </th:block>
+
+    <footer>
+        <p><a th:href="@{/login}">Voltar para a tela de entrada</a></p>
+    </footer>
+
+</div>
+</body>
+</html>

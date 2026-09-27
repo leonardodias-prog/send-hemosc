@@ -1,9 +1,11 @@
 package br.univille.sendhemosc.domain.port.outbound;
 
+import br.univille.sendhemosc.domain.dto.CadastroPendente;
 import br.univille.sendhemosc.domain.dto.UsuarioAutenticavel;
 import br.univille.sendhemosc.domain.dto.UsuarioResumo;
 import br.univille.sendhemosc.domain.enums.PerfilUsuario;
 import br.univille.sendhemosc.domain.enums.SituacaoUsuario;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -97,6 +99,32 @@ public interface IUsuarioRepositoryPort {
      * @return o usuario afetado, vazio quando nao havia solicitacao pendente
      */
     Optional<UsuarioResumo> resolverAprovacao(Long usuarioId, boolean aprovado, Long aprovadorId);
+
+    /**
+     * Busca o cadastro pendente dono do token de aprovacao, sem decidir nada: e o que a pagina
+     * de confirmacao mostra antes de o administrador clicar.
+     *
+     * @param token token dos links de decisao
+     * @return o cadastro, vazio quando o token nao existe ou a conta ja foi decidida
+     */
+    Optional<CadastroPendente> buscarPendentePorToken(String token);
+
+    /**
+     * Momento do ultimo aviso de cadastros pendentes enviado aos administradores.
+     *
+     * @return o momento, vazio quando nenhum aviso saiu ainda
+     */
+    Optional<LocalDateTime> ultimoAvisoDeCadastros();
+
+    /**
+     * Marca com o momento informado os cadastros pendentes que ainda nao entraram em nenhum
+     * aviso, e devolve exatamente esses. A marcacao e condicional: dois avisos simultaneos nao
+     * listam o mesmo cadastro.
+     *
+     * @param quando momento do aviso
+     * @return os cadastros reservados para este aviso, do mais antigo ao mais recente
+     */
+    List<CadastroPendente> reservarPendentesParaAviso(LocalDateTime quando);
 
     List<UsuarioResumo> listarTodos();
 

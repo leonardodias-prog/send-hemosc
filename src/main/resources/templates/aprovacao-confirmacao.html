@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Decisão de cadastro — Send Hemosc</title>
+    <link rel="stylesheet" th:href="@{/css/sendhemosc.css}"/>
+</head>
+<body>
+<!--/*
+  Página que o link de aprovação do e-mail abre. Ela não decide nada: filtros de e-mail
+  corporativos abrem links sozinhos para inspecionar, e abrir não pode bastar para liberar
+  alguém a mandar e-mail para a base de doadores. A decisão sai do botão.
+*/-->
+<div class="app">
+
+<th:block sec:authorize="isAuthenticated()">
+<nav th:replace="~{fragmentos/casca :: lateral('contas')}"></nav>
+</th:block>
+
+<main class="conteudo">
+<div class="container estreito">
+
+    <header>
+        <h1 th:text="${aprovar} ? 'Aprovar este cadastro?' : 'Recusar este cadastro?'">Aprovar este cadastro?</h1>
+        <p class="subtitulo">Gerenciamento de contas &middot; Send Hemosc</p>
+    </header>
+
+    <div class="cartao">
+        <h2 th:text="${cadastro.nome}">Nome</h2>
+        <p class="dica">
+            <span th:text="${cadastro.email}">email</span> &middot; pediu acesso como
+            <strong th:text="${cadastro.perfil.descricao}">Responsável</strong> em
+            <span th:text="${#temporals.format(cadastro.criadoEm, 'dd/MM/yyyy HH:mm')}">24/09/2026 10:00</span>
+        </p>
+
+        <p th:if="${aprovar}">
+            <strong th:text="${cadastro.perfil.descricao}">Responsável</strong>:
+            <span th:text="${cadastro.perfil.atribuicoes}">Dispara convocações e controla o envio de e-mail</span>.
+            Aprovar libera o envio de e-mail para a base de doadores, e mensagem enviada não se
+            desfaz. Confirme que a pessoa tem essa atribuição na unidade.
+        </p>
+        <p th:unless="${aprovar}">
+            Recusar impede a entrada dessa conta. Se a pessoa precisar de acesso depois, um
+            administrador ajusta a situação dela na tela de contas.
+        </p>
+
+        <form th:action="@{'/aprovacao/' + ${token} + '/' + ${acao}}" method="post" style="display:block;">
+            <button type="submit" th:text="${aprovar} ? 'Aprovar acesso' : 'Recusar cadastro'">Aprovar acesso</button>
+        </form>
+
+        <p class="dica" style="margin:12px 0 0;">
+            Não era isso?
+            <a th:href="@{'/aprovacao/' + ${token} + '/' + ${outraAcao}}"
+               th:text="${aprovar} ? 'Recusar este cadastro' : 'Aprovar este cadastro'">Recusar este cadastro</a>
+        </p>
+    </div>
+
+    <footer>
+        <p>
+            Abrir o link não decide nada: a decisão sai do botão acima. Cada link vale uma única
+            vez e por <span th:text="${validadeDias}">7</span> dias a partir do cadastro. Toda
+            decisão fica registrada com data, hora e quem decidiu.
+        </p>
+    </footer>
+
+</div>
+</main>
+
+</div>
+</body>
+</html>

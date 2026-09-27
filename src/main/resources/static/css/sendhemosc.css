@@ -17,6 +17,8 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
     line-height: 1.5;
 }
+/* Sem cor propria, link ficava no azul padrao do navegador, ilegivel no tema escuro. */
+a { color: var(--texto); text-underline-offset: 2px; }
 .container { max-width: 900px; margin: 0 auto; padding: 0 16px 48px; }
 .estreito { max-width: 420px; }
 header { padding: 32px 0 24px; border-bottom: 1px solid var(--borda); margin-bottom: 24px; }

@@ -78,6 +78,30 @@ sendhemosc:
       email: ${MASTER_EMAIL:admin@sendhemosc.local}
       nome: ${MASTER_NOME:Administrador}
       senha: ${MASTER_SENHA:}
+    login:
+      # Falhas seguidas com o mesmo e-mail que bloqueiam a entrada por bloqueio-minutos. Vale
+      # para qualquer e-mail, com ou sem conta: o bloqueio nao revela quem tem cadastro. O
+      # contador vive em memoria e zera quando o servico reinicia.
+      max-falhas: 5
+      bloqueio-minutos: 15
+    recuperacao-senha:
+      # Todo pedido atendido vira um e-mail. Os limites protegem a caixa de quem e alvo de
+      # pedidos repetidos e a cota diaria do provedor: sem o teto do sistema, contas criadas no
+      # autocadastro bastariam para esgota-la.
+      validade-minutos: 60
+      intervalo-minutos: 15
+      max-por-conta-dia: 3
+      max-no-sistema-dia: 30
+    aprovacao:
+      # O link de aprovacao vale por validade-dias, contados do cadastro; depois disso a
+      # decisao e pela tela de contas. O aviso aos administradores sai no maximo uma vez a cada
+      # aviso-intervalo-minutos, com todos os cadastros pendentes juntos.
+      validade-dias: 7
+      aviso-intervalo-minutos: 60
+      aviso-max-listados: 10
+      # Conferencia periodica que manda o aviso que ficou para depois, quando o periodo acaba.
+      aviso-verificacao-ms: 600000
+      aviso-primeira-verificacao-ms: 60000
 
   termo:
     # Versao registrada junto do consentimento de cada doador. Mudou o texto, muda a versao.

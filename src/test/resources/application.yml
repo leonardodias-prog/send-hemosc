@@ -30,6 +30,10 @@ sendhemosc:
   disparo-automatico:
     # Uma hora: a conferencia periodica nao roda durante os testes, que chamam a rodada direto.
     primeira-verificacao-ms: 3600000
+  seguranca:
+    aprovacao:
+      # Idem para o aviso de cadastros pendentes: os testes chamam o aviso direto.
+      aviso-primeira-verificacao-ms: 3600000
 
   notificacao:
     intervalo-reenvio-dias: 30

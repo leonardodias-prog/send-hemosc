@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Minha senha — Send Hemosc</title>
+    <link rel="stylesheet" th:href="@{/css/sendhemosc.css}"/>
+</head>
+<body>
+<div class="app">
+
+<nav th:replace="~{fragmentos/casca :: lateral('senha')}"></nav>
+
+<main class="conteudo">
+<div class="container estreito">
+
+    <header>
+        <h1>Minha senha</h1>
+        <p class="subtitulo">Troca da senha da sua própria conta</p>
+    </header>
+
+    <div class="aviso" th:if="${aviso}" th:text="${aviso}">mensagem</div>
+    <div class="erro-caixa" th:if="${erro}" th:text="${erro}">mensagem</div>
+
+    <!--/* Senha digitada nunca volta para o formulário, nem depois de erro. */-->
+    <div class="cartao">
+        <form th:action="@{/conta/senha}" method="post" style="display:block;">
+            <div class="campo">
+                <label for="senhaAtual">Senha atual</label>
+                <input type="password" id="senhaAtual" name="senhaAtual" autocomplete="current-password" required/>
+            </div>
+
+            <div class="campo">
+                <label for="novaSenha">Senha nova</label>
+                <input type="password" id="novaSenha" name="novaSenha" autocomplete="new-password"
+                       minlength="8" required/>
+                <p class="dica">Entre 8 e 72 caracteres.</p>
+            </div>
+
+            <div class="campo">
+                <label for="confirmacao">Repita a senha nova</label>
+                <input type="password" id="confirmacao" name="confirmacao" autocomplete="new-password"
+                       minlength="8" required/>
+            </div>
+
+            <button type="submit" class="largo">Trocar senha</button>
+        </form>
+    </div>
+
+    <footer>
+        <p>
+            A senha atual é pedida mesmo com você já dentro do sistema: uma sessão esquecida aberta
+            não basta para trocar a senha de ninguém. A troca fica registrada na auditoria, sem a
+            senha.
+        </p>
+        <p>
+            Não lembra a senha atual? Saia e use "Esqueci minha senha" na tela de entrada, ou peça a
+            um administrador que a redefina.
+        </p>
+    </footer>
+
+</div>
+</main>
+
+</div>
+</body>
+</html>

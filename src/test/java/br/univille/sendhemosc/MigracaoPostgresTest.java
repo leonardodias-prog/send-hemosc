@@ -2,20 +2,25 @@ package br.univille.sendhemosc;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import br.univille.sendhemosc.domain.dto.CadastroPendente;
 import br.univille.sendhemosc.domain.dto.FiltroDoador;
 import br.univille.sendhemosc.domain.dto.SituacaoEstoque;
 import br.univille.sendhemosc.domain.enums.PerfilUsuario;
+import br.univille.sendhemosc.domain.enums.SituacaoUsuario;
 import br.univille.sendhemosc.domain.enums.TipoSanguineo;
 import br.univille.sendhemosc.domain.port.outbound.IDisparoAutomaticoRepositoryPort;
 import br.univille.sendhemosc.domain.port.outbound.IDoadorRepositoryPort;
+import br.univille.sendhemosc.domain.port.outbound.IRecuperacaoSenhaPort;
 import br.univille.sendhemosc.domain.port.outbound.IUsuarioRepositoryPort;
 import br.univille.sendhemosc.usecase.estoque.ListarSituacaoEstoqueUseCase;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -56,6 +61,9 @@ class MigracaoPostgresTest {
     @Autowired
     private IDisparoAutomaticoRepositoryPort disparoRepository;
 
+    @Autowired
+    private IRecuperacaoSenhaPort recuperacaoSenha;
+
     @Test
     @DisplayName("o banco realmente e PostgreSQL, e nao H2 por engano")
     void bancoEPostgres() throws Exception {
@@ -81,7 +89,42 @@ class MigracaoPostgresTest {
 
         assertThat(tabelas).contains(
                 "doador", "doacao", "estoque_hemocomponente", "notificacao",
-                "usuario", "consentimento", "auditoria", "disparo_automatico");
+                "usuario", "consentimento", "auditoria", "disparo_automatico", "recuperacao_senha");
+    }
+
+    @Test
+    @DisplayName("o aviso de cadastros encontra no PostgreSQL exatamente o lote que marcou")
+    void avisoDeCadastrosNoPostgres() {
+        final String sufixo = UUID.randomUUID().toString();
+        final String email = "pendente." + sufixo + "@example.org";
+        usuarioRepository.criar("Pendente " + sufixo, email, "hash",
+                PerfilUsuario.RESPONSAVEL, SituacaoUsuario.PENDENTE, "token-" + sufixo);
+
+        // A busca do lote compara o momento gravado com o procurado: precisao de timestamp
+        // diferente entre Java e o banco faria o lote voltar vazio.
+        final List<CadastroPendente> lote = usuarioRepository.reservarPendentesParaAviso(LocalDateTime.now());
+
+        assertThat(lote).extracting(CadastroPendente::email).contains(email);
+        assertThat(usuarioRepository.ultimoAvisoDeCadastros()).isPresent();
+    }
+
+    @Test
+    @DisplayName("os limites e o uso unico do link de recuperacao rodam no PostgreSQL")
+    void recuperacaoDeSenhaNoPostgres() {
+        final String sufixo = UUID.randomUUID().toString().replace("-", "");
+        final Long id = usuarioRepository.criar("Conta " + sufixo, "conta." + sufixo + "@example.org", "hash",
+                PerfilUsuario.OPERADOR, SituacaoUsuario.ATIVO, null);
+        final LocalDateTime agora = LocalDateTime.now();
+        final String hash = sufixo + sufixo;
+
+        recuperacaoSenha.registrar(id, hash, agora, agora.plusMinutes(60));
+        final Long pedido = recuperacaoSenha.buscarPorTokenHash(hash).orElseThrow().id();
+
+        assertThat(recuperacaoSenha.contarDaConta(id, agora.minusDays(1))).isEqualTo(1);
+        assertThat(recuperacaoSenha.contarTodos(agora.minusDays(1))).isPositive();
+        assertThat(recuperacaoSenha.ultimoDaConta(id)).isPresent();
+        assertThat(recuperacaoSenha.usar(pedido, agora.plusMinutes(1))).isTrue();
+        assertThat(recuperacaoSenha.usar(pedido, agora.plusMinutes(2))).isFalse();
     }
 
     @Test

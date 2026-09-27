@@ -51,7 +51,9 @@ transfusional**. Quando A+ está em falta, convoca A+, A−, O+ e O−.
 | `/doadores/{id}/editar` | Todos autenticados (excluir: responsável e administrador) | Edição, desativação, exportação dos dados e exclusão do doador |
 | `/disparo-automatico` | Responsável e administrador | Liga, desliga e configura a rodada automática, com prévia de quem ela convocaria |
 | `/usuarios` | Administrador | Criação, alteração, senha e exclusão de contas |
+| `/conta/senha` | Todos autenticados | Troca da própria senha, pedindo a atual |
 | `/login`, `/cadastro`, `/termo` | Público | Entrada, autocadastro e termo de uso |
+| `/senha/esqueci` | Público | Recuperação de senha por um link enviado ao e-mail da conta |
 | `/meus-dados/{token}` | Público, pelo link dos e-mails | O doador baixa uma cópia dos próprios dados ou pede a exclusão |
 
 ## Perfis de acesso
@@ -65,8 +67,24 @@ alimentar dados, não.
 | **Responsável** | Tudo acima, mais disparar convocações, ligar o envio e o disparo automático | Autocadastro, pendente até aprovação |
 | **Administrador** | Tudo acima, mais gerenciar contas | Criado na primeira subida |
 
-O cadastro de responsável dispara um e-mail ao administrador com links de aprovar e recusar.
-O token vale uma vez só.
+O cadastro de responsável entra num aviso por e-mail aos administradores, com links de aprovar e
+recusar. O aviso sai no máximo uma vez por hora, com todos os pendentes juntos: assim o volume de
+e-mail não cresce com o de cadastros, e cadastro em massa não esgota a cota diária do provedor.
+Os links abrem uma página de confirmação, e a decisão sai do botão dela — filtros de e-mail
+corporativos abrem links sozinhos para inspecionar. Cada link vale uma vez e por 7 dias; depois,
+a decisão é pela tela de contas.
+
+### Acesso e senha
+
+- **Tentativas de entrada:** 5 falhas seguidas com o mesmo e-mail bloqueiam a entrada por 15
+  minutos, com ou sem conta, para que o bloqueio não revele quem tem cadastro. As falhas contra
+  conta existente ficam na auditoria, sem a senha digitada.
+- **Recuperação de senha:** o link vale por 60 minutos e uma vez só, e o banco guarda apenas o
+  hash do token. Cada conta recebe no máximo um link a cada 15 minutos e três por dia; o sistema
+  inteiro, 30 por dia, de novo para proteger a cota de envio.
+- **Troca da própria senha:** pede a senha atual mesmo de quem já entrou.
+
+Os limites ficam em `sendhemosc.seguranca`, no `application.yml`.
 
 ## Rodando o projeto
 
@@ -195,7 +213,7 @@ implementado:
 
 - consentimento como caixa própria, não marcada por padrão;
 - histórico do consentimento com data, hora e versão do termo aceito;
-- link de descadastro em toda mensagem, de uso imediato;
+- link de descadastro em toda mensagem: ele abre a página de cancelamento, e um clique confirma;
 - página de termo de uso com finalidade e forma de revogação;
 - auditoria de quem disparou cada convocação.
 

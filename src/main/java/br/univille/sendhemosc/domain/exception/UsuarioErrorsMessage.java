@@ -18,7 +18,11 @@ public enum UsuarioErrorsMessage implements ErrorsMessage {
     APROVACAO_INVALIDA("USU-005", "usuario.aprovacao.invalida", HttpStatus.GONE),
     SEM_ADMINISTRADOR("USU-006", "usuario.sem-administrador", HttpStatus.SERVICE_UNAVAILABLE),
     ACAO_SOBRE_SI("USU-007", "usuario.acao-sobre-si", HttpStatus.CONFLICT),
-    ULTIMO_ADMINISTRADOR("USU-008", "usuario.ultimo-administrador", HttpStatus.CONFLICT);
+    ULTIMO_ADMINISTRADOR("USU-008", "usuario.ultimo-administrador", HttpStatus.CONFLICT),
+    SENHA_ATUAL_INCORRETA("USU-009", "usuario.senha-atual.incorreta", HttpStatus.BAD_REQUEST),
+    SENHA_FORA_DO_TAMANHO("USU-010", "usuario.senha.tamanho", HttpStatus.BAD_REQUEST),
+    RECUPERACAO_INVALIDA("USU-011", "usuario.recuperacao.invalida", HttpStatus.GONE),
+    APROVACAO_VENCIDA("USU-012", "usuario.aprovacao.vencida", HttpStatus.GONE);
 
     private final String codigo;
     private final String chaveMensagem;

@@ -49,6 +49,12 @@
               th:title="${aprovacoesPendentes} + ' cadastro(s) aguardando decisão'">1</span>
     </a>
 
+    <a class="secao" th:href="@{/conta/senha}"
+       th:classappend="${secao == 'senha'} ? 'atual'"
+       th:aria-current="${secao == 'senha'} ? 'page' : null">
+        <span>Minha senha</span>
+    </a>
+
     <a class="secao" th:href="@{/termo}"
        th:classappend="${secao == 'termo'} ? 'atual'"
        th:aria-current="${secao == 'termo'} ? 'page' : null">

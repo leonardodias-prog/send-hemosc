@@ -1,5 +1,6 @@
 package br.univille.sendhemosc;
 
+import br.univille.sendhemosc.config.SegurancaProperties;
 import br.univille.sendhemosc.config.SendHemoscProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -11,7 +12,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  */
 @SpringBootApplication
 @EnableScheduling
-@EnableConfigurationProperties(SendHemoscProperties.class)
+@EnableConfigurationProperties({SendHemoscProperties.class, SegurancaProperties.class})
 public class SendHemoscApplication {
 
     public static void main(final String[] args) {
