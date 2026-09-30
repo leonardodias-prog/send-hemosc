@@ -7,6 +7,7 @@ import br.univille.sendhemosc.domain.exception.NegocioException;
 import br.univille.sendhemosc.domain.exception.UsuarioErrorsMessage;
 import br.univille.sendhemosc.domain.port.outbound.IAuditoriaPort;
 import br.univille.sendhemosc.domain.port.outbound.IUsuarioRepositoryPort;
+import br.univille.sendhemosc.domain.util.MascaraDeEmail;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -69,7 +70,7 @@ public class CriarUsuarioUseCase {
         }
 
         log.info("[m=execute] Conta criada para {} com perfil {}, aguardando aprovacao={}",
-                email, novoUsuario.perfil(), dependeDeAprovacao);
+                MascaraDeEmail.mascarar(email), novoUsuario.perfil(), dependeDeAprovacao);
 
         return new Resultado(dependeDeAprovacao, novoUsuario.perfil());
     }

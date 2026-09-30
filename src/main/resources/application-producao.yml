@@ -3,6 +3,15 @@
 # Exige PostgreSQL: a partir do momento em que existem contas de acesso, banco em memoria
 # deixa de servir. A plataforma hiberna por inatividade, e ao acordar todo usuario cadastrado
 # desapareceria.
+server:
+  # Atras do proxy da plataforma a conexao chega por HTTP; sem isto o Spring nao sabe que o acesso
+  # original foi HTTPS, e nao envia o cabecalho HSTS.
+  forward-headers-strategy: framework
+  servlet:
+    session:
+      cookie:
+        secure: true
+
 spring:
   datasource:
     # String de conexao do Neon, no formato JDBC. Exemplo:

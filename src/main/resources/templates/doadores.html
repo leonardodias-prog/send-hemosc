@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Doadores — Send Hemosc</title>
     <link rel="stylesheet" th:href="@{/css/sendhemosc.css}"/>
+    <script th:src="@{/js/sendhemosc.js}" defer></script>
 </head>
 <body>
 <div class="app">
@@ -97,7 +98,7 @@
                 <thead>
                 <tr>
                     <th sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')" style="width:32px;">
-                        <input type="checkbox" onclick="marcarTodos(this)" aria-label="Selecionar todos"/>
+                        <input type="checkbox" data-marcar-todos aria-label="Selecionar todos"/>
                     </th>
                     <th>Nome</th>
                     <th>E-mail</th>
@@ -224,11 +225,5 @@
 
 </div>
 
-<script>
-    function marcarTodos(origem) {
-        document.querySelectorAll('input[name="selecionados"]:not([disabled])')
-            .forEach(caixa => caixa.checked = origem.checked);
-    }
-</script>
 </body>
 </html>

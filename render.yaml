@@ -27,8 +27,9 @@ services:
         sync: false
 
       # --- Administrador inicial ---
-      # Criado apenas na primeira subida, quando ainda nao existe nenhum. Trocar a senha aqui
-      # depois nao redefine a senha de quem ja existe.
+      # Criado apenas na primeira subida, quando ainda nao existe nenhum. MASTER_SENHA e obrigatoria
+      # em producao: sem ela o servico se recusa a subir. Trocar a senha aqui depois nao redefine
+      # a senha de quem ja existe.
       - key: MASTER_EMAIL
         sync: false
       - key: MASTER_SENHA

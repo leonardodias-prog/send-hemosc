@@ -4,6 +4,7 @@ import br.univille.sendhemosc.domain.enums.PerfilUsuario;
 import br.univille.sendhemosc.domain.port.outbound.IUsuarioRepositoryPort;
 import br.univille.sendhemosc.usecase.usuario.LimiteDeTentativasDeLogin;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -12,6 +13,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.header.writers.DelegatingRequestMatcherHeaderWriter;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy;
+import org.springframework.security.web.header.writers.StaticHeadersWriter;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 
 /**
  * Regras de acesso do sistema.
@@ -28,6 +34,19 @@ public class SegurancaConfig {
     private static final String PERFIL_OPERADOR = PerfilUsuario.OPERADOR.name();
     private static final String PERFIL_RESPONSAVEL = PerfilUsuario.RESPONSAVEL.name();
     private static final String PERFIL_MASTER = PerfilUsuario.MASTER.name();
+
+    /**
+     * Politica de conteudo das paginas. Tudo vem do proprio servidor: nao ha script, fonte nem
+     * imagem externa, e por isso nenhum script embutido na pagina e aceito. Estilo embutido
+     * continua permitido porque as telas usam o atributo style. frame-ancestors e form-action
+     * impedem que a pagina seja embutida em outro site e que um formulario injetado envie os
+     * dados para fora.
+     */
+    private static final String POLITICA_DE_CONTEUDO = "default-src 'self'; script-src 'self'; "
+            + "style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; "
+            + "base-uri 'self'; form-action 'self'; frame-ancestors 'self'";
+
+    private static final String POLITICA_DE_PERMISSOES = "camera=(), microphone=(), geolocation=(), payment=(), usb=()";
 
     private final IUsuarioRepositoryPort usuarioRepository;
     private final LimiteDeTentativasDeLogin limiteDeTentativas;
@@ -61,7 +80,9 @@ public class SegurancaConfig {
     @Bean
     public SecurityFilterChain filtros(final HttpSecurity http,
                                        final AuthenticationSuccessHandler sucessoAoEntrar,
-                                       final FalhaAoEntrar falhaAoEntrar) throws Exception {
+                                       final FalhaAoEntrar falhaAoEntrar,
+                                       @Value("${spring.h2.console.enabled:false}") final boolean consoleH2)
+            throws Exception {
         http
                 .authorizeHttpRequests(regras -> regras
                     // Publico: entrar, cadastrar-se, recuperar a senha, termo de uso, descadastro
@@ -69,7 +90,7 @@ public class SegurancaConfig {
                     // identifica pelo token do link dos e-mails, o mesmo do descadastro.
                     .requestMatchers("/login", "/cadastro", "/senha/esqueci", "/senha/redefinir/**", "/termo",
                             "/descadastro/**", "/meus-dados/**", "/aprovacao/**",
-                            "/actuator/health", "/actuator/info", "/css/**").permitAll()
+                            "/actuator/health", "/actuator/info", "/css/**", "/js/**").permitAll()
                     // Gerenciamento de contas
                     .requestMatchers("/usuarios/**").hasRole(PERFIL_MASTER)
                     // Liberar o limite de contato de alguem e decisao do administrador. Antes de
@@ -101,9 +122,23 @@ public class SegurancaConfig {
                     .logoutUrl("/sair")
                     .logoutSuccessUrl("/login?saiu")
                     .permitAll())
-                // O console do H2 usa quadros e tem protecao propria desativada; fica restrito ao
-                // perfil de desenvolvimento, onde a linha abaixo nao expoe ambiente publicado.
-                .headers(cabecalhos -> cabecalhos.frameOptions(quadros -> quadros.sameOrigin()))
+                .headers(cabecalhos -> {
+                    // O console do H2 usa quadros e tem protecao propria desativada; so o perfil de
+                    // desenvolvimento o liga. Fora dele nenhuma pagina pode ser embutida em outra.
+                    if (consoleH2) {
+                        cabecalhos.frameOptions(quadros -> quadros.sameOrigin());
+                    } else {
+                        cabecalhos.frameOptions(quadros -> quadros.deny());
+                    }
+                    // Os links de descadastro, aprovacao e redefinicao de senha carregam um token no
+                    // endereco: sem esta regra ele seguiria no cabecalho Referer para qualquer site externo.
+                    cabecalhos.referrerPolicy(referrer -> referrer.policy(ReferrerPolicy.NO_REFERRER));
+                    cabecalhos.addHeaderWriter(new StaticHeadersWriter("Permissions-Policy", POLITICA_DE_PERMISSOES));
+                    // Fora do console do H2, que usa script embutido e nao passa pela politica.
+                    cabecalhos.addHeaderWriter(new DelegatingRequestMatcherHeaderWriter(
+                            new NegatedRequestMatcher(PathPatternRequestMatcher.withDefaults().matcher("/h2-console/**")),
+                            new StaticHeadersWriter("Content-Security-Policy", POLITICA_DE_CONTEUDO)));
+                })
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**", "/api/**"));
 
         return http.build();

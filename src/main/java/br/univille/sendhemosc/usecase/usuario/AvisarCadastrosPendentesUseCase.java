@@ -6,6 +6,7 @@ import br.univille.sendhemosc.domain.dto.CadastroPendente;
 import br.univille.sendhemosc.domain.dto.MensagemEmail;
 import br.univille.sendhemosc.domain.port.outbound.IEmailPort;
 import br.univille.sendhemosc.domain.port.outbound.IUsuarioRepositoryPort;
+import br.univille.sendhemosc.domain.util.MascaraDeEmail;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -82,7 +83,7 @@ public class AvisarCadastrosPendentesUseCase {
                 emailPort.enviar(new MensagemEmail(destinatario, assunto, corpo));
             } catch (final RuntimeException excecao) {
                 log.error("[m=executarSeDevido] Falha ao avisar o administrador {}: {}",
-                        destinatario, excecao.getMessage());
+                        MascaraDeEmail.mascarar(destinatario), MascaraDeEmail.mascararEmTexto(excecao.getMessage()));
             }
         });
 

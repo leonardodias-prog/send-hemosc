@@ -9,6 +9,7 @@ import br.univille.sendhemosc.domain.enums.TipoSanguineo;
 import br.univille.sendhemosc.domain.exception.EstoqueErrorsMessage;
 import br.univille.sendhemosc.domain.exception.NegocioException;
 import br.univille.sendhemosc.domain.port.outbound.IEstoqueRepositoryPort;
+import br.univille.sendhemosc.domain.util.MascaraDeEmail;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -76,7 +77,7 @@ public class EstoquePersistenceAdapter implements IEstoqueRepositoryPort {
         estoqueRepository.save(entidade);
 
         log.info("[m=atualizar] Estoque {} atualizado para {} de {} bolsas por {}", tipoSanguineo.getSigla(),
-                quantidadeBolsas, capacidadeAlvo, movimentacao.getUsuarioEmail());
+                quantidadeBolsas, capacidadeAlvo, MascaraDeEmail.mascarar(movimentacao.getUsuarioEmail()));
 
         return Optional.of(paraMovimentacao(movimentacao));
     }

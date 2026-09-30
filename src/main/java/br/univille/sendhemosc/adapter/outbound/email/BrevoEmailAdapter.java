@@ -5,6 +5,7 @@ import br.univille.sendhemosc.domain.dto.MensagemEmail;
 import br.univille.sendhemosc.domain.exception.NegocioException;
 import br.univille.sendhemosc.domain.exception.NotificacaoErrorsMessage;
 import br.univille.sendhemosc.domain.port.outbound.IEmailPort;
+import br.univille.sendhemosc.domain.util.MascaraDeEmail;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -67,7 +68,7 @@ public class BrevoEmailAdapter implements IEmailPort {
 
         if (redirecionamento.isAtivo()) {
             log.warn("[m=init] Envio pelo Brevo com redirecionamento: toda mensagem ira para {} "
-                    + "independentemente do destinatario original", redirecionamento.descricao());
+                    + "independentemente do destinatario original", MascaraDeEmail.mascararEmTexto(redirecionamento.descricao()));
         } else {
             log.warn("[m=init] Envio pelo Brevo SEM redirecionamento: cada doador recebera no proprio endereco");
         }
@@ -93,10 +94,12 @@ public class BrevoEmailAdapter implements IEmailPort {
                     .toBodilessEntity();
 
             log.info("[m=enviar] Mensagem de {} entregue ao Brevo para {}",
-                    mensagem.destinatario(), String.join(", ", destinos));
+                    MascaraDeEmail.mascarar(mensagem.destinatario()),
+                    MascaraDeEmail.mascararEmTexto(String.join(", ", destinos)));
         } catch (final RestClientException excecao) {
             log.error("[m=enviar] Falha ao entregar ao Brevo a mensagem de {}: {}",
-                    mensagem.destinatario(), excecao.getMessage());
+                    MascaraDeEmail.mascarar(mensagem.destinatario()),
+                    MascaraDeEmail.mascararEmTexto(excecao.getMessage()));
             throw new NegocioException(NotificacaoErrorsMessage.FALHA_ENVIO, excecao);
         }
     }

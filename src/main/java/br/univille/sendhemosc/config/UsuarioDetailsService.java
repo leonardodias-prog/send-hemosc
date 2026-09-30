@@ -2,6 +2,7 @@ package br.univille.sendhemosc.config;
 
 import br.univille.sendhemosc.domain.dto.UsuarioAutenticavel;
 import br.univille.sendhemosc.domain.port.outbound.IUsuarioRepositoryPort;
+import br.univille.sendhemosc.domain.util.MascaraDeEmail;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +34,7 @@ public class UsuarioDetailsService implements UserDetailsService {
 
         if (!usuario.situacao().permiteAcesso()) {
             log.warn("[m=loadUserByUsername] Tentativa de acesso de {} com conta em situacao {}",
-                    email, usuario.situacao());
+                    MascaraDeEmail.mascarar(email), usuario.situacao());
         }
 
         return User.withUsername(usuario.email())

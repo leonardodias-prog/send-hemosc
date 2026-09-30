@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Contas — Send Hemosc</title>
     <link rel="stylesheet" th:href="@{/css/sendhemosc.css}"/>
+    <script th:src="@{/js/sendhemosc.js}" defer></script>
 </head>
 <body>
 <div class="app">
@@ -104,13 +105,13 @@
 
                 <button type="submit" class="secundario"
                         th:formaction="@{'/usuarios/' + ${u.id} + '/senha'}"
-                        onclick="return confirm('Gerar uma senha nova para esta conta? A senha atual deixa de valer.')">
+                        data-confirmar="Gerar uma senha nova para esta conta? A senha atual deixa de valer.">
                     Redefinir senha
                 </button>
 
                 <button type="submit" class="secundario"
                         th:formaction="@{'/usuarios/' + ${u.id} + '/excluir'}"
-                        onclick="return confirm('Excluir esta conta definitivamente? Isso não pode ser desfeito.')">
+                        data-confirmar="Excluir esta conta definitivamente? Isso não pode ser desfeito.">
                     Excluir
                 </button>
             </div>

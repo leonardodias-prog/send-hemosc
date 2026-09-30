@@ -3,6 +3,7 @@ package br.univille.sendhemosc.config;
 import br.univille.sendhemosc.domain.enums.PerfilUsuario;
 import br.univille.sendhemosc.domain.enums.SituacaoUsuario;
 import br.univille.sendhemosc.domain.port.outbound.IUsuarioRepositoryPort;
+import br.univille.sendhemosc.domain.util.MascaraDeEmail;
 import java.security.SecureRandom;
 import java.util.Base64;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +11,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -23,6 +26,10 @@ import org.springframework.util.StringUtils;
  *
  * <p>Quando a senha nao e configurada, uma aleatoria e gerada e escrita no log. Isso evita
  * senha padrao conhecida no codigo, que seria a mesma em toda instalacao.</p>
+ *
+ * <p>No perfil de producao a senha gerada nao serve: o log da hospedagem e legivel por quem opera
+ * a plataforma e fica guardado, entao a senha do administrador nao pode passar por ele. Sem
+ * MASTER_SENHA, o servico se recusa a subir em vez de criar uma conta assim.</p>
  */
 @Slf4j
 @Component
@@ -31,6 +38,7 @@ public class AdministradorInicialRunner implements ApplicationRunner {
 
     private final IUsuarioRepositoryPort usuarioRepository;
     private final PasswordEncoder passwordEncoder;
+    private final boolean producao;
     private final String email;
     private final String nome;
     private final String senhaConfigurada;
@@ -38,11 +46,13 @@ public class AdministradorInicialRunner implements ApplicationRunner {
     public AdministradorInicialRunner(
             final IUsuarioRepositoryPort usuarioRepository,
             final PasswordEncoder passwordEncoder,
+            final Environment ambiente,
             @Value("${sendhemosc.seguranca.master.email:admin@sendhemosc.local}") final String email,
             @Value("${sendhemosc.seguranca.master.nome:Administrador}") final String nome,
             @Value("${sendhemosc.seguranca.master.senha:}") final String senhaConfigurada) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
+        this.producao = ambiente.acceptsProfiles(Profiles.of("producao"));
         this.email = email;
         this.nome = nome;
         this.senhaConfigurada = senhaConfigurada;
@@ -56,6 +66,12 @@ public class AdministradorInicialRunner implements ApplicationRunner {
         }
 
         final boolean senhaGerada = !StringUtils.hasText(senhaConfigurada);
+
+        if (senhaGerada && producao) {
+            throw new IllegalStateException("MASTER_SENHA nao foi definida e nao existe administrador. "
+                    + "Em producao a senha nao e gerada: defina MASTER_SENHA e suba de novo.");
+        }
+
         final String senha = senhaGerada ? gerarSenha() : senhaConfigurada;
 
         usuarioRepository.criar(nome, email.toLowerCase(), passwordEncoder.encode(senha),
@@ -76,7 +92,7 @@ public class AdministradorInicialRunner implements ApplicationRunner {
                     ===========================================================================
                     """, email, senha);
         } else {
-            log.info("[m=run] Administrador criado para {} com a senha configurada", email);
+            log.info("[m=run] Administrador criado para {} com a senha configurada", MascaraDeEmail.mascarar(email));
         }
     }
 

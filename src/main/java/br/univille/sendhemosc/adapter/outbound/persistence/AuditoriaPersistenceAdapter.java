@@ -3,6 +3,7 @@ package br.univille.sendhemosc.adapter.outbound.persistence;
 import br.univille.sendhemosc.adapter.outbound.persistence.entity.AuditoriaEntity;
 import br.univille.sendhemosc.adapter.outbound.persistence.repository.AuditoriaJpaRepository;
 import br.univille.sendhemosc.domain.port.outbound.IAuditoriaPort;
+import br.univille.sendhemosc.domain.util.MascaraDeEmail;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,12 +28,14 @@ public class AuditoriaPersistenceAdapter implements IAuditoriaPort {
         final String autor = autorDaAcao.atual();
 
         auditoriaRepository.save(AuditoriaEntity.builder()
+                .usuarioId(autorDaAcao.idAtual().orElse(null))
                 .usuarioEmail(autor)
                 .acao(acao)
                 .detalhe(detalhe)
                 .ocorridoEm(LocalDateTime.now())
                 .build());
 
-        log.info("[m=registrar] {} por {}: {}", acao, autor, detalhe);
+        log.info("[m=registrar] {} por {}: {}", acao, MascaraDeEmail.mascarar(autor),
+                MascaraDeEmail.mascararEmTexto(detalhe));
     }
 }

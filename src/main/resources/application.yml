@@ -37,7 +37,7 @@ server:
         http-only: true
         same-site: lax
   error:
-    include-message: always
+    include-message: never
     include-stacktrace: never
 
 management:

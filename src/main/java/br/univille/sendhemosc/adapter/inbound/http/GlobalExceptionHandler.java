@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
 
+    private static final String MENSAGEM_REQUISICAO_INVALIDA = "Requisicao invalida.";
+
     private final MessageSource messageSource;
 
     @ExceptionHandler(NegocioException.class)
@@ -35,9 +37,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<RespostaErro> tratarArgumentoInvalido(final IllegalArgumentException excecao) {
+        // O texto da excecao e interno e pode vir de qualquer biblioteca: fica so no log.
         log.warn("[m=tratarArgumentoInvalido] {}", excecao.getMessage());
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new RespostaErro("REQ-400", excecao.getMessage(), LocalDateTime.now()));
+                .body(new RespostaErro("REQ-400", MENSAGEM_REQUISICAO_INVALIDA, LocalDateTime.now()));
     }
 
     /**

@@ -2,6 +2,7 @@ package br.univille.sendhemosc.adapter.outbound.email;
 
 import br.univille.sendhemosc.domain.dto.MensagemEmail;
 import br.univille.sendhemosc.domain.port.outbound.IEmailPort;
+import br.univille.sendhemosc.domain.util.MascaraDeEmail;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +19,7 @@ public class LogEmailAdapter implements IEmailPort {
     @Override
     public void enviar(final MensagemEmail mensagem) {
         log.info("[m=enviar] [MODO LOG - NADA FOI ENVIADO] para={} assunto={} tamanhoCorpo={}",
-                mensagem.destinatario(), mensagem.assunto(), mensagem.corpoHtml().length());
+                MascaraDeEmail.mascarar(mensagem.destinatario()), MascaraDeEmail.mascararEmTexto(mensagem.assunto()),
+                mensagem.corpoHtml().length());
     }
 }

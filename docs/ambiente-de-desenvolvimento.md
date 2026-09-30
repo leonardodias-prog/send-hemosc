@@ -83,6 +83,8 @@ mvn spring-boot:run
 
 O banco é seu, isolado, e nada que você fizer afeta o dos outros.
 
+No perfil `producao` a `MASTER_SENHA` é obrigatória quando o banco ainda não tem administrador: sem ela o serviço se recusa a subir, em vez de gerar uma senha e escrevê-la no log.
+
 ## Antes de abrir pull request
 
 ```bash
@@ -96,7 +98,7 @@ Isso roda os testes e o Checkstyle. A integração contínua roda o mesmo a cada
 | Perfil | Quando usar |
 |---|---|
 | `dev` | Padrão. H2 em memória, dados fictícios, e-mail em log |
-| `producao` | Exige PostgreSQL. É o que roda no ambiente publicado |
+| `producao` | Exige PostgreSQL e `MASTER_SENHA` na primeira subida. É o que roda no ambiente publicado |
 
 ## Cuidados
 
