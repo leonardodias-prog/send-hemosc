@@ -1,0 +1,26 @@
+# Dependabot: abre pull request quando uma dependencia tem versao nova ou vulnerabilidade
+# conhecida. Os alertas de seguranca em si dependem de estar ligados em Settings > Code
+# security do repositorio; este arquivo cuida das atualizacoes.
+version: 2
+updates:
+  - package-ecosystem: maven
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      # Atualizacoes do Spring Boot trazem juntas as bibliotecas que ele gerencia.
+      spring:
+        patterns:
+          - "org.springframework*"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly

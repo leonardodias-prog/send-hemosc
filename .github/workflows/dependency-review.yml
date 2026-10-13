@@ -1,0 +1,23 @@
+name: Revisao de dependencias
+
+# Em todo pull request, compara as dependencias que entram com o banco de vulnerabilidades do
+# GitHub e reprova quando alguma tem falha de gravidade alta ou critica.
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  revisao:
+    name: Vulnerabilidades nas dependencias
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Revisar dependencias
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
