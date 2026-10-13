@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.6</version>
+        <version>3.5.16</version>
         <relativePath/>
     </parent>
 
@@ -25,8 +25,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <checkstyle.plugin.version>3.6.0</checkstyle.plugin.version>
         <checkstyle.version>10.20.2</checkstyle.version>
-        <jacoco.version>0.8.12</jacoco.version>
-        <datafaker.version>2.4.2</datafaker.version>
+        <jacoco.version>0.8.15</jacoco.version>
+        <datafaker.version>2.7.0</datafaker.version>
         <project.build.checkstyleSkip>false</project.build.checkstyleSkip>
     </properties>
 
