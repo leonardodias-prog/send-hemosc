@@ -9,6 +9,7 @@ import br.univille.sendhemosc.domain.enums.StatusNotificacao;
 import br.univille.sendhemosc.domain.enums.TipoSanguineo;
 import br.univille.sendhemosc.domain.exception.EstoqueErrorsMessage;
 import br.univille.sendhemosc.domain.exception.NegocioException;
+import br.univille.sendhemosc.domain.port.outbound.IAuditoriaPort;
 import br.univille.sendhemosc.domain.port.outbound.IDoadorRepositoryPort;
 import br.univille.sendhemosc.domain.port.outbound.IEmailPort;
 import br.univille.sendhemosc.domain.port.outbound.IEstoqueRepositoryPort;
@@ -56,6 +57,7 @@ public class ConvocarDoadoresUseCase {
     private final CalcularAptidaoUseCase calcularAptidao;
     private final AvaliarLimiteDeContatoUseCase avaliarLimiteDeContato;
     private final RenderizarConvocacaoUseCase renderizarConvocacao;
+    private final IAuditoriaPort auditoria;
 
     /**
      * Interrompe a rodada apos esta quantidade de falhas seguidas. Falha em sequencia indica
@@ -84,7 +86,13 @@ public class ConvocarDoadoresUseCase {
         }
 
         final SelecaoConvocacao selecao = selecionar(situacao, LocalDate.now());
-        return enviar(selecao, selecao.elegiveis(), origem);
+        final ResultadoConvocacao resultado = enviar(selecao, selecao.elegiveis(), origem);
+
+        // Mesmo formato da convocacao seletiva e da automatica. O autor vem da sessao, gravado pelo
+        // adaptador de auditoria: a convocacao fica registrada em nome de quem apertou o botao.
+        auditoria.registrar("CONVOCACAO_POR_TIPO", descrever(resultado));
+
+        return resultado;
     }
 
     /**
@@ -158,6 +166,13 @@ public class ConvocarDoadoresUseCase {
 
         return new ResultadoConvocacao(tipoSanguineo, situacao.nivel(), selecao.elegiveis().size(),
                 enviados, falhas, selecao.retidos().size(), interrompida);
+    }
+
+    private static String descrever(final ResultadoConvocacao resultado) {
+        return "tipo %s em nivel %s: %d elegivel(is), %d enviado(s), %d falha(s), %d retido(s) pelo limite de contato"
+                .formatted(resultado.tipoSanguineo().getSigla(), resultado.nivel(), resultado.totalElegiveis(),
+                        resultado.totalEnviados(), resultado.totalFalhas(), resultado.totalRetidos())
+                + (resultado.interrompida() ? ". Interrompida por falhas seguidas no envio." : ".");
     }
 
     private SituacaoEstoque situacaoDoTipo(final TipoSanguineo tipoSanguineo) {

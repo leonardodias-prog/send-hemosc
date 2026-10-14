@@ -21,6 +21,7 @@ import br.univille.sendhemosc.domain.enums.OrigemNotificacao;
 import br.univille.sendhemosc.domain.enums.Sexo;
 import br.univille.sendhemosc.domain.enums.StatusNotificacao;
 import br.univille.sendhemosc.domain.enums.TipoSanguineo;
+import br.univille.sendhemosc.domain.port.outbound.IAuditoriaPort;
 import br.univille.sendhemosc.domain.port.outbound.IDoadorRepositoryPort;
 import br.univille.sendhemosc.domain.port.outbound.IEmailPort;
 import br.univille.sendhemosc.domain.port.outbound.IEstoqueRepositoryPort;
@@ -56,6 +57,8 @@ class ConvocarDoadoresUseCaseTest {
     private IEmailPort emailPort;
     @Mock
     private RenderizarConvocacaoUseCase renderizarConvocacao;
+    @Mock
+    private IAuditoriaPort auditoria;
 
     private ConvocarDoadoresUseCase useCase;
 
@@ -69,7 +72,7 @@ class ConvocarDoadoresUseCaseTest {
         useCase = new ConvocarDoadoresUseCase(
                 estoqueRepository, doadorRepository, notificacaoRepository, emailPort,
                 new ClassificarNivelEstoqueUseCase(properties), new CalcularAptidaoUseCase(properties),
-                new AvaliarLimiteDeContatoUseCase(properties), renderizarConvocacao);
+                new AvaliarLimiteDeContatoUseCase(properties), renderizarConvocacao, auditoria);
 
         ReflectionTestUtils.setField(useCase, "maxFalhasConsecutivas", 5);
     }
@@ -104,6 +107,7 @@ class ConvocarDoadoresUseCaseTest {
         assertThat(resultado.totalEnviados()).isZero();
         verify(emailPort, never()).enviar(any());
         verify(doadorRepository, never()).buscarCandidatos(anySet(), any());
+        verify(auditoria, never()).registrar(any(), any());
     }
 
     @Test
@@ -119,6 +123,42 @@ class ConvocarDoadoresUseCaseTest {
 
         assertThat(resultado.totalEnviados()).isEqualTo(1);
         verify(emailPort).enviar(any());
+    }
+
+    @Test
+    @DisplayName("a convocacao por tipo fica em auditoria com o tipo, o nivel e os totais")
+    void convocacaoPorTipoFicaEmAuditoria() {
+        estoqueEm(10, 100);
+        when(doadorRepository.buscarCandidatos(anySet(), any())).thenReturn(List.of(
+                candidato(1L, null),
+                candidato(2L, null),
+                comHistorico(3L, null, 0, LocalDateTime.now().minusDays(5))));
+        when(renderizarConvocacao.execute(any(), any()))
+                .thenReturn(new MensagemEmail("doador@example.org", "assunto", "<p>corpo</p>"));
+        doThrow(new RuntimeException("timeout")).doNothing().when(emailPort).enviar(any());
+
+        useCase.execute(TipoSanguineo.O_NEGATIVO, OrigemNotificacao.MANUAL, true);
+
+        verify(auditoria).registrar("CONVOCACAO_POR_TIPO",
+                "tipo O- em nivel CRITICO: 2 elegivel(is), 1 enviado(s), 1 falha(s), 1 retido(s) pelo limite de contato.");
+    }
+
+    @Test
+    @DisplayName("a auditoria da convocacao por tipo registra quando a rodada foi interrompida")
+    void auditoriaRegistraInterrupcao() {
+        estoqueEm(10, 100);
+        when(doadorRepository.buscarCandidatos(anySet(), any())).thenReturn(List.of(
+                candidato(1L, null), candidato(2L, null), candidato(3L, null),
+                candidato(4L, null), candidato(5L, null), candidato(6L, null)));
+        when(renderizarConvocacao.execute(any(), any()))
+                .thenReturn(new MensagemEmail("doador@example.org", "assunto", "<p>corpo</p>"));
+        doThrow(new RuntimeException("timeout")).when(emailPort).enviar(any());
+
+        useCase.execute(TipoSanguineo.O_NEGATIVO, OrigemNotificacao.MANUAL, true);
+
+        verify(auditoria).registrar(eq("CONVOCACAO_POR_TIPO"),
+                eq("tipo O- em nivel CRITICO: 6 elegivel(is), 0 enviado(s), 5 falha(s), 0 retido(s) "
+                        + "pelo limite de contato. Interrompida por falhas seguidas no envio."));
     }
 
     @Test
