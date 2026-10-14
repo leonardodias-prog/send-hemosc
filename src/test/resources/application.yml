@@ -31,6 +31,13 @@ sendhemosc:
     # Uma hora: a conferencia periodica nao roda durante os testes, que chamam a rodada direto.
     primeira-verificacao-ms: 3600000
   seguranca:
+    master:
+      # Este arquivo substitui o application.yml principal, entao a senha precisa ser mapeada
+      # aqui tambem. O teste em PostgreSQL sobe com o perfil producao, que nao gera senha: sem
+      # este mapeamento, o MASTER_SENHA da integracao continua seria ignorado. O e-mail fica
+      # fixo porque ha testes que procuram o administrador por ele.
+      email: admin@sendhemosc.local
+      senha: ${MASTER_SENHA:}
     aprovacao:
       # Idem para o aviso de cadastros pendentes: os testes chamam o aviso direto.
       aviso-primeira-verificacao-ms: 3600000
