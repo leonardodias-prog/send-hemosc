@@ -24,7 +24,7 @@
         <java.version>21</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <checkstyle.plugin.version>3.6.0</checkstyle.plugin.version>
-        <checkstyle.version>10.20.2</checkstyle.version>
+        <checkstyle.version>14.3.0</checkstyle.version>
         <jacoco.version>0.8.15</jacoco.version>
         <datafaker.version>2.7.0</datafaker.version>
         <project.build.checkstyleSkip>false</project.build.checkstyleSkip>
