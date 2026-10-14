@@ -102,7 +102,7 @@ public class SegurancaConfig {
                     // Acoes que produzem e-mail de verdade. Precisam vir antes das regras
                     // gerais abaixo: a primeira correspondencia decide, e /doadores/** liberaria
                     // a convocacao seletiva para quem so deveria alimentar dados.
-                    .requestMatchers("/convocar/**", "/api/convocacoes/**", "/envio/**",
+                    .requestMatchers("/convocar/**", "/envio/**",
                             "/doadores/convocar", "/doadores/*/convocar", "/disparo-automatico/**")
                             .hasAnyRole(PERFIL_RESPONSAVEL, PERFIL_MASTER)
                     // Alimentacao de dados e consulta
@@ -139,7 +139,8 @@ public class SegurancaConfig {
                             new NegatedRequestMatcher(PathPatternRequestMatcher.withDefaults().matcher("/h2-console/**")),
                             new StaticHeadersWriter("Content-Security-Policy", POLITICA_DE_CONTEUDO)));
                 })
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**", "/api/**"));
+                // A API so tem leitura. Se uma rota de escrita voltar, ela exige o token como as telas.
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"));
 
         return http.build();
     }

@@ -55,6 +55,7 @@ transfusional**. Quando A+ está em falta, convoca A+, A−, O+ e O−.
 | `/login`, `/cadastro`, `/termo` | Público | Entrada, autocadastro e termo de uso |
 | `/senha/esqueci` | Público | Recuperação de senha por um link enviado ao e-mail da conta |
 | `/meus-dados/{token}` | Público, pelo link dos e-mails | O doador baixa uma cópia dos próprios dados ou pede a exclusão |
+| `/api/estoque`, `/api/estoque/movimentacoes` | Todos autenticados | Consulta do estoque em JSON. A API só tem leitura: escrever passa pelas telas, que exigem o token CSRF |
 
 ## Perfis de acesso
 
