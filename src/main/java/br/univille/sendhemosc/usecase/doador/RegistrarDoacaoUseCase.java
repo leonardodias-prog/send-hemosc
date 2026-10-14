@@ -72,8 +72,8 @@ public class RegistrarDoacaoUseCase {
         final Long doacaoId = doacaoRepository.registrar(doacao);
         final int fechadas = notificacaoRepository.marcarComparecimento(doacao.doadorId(), doacao.dataDoacao());
 
-        auditoria.registrar("DOACAO_REGISTRADA", "%s doou em %s; %d convocacao(oes) fechada(s)%s"
-                .formatted(doador.nome(), doacao.dataDoacao(), fechadas,
+        auditoria.registrar("DOACAO_REGISTRADA", "doador %d doou em %s; %d convocacao(oes) fechada(s)%s"
+                .formatted(doacao.doadorId(), doacao.dataDoacao(), fechadas,
                         estavaApto ? "" : "; constava como inapto"));
 
         return new ResultadoRegistroDoacao(doacaoId, doador.nome(), fechadas,

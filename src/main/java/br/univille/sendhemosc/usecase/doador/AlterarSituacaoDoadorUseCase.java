@@ -37,7 +37,7 @@ public class AlterarSituacaoDoadorUseCase {
 
         doadorRepository.definirAtivo(id, ativo);
         auditoria.registrar(ativo ? "DOADOR_REATIVADO" : "DOADOR_DESATIVADO",
-                "%s (doador %d)".formatted(doador.nome(), id));
+                "doador %d".formatted(id));
 
         log.info("[m=execute] Doador {} {}", id, ativo ? "reativado" : "desativado");
         return doador.nome();

@@ -8,6 +8,7 @@ import br.univille.sendhemosc.domain.dto.SituacaoEstoque;
 import br.univille.sendhemosc.domain.enums.PerfilUsuario;
 import br.univille.sendhemosc.domain.enums.SituacaoUsuario;
 import br.univille.sendhemosc.domain.enums.TipoSanguineo;
+import br.univille.sendhemosc.domain.port.outbound.IAuditoriaPort;
 import br.univille.sendhemosc.domain.port.outbound.IDisparoAutomaticoRepositoryPort;
 import br.univille.sendhemosc.domain.port.outbound.IDoadorRepositoryPort;
 import br.univille.sendhemosc.domain.port.outbound.IRecuperacaoSenhaPort;
@@ -27,6 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
 /**
@@ -63,6 +65,12 @@ class MigracaoPostgresTest {
 
     @Autowired
     private IRecuperacaoSenhaPort recuperacaoSenha;
+
+    @Autowired
+    private IAuditoriaPort auditoria;
+
+    @Autowired
+    private JdbcTemplate jdbc;
 
     @Test
     @DisplayName("o banco realmente e PostgreSQL, e nao H2 por engano")
@@ -155,6 +163,18 @@ class MigracaoPostgresTest {
         assertThat(doadorRepository.buscarCandidatos(TipoSanguineo.A_POSITIVO.siglasDoadoresCompativeis(), hoje))
                 .isNotNull();
         assertThat(doadorRepository.buscarPorFiltro(FiltroDoador.vazio(), hoje)).isNotNull();
+    }
+
+    @Test
+    @DisplayName("a retirada do nome do doador da auditoria roda no PostgreSQL")
+    void anonimizacaoNoPostgres() {
+        final String nome = "Titular " + UUID.randomUUID();
+        auditoria.registrar("DOADOR_DESATIVADO", nome + " (doador 999999)");
+
+        auditoria.anonimizarDoador(999999L, nome);
+
+        assertThat(jdbc.queryForObject("select count(*) from auditoria where detalhe like ?", Integer.class,
+                "%" + nome + "%")).isZero();
     }
 
     @Test

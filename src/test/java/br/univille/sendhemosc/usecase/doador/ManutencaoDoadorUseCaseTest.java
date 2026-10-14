@@ -127,6 +127,7 @@ class ManutencaoDoadorUseCaseTest {
             new ExcluirDoadorUseCase(doadorRepository, auditoria).porToken("tok");
 
             verify(doadorRepository).excluir(ID);
+            verify(auditoria).anonimizarDoador(ID, "Beatriz Souza");
             final ArgumentCaptor<String> detalhe = ArgumentCaptor.forClass(String.class);
             verify(auditoria).registrar(eq("DOADOR_EXCLUIDO"), detalhe.capture());
             assertThat(detalhe.getValue()).contains("TITULAR").doesNotContain("Beatriz", "beatriz@example.org");
@@ -173,6 +174,6 @@ class ManutencaoDoadorUseCaseTest {
 
         assertThat(nome).isEqualTo("Beatriz Souza");
         verify(doadorRepository).definirAtivo(ID, false);
-        verify(auditoria).registrar(eq("DOADOR_DESATIVADO"), anyString());
+        verify(auditoria).registrar("DOADOR_DESATIVADO", "doador " + ID);
     }
 }

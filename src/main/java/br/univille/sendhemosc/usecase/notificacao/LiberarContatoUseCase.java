@@ -44,8 +44,8 @@ public class LiberarContatoUseCase {
         doadorRepository.liberarContato(doadorId, LocalDateTime.now());
 
         auditoria.registrar("LIMITE_DE_CONTATO_LIBERADO",
-                "%s (doador %d): convocacoes anteriores deixam de contar para o teto e o intervalo"
-                        .formatted(doador.nome(), doadorId));
+                "doador %d: convocacoes anteriores deixam de contar para o teto e o intervalo"
+                        .formatted(doadorId));
 
         return doador.nome();
     }

@@ -13,4 +13,14 @@ public interface IAuditoriaPort {
      * @param detalhe descricao do que foi feito
      */
     void registrar(String acao, String detalhe);
+
+    /**
+     * Troca o nome do doador pelo identificador nos registros sobre doadores. Hoje eles ja nao
+     * guardam o nome, mas os gravados antes disso guardam, e a exclusao a pedido do titular nao
+     * pode deixar o nome para tras.
+     *
+     * @param doadorId doador excluido
+     * @param nome nome que o doador tinha no cadastro
+     */
+    void anonimizarDoador(Long doadorId, String nome);
 }

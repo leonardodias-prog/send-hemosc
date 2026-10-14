@@ -106,7 +106,7 @@ class RegistrarDoacaoUseCaseTest {
         }
 
         @Test
-        @DisplayName("registra em auditoria quem doou e quantas convocacoes foram fechadas")
+        @DisplayName("registra em auditoria o identificador de quem doou, sem o nome, e quantas convocacoes foram fechadas")
         void registraEmAuditoria() {
             doadorExistente(null, 0);
             when(doacaoRepository.existeNoDia(anyLong(), any())).thenReturn(false);
@@ -117,7 +117,7 @@ class RegistrarDoacaoUseCaseTest {
 
             verify(auditoria).registrar(anyString(),
                     org.mockito.ArgumentMatchers.argThat(detalhe ->
-                            detalhe.contains("Beatriz Souza") && detalhe.contains("2 convocacao")));
+                            detalhe.startsWith("doador 1 doou em") && !detalhe.contains("Beatriz") && detalhe.contains("2 convocacao")));
         }
     }
 

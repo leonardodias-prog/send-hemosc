@@ -8,6 +8,7 @@ import br.univille.sendhemosc.domain.port.outbound.IDoadorRepositoryPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Exclui o doador e todo o historico dele: doacoes, convocacoes e consentimentos.
@@ -32,6 +33,7 @@ public class ExcluirDoadorUseCase {
      *
      * @param id doador
      */
+    @Transactional
     public void porId(final Long id) {
         excluir(doadorRepository.buscarPorId(id)
                 .orElseThrow(() -> new NegocioException(DoadorErrorsMessage.NAO_ENCONTRADO)), "EQUIPE");
@@ -42,6 +44,7 @@ public class ExcluirDoadorUseCase {
      *
      * @param token token do link
      */
+    @Transactional
     public void porToken(final String token) {
         excluir(doadorRepository.buscarPorToken(token)
                 .orElseThrow(() -> new NegocioException(DoadorErrorsMessage.NAO_ENCONTRADO)), "TITULAR");
@@ -49,6 +52,7 @@ public class ExcluirDoadorUseCase {
 
     private void excluir(final DoadorCadastrado doador, final String origem) {
         doadorRepository.excluir(doador.id());
+        auditoria.anonimizarDoador(doador.id(), doador.nome());
         auditoria.registrar("DOADOR_EXCLUIDO", "doador %d, a pedido de: %s".formatted(doador.id(), origem));
 
         log.info("[m=excluir] Doador {} excluido, origem {}", doador.id(), origem);

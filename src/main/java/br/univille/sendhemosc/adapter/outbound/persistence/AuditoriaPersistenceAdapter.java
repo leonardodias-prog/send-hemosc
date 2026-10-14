@@ -5,6 +5,7 @@ import br.univille.sendhemosc.adapter.outbound.persistence.repository.AuditoriaJ
 import br.univille.sendhemosc.domain.port.outbound.IAuditoriaPort;
 import br.univille.sendhemosc.domain.util.MascaraDeEmail;
 import java.time.LocalDateTime;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 @RequiredArgsConstructor
 public class AuditoriaPersistenceAdapter implements IAuditoriaPort {
+
+    /** Acoes que, antes de guardarem so o identificador, gravavam o nome do doador. */
+    private static final Set<String> ACOES_SOBRE_DOADOR = Set.of(
+            "DOACAO_REGISTRADA", "DOADOR_DESATIVADO", "DOADOR_REATIVADO", "LIMITE_DE_CONTATO_LIBERADO");
 
     private final AuditoriaJpaRepository auditoriaRepository;
     private final AutorDaAcao autorDaAcao;
@@ -37,5 +42,17 @@ public class AuditoriaPersistenceAdapter implements IAuditoriaPort {
 
         log.info("[m=registrar] {} por {}: {}", acao, MascaraDeEmail.mascarar(autor),
                 MascaraDeEmail.mascararEmTexto(detalhe));
+    }
+
+    /**
+     * So nas acoes sobre doadores: um membro da equipe com o mesmo nome nao pode ter os registros
+     * das proprias contas alterados.
+     */
+    @Override
+    @Transactional
+    public void anonimizarDoador(final Long doadorId, final String nome) {
+        final int alterados = auditoriaRepository.substituirNoDetalhe(ACOES_SOBRE_DOADOR, nome, "doador " + doadorId);
+
+        log.info("[m=anonimizarDoador] Nome do doador {} retirado de {} registro(s)", doadorId, alterados);
     }
 }
