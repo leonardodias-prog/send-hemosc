@@ -1,5 +1,5 @@
 # ---- Build ----
-FROM maven:3.9-eclipse-temurin-21 AS build
+FROM maven:3.9-eclipse-temurin-26 AS build
 WORKDIR /build
 
 # Baixar as dependencias antes de copiar o codigo aproveita o cache de camada do Docker:
