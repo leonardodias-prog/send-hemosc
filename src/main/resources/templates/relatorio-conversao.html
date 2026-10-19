@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Relatório de conversão — Send Hemosc</title>
+    <link rel="stylesheet" th:href="@{/css/sendhemosc.css}"/>
+</head>
+<body>
+<div class="app">
+
+<nav th:replace="~{fragmentos/casca :: lateral('relatorios')}"></nav>
+
+<main class="conteudo">
+<div class="container">
+
+    <header>
+        <h1>Relatório de conversão</h1>
+        <p class="subtitulo">Quantos convocados viraram doação, por tipo sanguíneo e período</p>
+    </header>
+
+    <div class="cartao">
+        <h2>Período</h2>
+        <form th:action="@{/relatorios/conversao}" method="get" style="display:block;">
+            <div class="campos">
+                <div class="campo">
+                    <label for="dataInicio">De</label>
+                    <input type="date" id="dataInicio" name="dataInicio"
+                           th:value="${#temporals.format(relatorio.inicio, 'yyyy-MM-dd')}"/>
+                </div>
+                <div class="campo">
+                    <label for="dataFim">Até</label>
+                    <input type="date" id="dataFim" name="dataFim"
+                           th:value="${#temporals.format(relatorio.fim, 'yyyy-MM-dd')}"/>
+                </div>
+            </div>
+            <button type="submit">Aplicar período</button>
+        </form>
+    </div>
+
+    <div class="resumo">
+        <div class="indicador">
+            <div class="numero" th:text="${relatorio.totalConvocados()}">0</div>
+            <div class="rotulo">convocações enviadas no período</div>
+        </div>
+        <div class="indicador">
+            <div class="numero normal" th:text="${relatorio.totalConvertidos()}">0</div>
+            <div class="rotulo">terminaram em doação</div>
+        </div>
+        <div class="indicador">
+            <div class="numero" th:text="${#numbers.formatDecimal(relatorio.taxaConversaoGeral(), 1, 1)} + '%'">0%</div>
+            <div class="rotulo">taxa de conversão geral</div>
+        </div>
+    </div>
+
+    <div class="cartao">
+        <h2>Por tipo sanguíneo</h2>
+        <p class="dica" style="margin-bottom:12px;">
+            Uma convocação conta por envio, não por doador: quem recebeu duas convocações no
+            período conta duas vezes, como nos demais resumos de envio do sistema.
+        </p>
+
+        <div class="tabela-rolavel">
+        <table>
+            <thead>
+            <tr>
+                <th>Tipo</th>
+                <th>Convocados</th>
+                <th>Converteram em doação</th>
+                <th>Taxa de conversão</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="linha : ${relatorio.porTipo()}">
+                <td><strong th:text="${linha.tipoSanguineo.sigla}">O-</strong></td>
+                <td th:text="${linha.totalConvocados()}">0</td>
+                <td th:text="${linha.totalConvertidos()}">0</td>
+                <td th:text="${#numbers.formatDecimal(linha.taxaConversao(), 1, 1)} + '%'">0%</td>
+            </tr>
+            </tbody>
+        </table>
+        </div>
+    </div>
+
+</div>
+</main>
+
+</div>
+
+</body>
+</html>

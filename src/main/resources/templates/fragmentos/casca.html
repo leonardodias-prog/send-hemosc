@@ -38,6 +38,12 @@
               title="As rodadas automáticas de convocação estão ligadas">ligado</span>
     </a>
 
+    <a class="secao" th:href="@{/relatorios/conversao}"
+       th:classappend="${secao == 'relatorios'} ? 'atual'"
+       th:aria-current="${secao == 'relatorios'} ? 'page' : null">
+        <span>Relatórios</span>
+    </a>
+
     <a class="secao" th:href="@{/usuarios}" sec:authorize="hasRole('MASTER')"
        th:classappend="${secao == 'contas'} ? 'atual'"
        th:aria-current="${secao == 'contas'} ? 'page' : null">
