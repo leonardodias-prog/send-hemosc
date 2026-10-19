@@ -55,4 +55,27 @@ public interface NotificacaoJpaRepository extends JpaRepository<NotificacaoEntit
             """)
     int marcarComparecimento(@Param("doadorId") Long doadorId,
                              @Param("dataDoacao") LocalDate dataDoacao);
+
+    /**
+     * Conta, por tipo sanguineo, as convocacoes enviadas no periodo e quantas delas fecharam
+     * em comparecimento. Uma linha por convocacao enviada, nao por doador: quem recebeu duas
+     * conta duas vezes, como em qualquer outro resumo de envio do sistema.
+     *
+     * @param inicio inicio do periodo, inclusive
+     * @param fimExclusivo fim do periodo, exclusivo (o dia seguinte ao ultimo dia incluido)
+     * @return tuplas (sigla do tipo, total convocado, total convertido)
+     */
+    @Query("""
+            SELECT n.tipoSanguineoAlvo,
+                   COUNT(n),
+                   SUM(CASE WHEN n.status = br.univille.sendhemosc.domain.enums.StatusNotificacao.COMPARECEU
+                            THEN 1L ELSE 0L END)
+              FROM NotificacaoEntity n
+             WHERE n.status IN (br.univille.sendhemosc.domain.enums.StatusNotificacao.ENVIADA,
+                                 br.univille.sendhemosc.domain.enums.StatusNotificacao.COMPARECEU)
+               AND n.enviadaEm >= :inicio AND n.enviadaEm < :fimExclusivo
+             GROUP BY n.tipoSanguineoAlvo
+            """)
+    List<Object[]> contarConversaoPorTipo(@Param("inicio") LocalDateTime inicio,
+                                          @Param("fimExclusivo") LocalDateTime fimExclusivo);
 }

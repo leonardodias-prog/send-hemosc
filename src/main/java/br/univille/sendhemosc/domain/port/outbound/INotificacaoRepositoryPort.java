@@ -1,5 +1,6 @@
 package br.univille.sendhemosc.domain.port.outbound;
 
+import br.univille.sendhemosc.domain.dto.ConversaoPorTipo;
 import br.univille.sendhemosc.domain.enums.NivelEstoque;
 import br.univille.sendhemosc.domain.enums.OrigemNotificacao;
 import br.univille.sendhemosc.domain.enums.StatusNotificacao;
@@ -58,4 +59,13 @@ public interface INotificacaoRepositoryPort {
      * @return numero da proxima tentativa
      */
     int proximaTentativa(Long doadorId, TipoSanguineo tipoSanguineo);
+
+    /**
+     * Conta, por tipo sanguineo, quantas convocacoes enviadas no periodo terminaram em doacao.
+     *
+     * @param inicio data inicial do periodo, inclusive
+     * @param fim data final do periodo, inclusive
+     * @return uma linha por tipo sanguineo, incluindo os sem convocacao no periodo
+     */
+    List<ConversaoPorTipo> contarConversaoPorTipo(LocalDate inicio, LocalDate fim);
 }

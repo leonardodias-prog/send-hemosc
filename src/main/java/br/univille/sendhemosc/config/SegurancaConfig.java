@@ -106,7 +106,7 @@ public class SegurancaConfig {
                             "/doadores/convocar", "/doadores/*/convocar", "/disparo-automatico/**")
                             .hasAnyRole(PERFIL_RESPONSAVEL, PERFIL_MASTER)
                     // Alimentacao de dados e consulta
-                    .requestMatchers("/", "/doadores/**", "/estoque/**", "/api/**")
+                    .requestMatchers("/", "/doadores/**", "/estoque/**", "/api/**", "/relatorios/**")
                             .hasAnyRole(PERFIL_OPERADOR, PERFIL_RESPONSAVEL, PERFIL_MASTER)
                     .anyRequest().authenticated())
                 .formLogin(login -> login

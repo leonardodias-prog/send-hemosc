@@ -32,6 +32,7 @@ depois que o estoque já caiu.
 | Cálculo da data estimada da próxima doação | [`CalcularAptidaoUseCase`](src/main/java/br/univille/sendhemosc/usecase/doador/CalcularAptidaoUseCase.java) |
 | Convocação por tipo sanguíneo + aptidão | [`ConvocarDoadoresUseCase`](src/main/java/br/univille/sendhemosc/usecase/notificacao/ConvocarDoadoresUseCase.java) |
 | Convocação de uma seleção específica | [`ConvocarSelecionadosUseCase`](src/main/java/br/univille/sendhemosc/usecase/notificacao/ConvocarSelecionadosUseCase.java) |
+| Relatório de conversão: quantos convocados viraram doação, por tipo e período | [`GerarRelatorioConversaoUseCase`](src/main/java/br/univille/sendhemosc/usecase/notificacao/GerarRelatorioConversaoUseCase.java) |
 | Limite de contato por pessoa: intervalo e teto de convocações sem resposta | [`AvaliarLimiteDeContatoUseCase`](src/main/java/br/univille/sendhemosc/usecase/notificacao/AvaliarLimiteDeContatoUseCase.java) |
 | Disparo automático configurável na tela | [`ExecutarDisparoAutomaticoUseCase`](src/main/java/br/univille/sendhemosc/usecase/notificacao/ExecutarDisparoAutomaticoUseCase.java) |
 | Interruptor de envio, acionável na tela | [`EnvioDeEmailRouter`](src/main/java/br/univille/sendhemosc/adapter/outbound/email/EnvioDeEmailRouter.java) |
@@ -50,6 +51,7 @@ transfusional**. Quando A+ está em falta, convoca A+, A−, O+ e O−.
 | `/doadores` | Todos autenticados | Busca com filtros, aptidão e convocação seletiva |
 | `/doadores/{id}/editar` | Todos autenticados (excluir: responsável e administrador) | Edição, desativação, exportação dos dados e exclusão do doador |
 | `/disparo-automatico` | Responsável e administrador | Liga, desliga e configura a rodada automática, com prévia de quem ela convocaria |
+| `/relatorios/conversao` | Todos autenticados | Quantos convocados viraram doação, por tipo sanguíneo e período |
 | `/usuarios` | Administrador | Criação, alteração, senha e exclusão de contas |
 | `/conta/senha` | Todos autenticados | Troca da própria senha, pedindo a atual |
 | `/login`, `/cadastro`, `/termo` | Público | Entrada, autocadastro e termo de uso |
