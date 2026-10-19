@@ -40,6 +40,7 @@ public class ListarDoadoresUseCase {
         final List<DoadorListado> listados = doadorRepository.buscarPorFiltro(filtro, hoje).stream()
                 .map(candidato -> montar(candidato, hoje))
                 .filter(doador -> !filtro.apenasAptos() || doador.apto())
+                .filter(doador -> !filtro.apenasConvocados() || doador.convocacoesSemResposta() > 0)
                 .toList();
 
         log.debug("[m=execute] Listagem devolveu {} doadores", listados.size());

@@ -62,9 +62,10 @@ public class DoadorViewAdapter {
                          @RequestParam(defaultValue = "false") final boolean apenasAptos,
                          @RequestParam(defaultValue = "false") final boolean apenasComConsentimento,
                          @RequestParam(defaultValue = "false") final boolean porCompatibilidade,
+                         @RequestParam(defaultValue = "false") final boolean apenasConvocados,
                          final Model model) {
         final FiltroDoador filtro = montarFiltro(busca, tipo, apenasAptos, apenasComConsentimento,
-                porCompatibilidade);
+                porCompatibilidade, apenasConvocados);
         final List<DoadorListado> doadores = listarDoadores.execute(filtro);
 
         model.addAttribute("doadores", doadores);
@@ -84,6 +85,7 @@ public class DoadorViewAdapter {
                                   @RequestParam(defaultValue = "false") final boolean apenasAptos,
                                   @RequestParam(defaultValue = "false") final boolean apenasComConsentimento,
                                   @RequestParam(defaultValue = "false") final boolean porCompatibilidade,
+                                  @RequestParam(defaultValue = "false") final boolean apenasConvocados,
                                   final RedirectAttributes atributos) {
         if (selecionados == null || selecionados.isEmpty()) {
             atributos.addFlashAttribute("erro", "Selecione ao menos um doador.");
@@ -91,7 +93,8 @@ public class DoadorViewAdapter {
             informar(convocarSelecionados.execute(selecionados), selecionados.size(), atributos);
         }
 
-        return devolverParaLista(atributos, busca, tipo, apenasAptos, apenasComConsentimento, porCompatibilidade);
+        return devolverParaLista(atributos, busca, tipo, apenasAptos, apenasComConsentimento, porCompatibilidade,
+                apenasConvocados);
     }
 
     @PostMapping("/doadores/{id}/convocar")
@@ -101,10 +104,12 @@ public class DoadorViewAdapter {
                              @RequestParam(defaultValue = "false") final boolean apenasAptos,
                              @RequestParam(defaultValue = "false") final boolean apenasComConsentimento,
                              @RequestParam(defaultValue = "false") final boolean porCompatibilidade,
+                             @RequestParam(defaultValue = "false") final boolean apenasConvocados,
                              final RedirectAttributes atributos) {
         informar(convocarSelecionados.execute(Set.of(id)), 1, atributos);
 
-        return devolverParaLista(atributos, busca, tipo, apenasAptos, apenasComConsentimento, porCompatibilidade);
+        return devolverParaLista(atributos, busca, tipo, apenasAptos, apenasComConsentimento, porCompatibilidade,
+                apenasConvocados);
     }
 
     @PostMapping("/doadores/{id}/doacao")
@@ -117,6 +122,7 @@ public class DoadorViewAdapter {
                                   @RequestParam(defaultValue = "false") final boolean apenasAptos,
                                   @RequestParam(defaultValue = "false") final boolean apenasComConsentimento,
                                   @RequestParam(defaultValue = "false") final boolean porCompatibilidade,
+                                  @RequestParam(defaultValue = "false") final boolean apenasConvocados,
                                   final RedirectAttributes atributos) {
         try {
             final ResultadoRegistroDoacao resultado = registrarDoacao
@@ -129,7 +135,8 @@ public class DoadorViewAdapter {
                     excecao.getErro().getChaveMensagem(), PT_BR));
         }
 
-        return devolverParaLista(atributos, busca, tipo, apenasAptos, apenasComConsentimento, porCompatibilidade);
+        return devolverParaLista(atributos, busca, tipo, apenasAptos, apenasComConsentimento, porCompatibilidade,
+                apenasConvocados);
     }
 
     @PostMapping("/doadores/{id}/liberar-contato")
@@ -139,6 +146,7 @@ public class DoadorViewAdapter {
                                  @RequestParam(defaultValue = "false") final boolean apenasAptos,
                                  @RequestParam(defaultValue = "false") final boolean apenasComConsentimento,
                                  @RequestParam(defaultValue = "false") final boolean porCompatibilidade,
+                                 @RequestParam(defaultValue = "false") final boolean apenasConvocados,
                                  final RedirectAttributes atributos) {
         try {
             final String nome = liberarContato.execute(id);
@@ -150,16 +158,19 @@ public class DoadorViewAdapter {
                     excecao.getErro().getChaveMensagem(), PT_BR));
         }
 
-        return devolverParaLista(atributos, busca, tipo, apenasAptos, apenasComConsentimento, porCompatibilidade);
+        return devolverParaLista(atributos, busca, tipo, apenasAptos, apenasComConsentimento, porCompatibilidade,
+                apenasConvocados);
     }
 
     private FiltroDoador montarFiltro(final String busca, final String tipo, final boolean apenasAptos,
-                                      final boolean apenasComConsentimento, final boolean porCompatibilidade) {
+                                      final boolean apenasComConsentimento, final boolean porCompatibilidade,
+                                      final boolean apenasConvocados) {
         final TipoSanguineo tipoSanguineo = tipo == null || tipo.isBlank()
                 ? null
                 : TipoSanguineo.doSigla(tipo);
 
-        return new FiltroDoador(busca, tipoSanguineo, apenasAptos, apenasComConsentimento, porCompatibilidade);
+        return new FiltroDoador(busca, tipoSanguineo, apenasAptos, apenasComConsentimento, porCompatibilidade,
+                apenasConvocados);
     }
 
     /**
@@ -173,11 +184,13 @@ public class DoadorViewAdapter {
      * @param apenasAptos recorte de quem pode doar hoje
      * @param apenasComConsentimento recorte de quem autorizou contato
      * @param porCompatibilidade recorte por compatibilidade com o tipo, em vez do tipo exato
+     * @param apenasConvocados recorte de quem foi convocado e ainda nao respondeu
      * @return redirecionamento para a listagem, com o filtro recomposto
      */
     private String devolverParaLista(final RedirectAttributes atributos, final String busca,
                                      final String tipo, final boolean apenasAptos,
-                                     final boolean apenasComConsentimento, final boolean porCompatibilidade) {
+                                     final boolean apenasComConsentimento, final boolean porCompatibilidade,
+                                     final boolean apenasConvocados) {
         if (busca != null && !busca.isBlank()) {
             atributos.addAttribute("busca", busca);
         }
@@ -192,6 +205,9 @@ public class DoadorViewAdapter {
         }
         if (porCompatibilidade) {
             atributos.addAttribute("porCompatibilidade", true);
+        }
+        if (apenasConvocados) {
+            atributos.addAttribute("apenasConvocados", true);
         }
 
         return "redirect:/doadores";

@@ -15,13 +15,16 @@ import java.util.stream.Collectors;
  * @param porCompatibilidade quando true, o tipo desejado busca quem pode doar para ele (tabela
  *         de compatibilidade transfusional), e nao so quem tem exatamente esse tipo. E o mesmo
  *         criterio da convocacao segmentada por tipo.
+ * @param apenasConvocados quando true, descarta quem nao tem convocacao enviada aguardando
+ *         resposta. E o recorte da aba de validacao: quem foi chamado e ainda nao apareceu.
  */
 public record FiltroDoador(
         String busca,
         TipoSanguineo tipoSanguineo,
         boolean apenasAptos,
         boolean apenasComConsentimento,
-        boolean porCompatibilidade) {
+        boolean porCompatibilidade,
+        boolean apenasConvocados) {
 
     /**
      * Filtro sem restricao alguma.
@@ -29,7 +32,7 @@ public record FiltroDoador(
      * @return filtro vazio
      */
     public static FiltroDoador vazio() {
-        return new FiltroDoador(null, null, false, false, false);
+        return new FiltroDoador(null, null, false, false, false, false);
     }
 
     public boolean temBusca() {

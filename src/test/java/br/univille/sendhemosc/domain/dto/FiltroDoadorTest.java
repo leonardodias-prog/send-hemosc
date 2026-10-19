@@ -16,7 +16,7 @@ class FiltroDoadorTest {
     @Test
     @DisplayName("sem tipo escolhido, aceita todas as siglas")
     void semTipo() {
-        final FiltroDoador filtro = new FiltroDoador(null, null, false, false, false);
+        final FiltroDoador filtro = new FiltroDoador(null, null, false, false, false, false);
 
         assertThat(filtro.siglasAceitas()).hasSize(TipoSanguineo.values().length);
     }
@@ -24,7 +24,7 @@ class FiltroDoadorTest {
     @Test
     @DisplayName("com tipo e sem compatibilidade, aceita so a sigla exata")
     void tipoExato() {
-        final FiltroDoador filtro = new FiltroDoador(null, TipoSanguineo.A_POSITIVO, false, false, false);
+        final FiltroDoador filtro = new FiltroDoador(null, TipoSanguineo.A_POSITIVO, false, false, false, false);
 
         assertThat(filtro.siglasAceitas()).containsExactly("A+");
     }
@@ -32,7 +32,7 @@ class FiltroDoadorTest {
     @Test
     @DisplayName("com tipo e compatibilidade, aceita quem pode doar para o tipo escolhido")
     void tipoPorCompatibilidade() {
-        final FiltroDoador filtro = new FiltroDoador(null, TipoSanguineo.A_POSITIVO, false, false, true);
+        final FiltroDoador filtro = new FiltroDoador(null, TipoSanguineo.A_POSITIVO, false, false, true, false);
 
         assertThat(filtro.siglasAceitas()).containsExactlyInAnyOrderElementsOf(Set.of("A+", "A-", "O+", "O-"));
     }

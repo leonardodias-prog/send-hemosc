@@ -113,6 +113,28 @@ class LimiteDeContatoIntegracaoTest {
             mockMvc.perform(get("/doadores").param("busca", BUSCA))
                     .andExpect(content().string(containsString("Convocado em")));
         }
+
+        @Test
+        @DisplayName("filtro de convocados: so aparece quem foi chamado e ainda nao respondeu")
+        void filtroDeConvocados() throws Exception {
+            mockMvc.perform(get("/doadores").param("busca", BUSCA).param("apenasConvocados", "true"))
+                    .andExpect(content().string(not(containsString("Limite Um"))))
+                    .andExpect(content().string(not(containsString("Limite Dois"))));
+
+            mockMvc.perform(post("/doadores/convocar")
+                    .param("selecionados", primeiro.toString(), segundo.toString()).with(csrf()));
+
+            mockMvc.perform(get("/doadores").param("busca", BUSCA).param("apenasConvocados", "true"))
+                    .andExpect(content().string(containsString("Limite Um")))
+                    .andExpect(content().string(containsString("Limite Dois")));
+
+            mockMvc.perform(post("/doadores/" + primeiro + "/doacao")
+                    .param("dataDoacao", LocalDate.now().toString()).with(csrf()));
+
+            mockMvc.perform(get("/doadores").param("busca", BUSCA).param("apenasConvocados", "true"))
+                    .andExpect(content().string(not(containsString("Limite Um"))))
+                    .andExpect(content().string(containsString("Limite Dois")));
+        }
     }
 
     @Nested
