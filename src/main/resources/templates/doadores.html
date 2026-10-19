@@ -18,7 +18,10 @@
 
     <header>
         <h1>Doadores</h1>
-        <p class="subtitulo">Busca, aptidão e convocação individual ou em grupo</p>
+        <p class="subtitulo">
+            Busca, aptidão e convocação individual ou em grupo —
+            <a th:href="@{/doadores(apenasConvocados=true)}">ver quem foi convocado e ainda não respondeu</a>
+        </p>
     </header>
 
     <div class="aviso" th:if="${aviso}" th:text="${aviso}">mensagem</div>
@@ -52,6 +55,16 @@
                        th:checked="${filtro.apenasComConsentimento}"/>
                 <span>Somente quem autorizou receber convocações</span>
             </label>
+            <label class="consentimento">
+                <input type="checkbox" name="porCompatibilidade" value="true"
+                       th:checked="${filtro.porCompatibilidade}"/>
+                <span>Considerar tipos compatíveis com o tipo acima (ex.: A+ também convoca A−, O+ e O−)</span>
+            </label>
+            <label class="consentimento">
+                <input type="checkbox" name="apenasConvocados" value="true"
+                       th:checked="${filtro.apenasConvocados}"/>
+                <span>Somente quem foi convocado e ainda não respondeu</span>
+            </label>
 
             <button type="submit">Aplicar filtros</button>
             <a th:href="@{/doadores}"><button type="button" class="secundario">Limpar</button></a>
@@ -81,6 +94,8 @@
         <input type="hidden" name="apenasAptos" th:if="${filtro.apenasAptos}" value="true"/>
         <input type="hidden" name="apenasComConsentimento"
                th:if="${filtro.apenasComConsentimento}" value="true"/>
+        <input type="hidden" name="porCompatibilidade" th:if="${filtro.porCompatibilidade}" value="true"/>
+        <input type="hidden" name="apenasConvocados" th:if="${filtro.apenasConvocados}" value="true"/>
         <div class="cartao">
             <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
                 <h2 style="margin:0;flex:1;">Resultado</h2>

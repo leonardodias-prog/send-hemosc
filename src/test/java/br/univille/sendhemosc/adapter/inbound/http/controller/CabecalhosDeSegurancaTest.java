@@ -80,7 +80,7 @@ class CabecalhosDeSegurancaTest {
     @WithMockUser(roles = "RESPONSAVEL")
     @DisplayName("argumento invalido devolve mensagem generica, sem o texto interno da excecao")
     void argumentoInvalidoNaoVazaTextoInterno() throws Exception {
-        mockMvc.perform(post("/convocar/XYZ").with(csrf()))
+        mockMvc.perform(post("/estoque/XYZ").param("quantidadeBolsas", "1").with(csrf()))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.codigo").value("REQ-400"))
                 .andExpect(jsonPath("$.mensagem").value("Requisicao invalida."))

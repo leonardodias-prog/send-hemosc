@@ -47,9 +47,7 @@ public class DoadorPersistenceAdapter implements IDoadorRepositoryPort {
     @Override
     @Transactional(readOnly = true)
     public List<CandidatoConvocacao> buscarPorFiltro(final FiltroDoador filtro, final LocalDate referencia) {
-        final String sigla = filtro.tipoSanguineo() == null ? null : filtro.tipoSanguineo().getSigla();
-
-        return doadorRepository.buscarPorFiltro(filtro.buscaComoPadrao(), sigla,
+        return doadorRepository.buscarPorFiltro(filtro.buscaComoPadrao(), filtro.siglasAceitas(),
                         filtro.apenasComConsentimento(), referencia.minusMonths(12),
                         inicioPrazoTeto(referencia)).stream()
                 .map(this::paraCandidato)
