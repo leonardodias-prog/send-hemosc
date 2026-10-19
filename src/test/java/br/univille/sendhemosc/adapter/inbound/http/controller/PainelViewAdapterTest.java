@@ -116,13 +116,6 @@ class PainelViewAdapterTest {
         }
 
         @Test
-        @DisplayName("NAO dispara convocacao: o envio produz efeito fora do sistema")
-        void naoConvoca() throws Exception {
-            mockMvc.perform(post("/convocar/O-").with(csrf()))
-                    .andExpect(status().isForbidden());
-        }
-
-        @Test
         @DisplayName("NAO acessa o gerenciamento de contas")
         void naoGerenciaContas() throws Exception {
             mockMvc.perform(get("/usuarios")).andExpect(status().isForbidden());
@@ -133,15 +126,6 @@ class PainelViewAdapterTest {
     @DisplayName("com perfil de responsavel")
     @WithMockUser(username = "chefe@example.org", roles = "RESPONSAVEL")
     class ComoResponsavel {
-
-        @Test
-        @DisplayName("dispara convocacao")
-        void convoca() throws Exception {
-            mockMvc.perform(post("/convocar/O-").with(csrf()))
-                    .andExpect(status().is3xxRedirection())
-                    .andExpect(redirectedUrl("/"))
-                    .andExpect(flash().attributeExists("aviso"));
-        }
 
         @Test
         @DisplayName("cadastra doador, como o operador")
@@ -170,13 +154,6 @@ class PainelViewAdapterTest {
                     .andExpect(view().name("usuarios"))
                     .andExpect(model().attributeExists("usuarios", "pendentes"));
         }
-
-        @Test
-        @DisplayName("tambem dispara convocacao")
-        void convoca() throws Exception {
-            mockMvc.perform(post("/convocar/O-").with(csrf()))
-                    .andExpect(status().is3xxRedirection());
-        }
     }
 
     @Nested
@@ -187,7 +164,7 @@ class PainelViewAdapterTest {
         @Test
         @DisplayName("acao de formulario sem token e recusada")
         void semTokenERecusado() throws Exception {
-            mockMvc.perform(post("/convocar/O-")).andExpect(status().isForbidden());
+            mockMvc.perform(post("/estoque/O-")).andExpect(status().isForbidden());
         }
     }
 }

@@ -59,12 +59,13 @@ class LimiteDeContatoIntegracaoTest {
     private NotificacaoJpaRepository notificacaoRepository;
 
     private Long primeiro;
+    private Long segundo;
 
     @BeforeEach
     void cadastrarDoadores() {
         primeiro = doadorRepository.salvar(new NovoDoador("Limite Um", "limite.um@example.org", null,
                 TipoSanguineo.O_NEGATIVO, Sexo.MASCULINO, LocalDate.of(1990, 1, 1), BigDecimal.valueOf(70), true));
-        doadorRepository.salvar(new NovoDoador("Limite Dois", "limite.dois@example.org", null,
+        segundo = doadorRepository.salvar(new NovoDoador("Limite Dois", "limite.dois@example.org", null,
                 TipoSanguineo.O_NEGATIVO, Sexo.FEMININO, LocalDate.of(1992, 5, 20), BigDecimal.valueOf(62), true));
     }
 
@@ -92,18 +93,22 @@ class LimiteDeContatoIntegracaoTest {
         @Test
         @DisplayName("convocar duas vezes seguidas: a segunda nao reenvia para ninguem, e diz por que")
         void segundaConvocacaoNaoReenvia() throws Exception {
-            mockMvc.perform(post("/convocar/O-").with(csrf()))
-                    .andExpect(flash().attribute("aviso", containsString("convocado(s) para O-")));
+            mockMvc.perform(post("/doadores/convocar")
+                            .param("selecionados", primeiro.toString(), segundo.toString()).with(csrf()))
+                    .andExpect(flash().attribute("aviso", containsString("2 convocação(ões) enviada(s)")));
 
-            mockMvc.perform(post("/convocar/O-").with(csrf()))
-                    .andExpect(flash().attribute("aviso", containsString("Nenhum doador convocado para O-")))
-                    .andExpect(flash().attribute("aviso", containsString("convocados há pouco tempo")));
+            mockMvc.perform(post("/doadores/convocar")
+                            .param("selecionados", primeiro.toString(), segundo.toString()).with(csrf()))
+                    .andExpect(flash().attribute("erro", containsString("Nenhum dos 2 selecionados pode ser "
+                            + "convocado agora")))
+                    .andExpect(flash().attribute("erro", containsString("convocados há pouco tempo")));
         }
 
         @Test
         @DisplayName("depois de convocada, a pessoa aparece na listagem como convocada, com a data")
         void listagemMostraAConvocacao() throws Exception {
-            mockMvc.perform(post("/convocar/O-").with(csrf()));
+            mockMvc.perform(post("/doadores/convocar")
+                    .param("selecionados", primeiro.toString(), segundo.toString()).with(csrf()));
 
             mockMvc.perform(get("/doadores").param("busca", BUSCA))
                     .andExpect(content().string(containsString("Convocado em")));

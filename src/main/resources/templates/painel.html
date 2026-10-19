@@ -113,10 +113,10 @@
                 <button type="submit" class="secundario">Salvar</button>
             </form>
 
-            <form th:action="@{'/convocar/' + ${s.tipoSanguineo.sigla}}" method="post"
-                  sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')">
-                <button type="submit">Convocar doadores</button>
-            </form>
+            <a th:href="@{/doadores(tipo=${s.tipoSanguineo.sigla},porCompatibilidade=true)}"
+               sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')">
+                <button type="button">Convocar doadores</button>
+            </a>
         </div>
     </div>
 
@@ -167,7 +167,7 @@
     <div class="cartao" id="cadastro">
         <h2>Cadastrar doador</h2>
         <p class="dica">
-            Para convocar pessoas específicas em vez da base inteira, use a
+            Toda convocação, por tipo sanguíneo ou por seleção específica, é feita na
             <a th:href="@{/doadores}">tela de doadores</a>, que tem filtros e seleção.
         </p>
 
