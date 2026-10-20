@@ -138,19 +138,24 @@ footer a { color: inherit; }
     padding: 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
 }
 .sigla { font-size: 22px; font-weight: 700; min-width: 56px; text-align: center; }
-.barra-area { flex: 1 1 220px; min-width: 200px; }
-.barra { height: 8px; background: var(--borda); border-radius: 4px; overflow: hidden; margin-bottom: 6px; }
-.barra span { display: block; height: 100%; border-radius: 4px; }
+/* Bolsa de sangue do painel: plastico translucido com o liquido no fundo. O corpo quase
+   transparente e o contorno em tom medio mantem a forma legivel nos dois temas. */
+.bolsa { width: 46px; height: 66px; flex: 0 0 auto; }
+.bolsa-tubo { fill: var(--borda); }
+.bolsa-alca { fill: none; stroke: var(--suave); stroke-width: 1.6; }
+.bolsa-vazia { fill: var(--fundo); opacity: .55; }
+.bolsa-contorno { fill: none; stroke: var(--suave); stroke-width: 1.8; stroke-linejoin: round; }
 .detalhe { font-size: 12px; color: var(--suave); }
+.tipo .detalhe { flex: 1 1 140px; }
 .critico { color: var(--critico); }
 .atencao { color: var(--atencao); }
 .normal  { color: var(--normal); }
 .etiqueta.critico { background: var(--critico-bg); }
 .etiqueta.atencao { background: var(--atencao-bg); }
 .etiqueta.normal  { background: var(--normal-bg); }
-.barra span.critico { background: var(--critico); }
-.barra span.atencao { background: var(--atencao); }
-.barra span.normal  { background: var(--normal); }
+.bolsa-cheia.critico { fill: var(--critico); }
+.bolsa-cheia.atencao { fill: var(--atencao); }
+.bolsa-cheia.normal  { fill: var(--normal); }
 .acoes { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .acoes form { display: inline-flex; gap: 6px; align-items: center; margin: 0; }
 .acoes input[type=number] { width: 72px; padding: 7px 8px; }
