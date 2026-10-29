@@ -67,14 +67,19 @@
         </div>
     </div>
 
+    <!--/* Indicadores no topo: o que a equipe precisa saber antes de olhar tipo a tipo. */-->
     <div class="resumo">
-        <div class="indicador">
-            <div class="numero" th:text="${#lists.size(situacoes)}">8</div>
-            <div class="rotulo">tipos sanguíneos monitorados</div>
+        <div class="indicador" th:classappend="${totalCriticos > 0} ? 'destaque-critico'">
+            <div class="numero critico" th:text="${totalCriticos}">2</div>
+            <div class="rotulo">tipos em nível crítico</div>
+        </div>
+        <div class="indicador" th:classappend="${totalEmFalta > totalCriticos} ? 'destaque-atencao'">
+            <div class="numero atencao" th:text="${totalEmFalta - totalCriticos}">2</div>
+            <div class="rotulo">tipos em atenção</div>
         </div>
         <div class="indicador">
-            <div class="numero critico" th:text="${totalEmFalta}">4</div>
-            <div class="rotulo">em nível baixo (atenção ou crítico)</div>
+            <div class="numero" th:text="${totalBolsas}">310</div>
+            <div class="rotulo">bolsas em estoque</div>
         </div>
         <div class="indicador">
             <div class="numero" th:text="${totalDoadores}">120</div>
@@ -82,11 +87,22 @@
         </div>
     </div>
 
-    <div class="tipo" th:each="s : ${situacoes}">
-        <div class="sigla" th:classappend="${s.nivel.name().toLowerCase()}"
-             th:text="${s.tipoSanguineo.sigla}">O-</div>
+    <h2>Estoque por tipo sanguíneo</h2>
 
-        <div class="barra-area">
+    <!--/* Um bloco por tipo, na ordem em que o estoque vem: a cor da borda e da etiqueta
+           diz o nível antes de qualquer leitura de número. */-->
+    <div class="blocos">
+        <div class="bloco" th:each="s : ${situacoes}" th:classappend="${s.nivel.name().toLowerCase()}">
+            <div class="bloco-topo">
+                <span class="sigla" th:classappend="${s.nivel.name().toLowerCase()}"
+                      th:text="${s.tipoSanguineo.sigla}">O-</span>
+                <span class="etiqueta" th:classappend="${s.nivel.name().toLowerCase()}"
+                      th:text="${s.nivel.descricao}">Crítico</span>
+            </div>
+
+            <div class="percentual">
+                <span th:text="${s.percentualOcupacao}">18</span><small>%</small>
+            </div>
             <div class="barra">
                 <span th:classappend="${s.nivel.name().toLowerCase()}"
                       th:style="'width:' + ${s.percentualOcupacao > 100 ? 100 : s.percentualOcupacao} + '%'"></span>
@@ -94,15 +110,9 @@
             <div class="detalhe">
                 <span th:text="${s.quantidadeBolsas}">11</span> de
                 <span th:text="${s.capacidadeAlvo}">60</span> bolsas
-                (<span th:text="${s.percentualOcupacao}">18</span>%)
             </div>
-        </div>
 
-        <span class="etiqueta" th:classappend="${s.nivel.name().toLowerCase()}"
-              th:text="${s.nivel.descricao}">Crítico</span>
-
-        <div class="acoes">
-            <form th:action="@{'/estoque/' + ${s.tipoSanguineo.sigla}}" method="post">
+            <form class="bloco-estoque" th:action="@{'/estoque/' + ${s.tipoSanguineo.sigla}}" method="post">
                 <input type="number" name="quantidadeBolsas" min="0" required
                        th:value="${s.quantidadeBolsas}" aria-label="Quantidade de bolsas"
                        title="Quantidade de bolsas"/>
@@ -115,7 +125,8 @@
 
             <form th:action="@{'/convocar/' + ${s.tipoSanguineo.sigla}}" method="post"
                   sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')">
-                <button type="submit">Convocar doadores</button>
+                <button type="submit" class="largo"
+                        th:classappend="${s.nivel.exigeConvocacao} ? '' : 'secundario'">Convocar doadores</button>
             </form>
         </div>
     </div>

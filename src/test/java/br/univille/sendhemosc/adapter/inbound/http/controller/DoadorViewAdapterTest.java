@@ -84,4 +84,22 @@ class DoadorViewAdapterTest {
     void exigeLogin() throws Exception {
         mockMvc.perform(get("/doadores")).andExpect(status().is3xxRedirection());
     }
+
+    @Test
+    @WithMockUser(roles = "RESPONSAVEL")
+    @DisplayName("acao feita na pagina 2 devolve para a pagina 2, com o filtro")
+    void acaoVoltaParaAPagina() throws Exception {
+        mockMvc.perform(post("/doadores/convocar").param("tipo", "O-").param("pagina", "2").with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/doadores?tipo=O-&pagina=2"));
+    }
+
+    @Test
+    @WithMockUser(roles = "OPERADOR")
+    @DisplayName("a listagem chega paginada")
+    void listagemPaginada() throws Exception {
+        mockMvc.perform(get("/doadores").param("pagina", "1"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("paginaDoadores", "urlPaginacao", "totalEncontrados"));
+    }
 }

@@ -2,12 +2,17 @@ package br.univille.sendhemosc.adapter.outbound.persistence;
 
 import br.univille.sendhemosc.adapter.outbound.persistence.entity.AuditoriaEntity;
 import br.univille.sendhemosc.adapter.outbound.persistence.repository.AuditoriaJpaRepository;
+import br.univille.sendhemosc.domain.dto.Pagina;
+import br.univille.sendhemosc.domain.dto.RegistroAuditoria;
 import br.univille.sendhemosc.domain.port.outbound.IAuditoriaPort;
 import br.univille.sendhemosc.domain.util.MascaraDeEmail;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,5 +59,24 @@ public class AuditoriaPersistenceAdapter implements IAuditoriaPort {
         final int alterados = auditoriaRepository.substituirNoDetalhe(ACOES_SOBRE_DOADOR, nome, "doador " + doadorId);
 
         log.info("[m=anonimizarDoador] Nome do doador {} retirado de {} registro(s)", doadorId, alterados);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Pagina<RegistroAuditoria> listar(final String acao, final int pagina, final int tamanho) {
+        final PageRequest pedido = PageRequest.of(Math.max(0, pagina - 1), tamanho);
+        final Page<AuditoriaEntity> trecho = acao == null || acao.isBlank()
+                ? auditoriaRepository.findAllByOrderByOcorridoEmDescIdDesc(pedido)
+                : auditoriaRepository.findByAcaoOrderByOcorridoEmDescIdDesc(acao, pedido);
+
+        return new Pagina<>(trecho.map(entidade -> new RegistroAuditoria(entidade.getAcao(),
+                        entidade.getDetalhe(), entidade.getUsuarioEmail(), entidade.getOcorridoEm())).getContent(),
+                trecho.getNumber() + 1, tamanho, trecho.getTotalElements());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> acoesRegistradas() {
+        return auditoriaRepository.listarAcoes();
     }
 }

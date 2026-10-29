@@ -55,6 +55,12 @@
               th:title="${aprovacoesPendentes} + ' cadastro(s) aguardando decisão'">1</span>
     </a>
 
+    <a class="secao" th:href="@{/auditoria}" sec:authorize="hasRole('MASTER')"
+       th:classappend="${secao == 'auditoria'} ? 'atual'"
+       th:aria-current="${secao == 'auditoria'} ? 'page' : null">
+        <span>Auditoria</span>
+    </a>
+
     <a class="secao" th:href="@{/conta/senha}"
        th:classappend="${secao == 'senha'} ? 'atual'"
        th:aria-current="${secao == 'senha'} ? 'page' : null">

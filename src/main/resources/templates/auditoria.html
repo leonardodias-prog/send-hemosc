@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Auditoria — Send Hemosc</title>
+    <link rel="stylesheet" th:href="@{/css/sendhemosc.css}"/>
+</head>
+<body>
+<div class="app">
+
+<nav th:replace="~{fragmentos/casca :: lateral('auditoria')}"></nav>
+
+<main class="conteudo">
+<div class="container">
+
+    <header>
+        <h1>Auditoria</h1>
+        <p class="subtitulo">Quem fez o quê: convocações, envio de e-mail, contas e doadores</p>
+    </header>
+
+    <div class="cartao">
+        <form th:action="@{/auditoria}" method="get" class="acoes">
+            <div class="campo" style="margin:0;flex:1 1 240px;">
+                <label for="acao">Ação</label>
+                <select id="acao" name="acao">
+                    <option value="">Todas</option>
+                    <option th:each="a : ${acoes}" th:value="${a}" th:text="${nomes[a]}"
+                            th:selected="${a == acao}">Convocação</option>
+                </select>
+            </div>
+            <button type="submit" style="align-self:flex-end;">Filtrar</button>
+        </form>
+    </div>
+
+    <div class="cartao">
+        <p class="dica" th:if="${#lists.isEmpty(registros.itens)}" style="margin:0;">
+            Nenhuma ação registrada<span th:if="${acao != null and acao != ''}"> com esse filtro</span>.
+        </p>
+
+        <div class="tabela-rolavel" th:unless="${#lists.isEmpty(registros.itens)}">
+            <table>
+                <thead>
+                <tr>
+                    <th>Quando</th>
+                    <th>Ação</th>
+                    <th>Quem</th>
+                    <th>Detalhe</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="r : ${registros.itens}">
+                    <td style="white-space:nowrap;"
+                        th:text="${#temporals.format(r.ocorridoEm, 'dd/MM/yyyy HH:mm')}">29/10/2026 10:15</td>
+                    <td style="white-space:nowrap;"><strong th:text="${nomes[r.acao]}">Envio ligado</strong></td>
+                    <td th:text="${r.autor != null ? r.autor : 'sistema'}">admin@sendhemosc.local</td>
+                    <td th:text="${r.detalhe}">detalhe</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <nav th:replace="~{fragmentos/paginacao :: paginacao(${registros}, ${urlPaginacao})}"></nav>
+    </div>
+
+    <footer>
+        <p>
+            O registro só cresce: nada aqui pode ser editado ou apagado pela tela. Ações feitas pelas
+            rotinas agendadas aparecem como sistema.
+        </p>
+    </footer>
+
+</div>
+</main>
+
+</div>
+</body>
+</html>

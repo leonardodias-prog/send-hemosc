@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--/*
+  Navegacao entre paginas de uma listagem. Recebe a Pagina e o endereco terminado em
+  "pagina=", que ja carrega o filtro em uso:
+  th:replace="~{fragmentos/paginacao :: paginacao(${registros}, ${urlPaginacao})}"
+*/-->
+<nav class="paginacao" th:fragment="paginacao(pagina, url)" th:if="${pagina.totalPaginas() > 1}"
+     aria-label="Páginas">
+    <span class="dica" style="margin:0;"
+          th:text="${pagina.primeiroItem()} + '–' + ${pagina.ultimoItem()} + ' de ' + ${pagina.total}">1–30 de 120</span>
+    <span class="paginas">
+        <a th:if="${pagina.temAnterior()}" th:href="@{${url + (pagina.numero - 1)}}" rel="prev">&larr; Anterior</a>
+        <span th:text="'Página ' + ${pagina.numero} + ' de ' + ${pagina.totalPaginas()}">Página 1 de 4</span>
+        <a th:if="${pagina.temProxima()}" th:href="@{${url + (pagina.numero + 1)}}" rel="next">Próxima &rarr;</a>
+    </span>
+</nav>
+
+</body>
+</html>

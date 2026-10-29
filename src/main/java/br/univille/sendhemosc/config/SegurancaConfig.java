@@ -93,6 +93,8 @@ public class SegurancaConfig {
                             "/actuator/health", "/actuator/info", "/css/**", "/js/**").permitAll()
                     // Gerenciamento de contas
                     .requestMatchers("/usuarios/**").hasRole(PERFIL_MASTER)
+                    // Rastro de quem fez o que, inclusive tentativas de entrada recusadas
+                    .requestMatchers("/auditoria/**").hasRole(PERFIL_MASTER)
                     // Liberar o limite de contato de alguem e decisao do administrador. Antes de
                     // /doadores/**, pela mesma razao das acoes de envio logo abaixo.
                     .requestMatchers("/doadores/*/liberar-contato").hasRole(PERFIL_MASTER)

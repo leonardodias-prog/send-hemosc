@@ -4,6 +4,7 @@ import br.univille.sendhemosc.config.SendHemoscProperties;
 import br.univille.sendhemosc.domain.dto.DoadorListado;
 import br.univille.sendhemosc.domain.dto.FiltroDoador;
 import br.univille.sendhemosc.domain.dto.NovaDoacao;
+import br.univille.sendhemosc.domain.dto.Pagina;
 import br.univille.sendhemosc.domain.dto.ResultadoConvocacao;
 import br.univille.sendhemosc.domain.dto.ResultadoRegistroDoacao;
 import br.univille.sendhemosc.domain.enums.TipoSanguineo;
@@ -16,6 +17,7 @@ import br.univille.sendhemosc.usecase.notificacao.LiberarContatoUseCase;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Tela de doadores: busca com filtros e convocacao de uma selecao especifica.
@@ -46,6 +49,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class DoadorViewAdapter {
 
     private static final Locale PT_BR = Locale.of("pt", "BR");
+    private static final int POR_PAGINA = 25;
 
     private final ListarDoadoresUseCase listarDoadores;
     private final ConvocarSelecionadosUseCase convocarSelecionados;
@@ -60,11 +64,23 @@ public class DoadorViewAdapter {
                          @RequestParam(required = false) final String tipo,
                          @RequestParam(defaultValue = "false") final boolean apenasAptos,
                          @RequestParam(defaultValue = "false") final boolean apenasComConsentimento,
+                         @RequestParam(defaultValue = "1") final int pagina,
                          final Model model) {
         final FiltroDoador filtro = montarFiltro(busca, tipo, apenasAptos, apenasComConsentimento);
         final List<DoadorListado> doadores = listarDoadores.execute(filtro);
+        final Pagina<DoadorListado> trecho = Pagina.recortar(doadores, pagina, POR_PAGINA);
 
-        model.addAttribute("doadores", doadores);
+        // A aptidao e calculada em Java (ver ListarDoadoresUseCase), entao o recorte vem depois
+        // dela. O que pesava era a tela: centenas de linhas, cada uma com os seus botoes.
+        model.addAttribute("doadores", trecho.itens());
+        model.addAttribute("paginaDoadores", trecho);
+        model.addAttribute("urlPaginacao", ParaPaginacao.url(UriComponentsBuilder.fromPath("/doadores")
+                .queryParamIfPresent("busca", Optional.ofNullable(busca).filter(b -> !b.isBlank()))
+                .queryParamIfPresent("tipo", Optional.ofNullable(tipo).filter(t -> !t.isBlank()))
+                .queryParamIfPresent("apenasAptos", Optional.of(true).filter(v -> apenasAptos))
+                .queryParamIfPresent("apenasComConsentimento",
+                        Optional.of(true).filter(v -> apenasComConsentimento))));
+        model.addAttribute("totalEncontrados", doadores.size());
         model.addAttribute("filtro", filtro);
         model.addAttribute("tiposSanguineos", TipoSanguineo.values());
         model.addAttribute("totalConvocaveis", doadores.stream().filter(DoadorListado::convocavel).count());
@@ -80,6 +96,7 @@ public class DoadorViewAdapter {
                                   @RequestParam(required = false) final String tipo,
                                   @RequestParam(defaultValue = "false") final boolean apenasAptos,
                                   @RequestParam(defaultValue = "false") final boolean apenasComConsentimento,
+                                  @RequestParam(defaultValue = "1") final int pagina,
                                   final RedirectAttributes atributos) {
         if (selecionados == null || selecionados.isEmpty()) {
             atributos.addFlashAttribute("erro", "Selecione ao menos um doador.");
@@ -87,7 +104,7 @@ public class DoadorViewAdapter {
             informar(convocarSelecionados.execute(selecionados), selecionados.size(), atributos);
         }
 
-        return devolverParaLista(atributos, busca, tipo, apenasAptos, apenasComConsentimento);
+        return devolverParaLista(atributos, busca, tipo, apenasAptos, apenasComConsentimento, pagina);
     }
 
     @PostMapping("/doadores/{id}/convocar")
@@ -96,10 +113,11 @@ public class DoadorViewAdapter {
                              @RequestParam(required = false) final String tipo,
                              @RequestParam(defaultValue = "false") final boolean apenasAptos,
                              @RequestParam(defaultValue = "false") final boolean apenasComConsentimento,
+                             @RequestParam(defaultValue = "1") final int pagina,
                              final RedirectAttributes atributos) {
         informar(convocarSelecionados.execute(Set.of(id)), 1, atributos);
 
-        return devolverParaLista(atributos, busca, tipo, apenasAptos, apenasComConsentimento);
+        return devolverParaLista(atributos, busca, tipo, apenasAptos, apenasComConsentimento, pagina);
     }
 
     @PostMapping("/doadores/{id}/doacao")
@@ -111,6 +129,7 @@ public class DoadorViewAdapter {
                                   @RequestParam(required = false) final String tipo,
                                   @RequestParam(defaultValue = "false") final boolean apenasAptos,
                                   @RequestParam(defaultValue = "false") final boolean apenasComConsentimento,
+                                  @RequestParam(defaultValue = "1") final int pagina,
                                   final RedirectAttributes atributos) {
         try {
             final ResultadoRegistroDoacao resultado = registrarDoacao
@@ -123,7 +142,7 @@ public class DoadorViewAdapter {
                     excecao.getErro().getChaveMensagem(), PT_BR));
         }
 
-        return devolverParaLista(atributos, busca, tipo, apenasAptos, apenasComConsentimento);
+        return devolverParaLista(atributos, busca, tipo, apenasAptos, apenasComConsentimento, pagina);
     }
 
     @PostMapping("/doadores/{id}/liberar-contato")
@@ -132,6 +151,7 @@ public class DoadorViewAdapter {
                                  @RequestParam(required = false) final String tipo,
                                  @RequestParam(defaultValue = "false") final boolean apenasAptos,
                                  @RequestParam(defaultValue = "false") final boolean apenasComConsentimento,
+                                 @RequestParam(defaultValue = "1") final int pagina,
                                  final RedirectAttributes atributos) {
         try {
             final String nome = liberarContato.execute(id);
@@ -143,7 +163,7 @@ public class DoadorViewAdapter {
                     excecao.getErro().getChaveMensagem(), PT_BR));
         }
 
-        return devolverParaLista(atributos, busca, tipo, apenasAptos, apenasComConsentimento);
+        return devolverParaLista(atributos, busca, tipo, apenasAptos, apenasComConsentimento, pagina);
     }
 
     private FiltroDoador montarFiltro(final String busca, final String tipo,
@@ -165,11 +185,12 @@ public class DoadorViewAdapter {
      * @param tipo sigla do tipo sanguineo em uso
      * @param apenasAptos recorte de quem pode doar hoje
      * @param apenasComConsentimento recorte de quem autorizou contato
+     * @param pagina pagina em que a pessoa estava
      * @return redirecionamento para a listagem, com o filtro recomposto
      */
     private String devolverParaLista(final RedirectAttributes atributos, final String busca,
                                      final String tipo, final boolean apenasAptos,
-                                     final boolean apenasComConsentimento) {
+                                     final boolean apenasComConsentimento, final int pagina) {
         if (busca != null && !busca.isBlank()) {
             atributos.addAttribute("busca", busca);
         }
@@ -181,6 +202,9 @@ public class DoadorViewAdapter {
         }
         if (apenasComConsentimento) {
             atributos.addAttribute("apenasComConsentimento", true);
+        }
+        if (pagina > 1) {
+            atributos.addAttribute("pagina", pagina);
         }
 
         return "redirect:/doadores";

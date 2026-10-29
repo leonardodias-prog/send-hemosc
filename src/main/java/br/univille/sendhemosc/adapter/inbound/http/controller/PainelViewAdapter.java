@@ -5,6 +5,7 @@ import br.univille.sendhemosc.config.ModoEnvioEmail;
 import br.univille.sendhemosc.domain.dto.NovoDoador;
 import br.univille.sendhemosc.domain.dto.ResultadoConvocacao;
 import br.univille.sendhemosc.domain.dto.SituacaoEstoque;
+import br.univille.sendhemosc.domain.enums.NivelEstoque;
 import br.univille.sendhemosc.domain.enums.OrigemNotificacao;
 import br.univille.sendhemosc.domain.enums.Sexo;
 import br.univille.sendhemosc.domain.enums.TipoSanguineo;
@@ -182,6 +183,10 @@ public class PainelViewAdapter {
         model.addAttribute("totalEmFalta", situacoes.stream()
                 .filter(situacao -> situacao.nivel().isExigeConvocacao())
                 .count());
+        model.addAttribute("totalCriticos", situacoes.stream()
+                .filter(situacao -> situacao.nivel() == NivelEstoque.CRITICO)
+                .count());
+        model.addAttribute("totalBolsas", situacoes.stream().mapToInt(SituacaoEstoque::quantidadeBolsas).sum());
         model.addAttribute("totalDoadores", doadorRepository.contar());
         model.addAttribute("movimentacoes", estoqueRepository.listarMovimentacoes(MOVIMENTACOES_NO_PAINEL));
         model.addAttribute("tiposSanguineos", TipoSanguineo.values());

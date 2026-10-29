@@ -133,13 +133,38 @@ footer a { color: inherit; }
 }
 .indicador .numero { font-size: 28px; font-weight: 700; line-height: 1; }
 .indicador .rotulo { font-size: 12px; color: var(--suave); margin-top: 4px; }
-.tipo {
-    background: var(--cartao); border: 1px solid var(--borda); border-radius: 8px;
-    padding: 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+.indicador.destaque-critico { border-color: var(--critico); background: var(--critico-bg); }
+.indicador.destaque-atencao { border-color: var(--atencao); background: var(--atencao-bg); }
+/* Um bloco por tipo sanguineo. Quatro por linha em tela larga, um por linha no celular. */
+.blocos {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 12px; margin-bottom: 24px;
 }
-.sigla { font-size: 22px; font-weight: 700; min-width: 56px; text-align: center; }
-.barra-area { flex: 1 1 220px; min-width: 200px; }
+.bloco {
+    background: var(--cartao); border: 1px solid var(--borda); border-top-width: 4px;
+    border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 8px;
+}
+.bloco.critico { border-top-color: var(--critico); }
+.bloco.atencao { border-top-color: var(--atencao); }
+.bloco.normal  { border-top-color: var(--normal); }
+.bloco-topo { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.percentual { font-size: 30px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.percentual small { font-size: 15px; color: var(--suave); font-weight: 600; }
+.bloco .barra { margin-bottom: 0; }
+.bloco-estoque { display: flex; gap: 6px; align-items: center; margin-top: auto; padding-top: 6px; }
+.bloco-estoque input {
+    flex: 1 1 0; min-width: 0; padding: 6px 7px; border: 1px solid var(--borda); border-radius: 6px;
+    background: var(--fundo); color: var(--texto); font: inherit; font-size: 14px;
+}
+.bloco-estoque button { padding: 6px 10px; font-size: 13px; }
+.sigla { font-size: 22px; font-weight: 700; }
 .barra { height: 8px; background: var(--borda); border-radius: 4px; overflow: hidden; margin-bottom: 6px; }
+/* --- Paginacao das listagens --- */
+.paginacao {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+    margin-top: 14px; font-size: 14px;
+}
+.paginacao .paginas { display: flex; gap: 14px; align-items: center; }
 .barra span { display: block; height: 100%; border-radius: 4px; }
 .detalhe { font-size: 12px; color: var(--suave); }
 .critico { color: var(--critico); }
