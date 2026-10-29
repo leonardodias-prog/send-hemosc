@@ -150,7 +150,7 @@ footer a { color: inherit; }
 .bloco-topo { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .percentual { font-size: 30px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
 .percentual small { font-size: 15px; color: var(--suave); font-weight: 600; }
-.bloco .barra { margin-bottom: 0; }
+.bloco-nivel { display: flex; align-items: center; gap: 14px; }
 .bloco-estoque { display: flex; gap: 6px; align-items: center; margin-top: auto; padding-top: 6px; }
 .bloco-estoque input {
     flex: 1 1 0; min-width: 0; padding: 6px 7px; border: 1px solid var(--borda); border-radius: 6px;
@@ -158,14 +158,19 @@ footer a { color: inherit; }
 }
 .bloco-estoque button { padding: 6px 10px; font-size: 13px; }
 .sigla { font-size: 22px; font-weight: 700; }
-.barra { height: 8px; background: var(--borda); border-radius: 4px; overflow: hidden; margin-bottom: 6px; }
 /* --- Paginacao das listagens --- */
 .paginacao {
     display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
     margin-top: 14px; font-size: 14px;
 }
 .paginacao .paginas { display: flex; gap: 14px; align-items: center; }
-.barra span { display: block; height: 100%; border-radius: 4px; }
+/* Bolsa de sangue do painel: plastico translucido com o liquido no fundo. O corpo quase
+   transparente e o contorno em tom medio mantem a forma legivel nos dois temas. */
+.bolsa { width: 46px; height: 66px; flex: 0 0 auto; }
+.bolsa-tubo { fill: var(--borda); }
+.bolsa-alca { fill: none; stroke: var(--suave); stroke-width: 1.6; }
+.bolsa-vazia { fill: var(--fundo); opacity: .55; }
+.bolsa-contorno { fill: none; stroke: var(--suave); stroke-width: 1.8; stroke-linejoin: round; }
 .detalhe { font-size: 12px; color: var(--suave); }
 .critico { color: var(--critico); }
 .atencao { color: var(--atencao); }
@@ -173,9 +178,9 @@ footer a { color: inherit; }
 .etiqueta.critico { background: var(--critico-bg); }
 .etiqueta.atencao { background: var(--atencao-bg); }
 .etiqueta.normal  { background: var(--normal-bg); }
-.barra span.critico { background: var(--critico); }
-.barra span.atencao { background: var(--atencao); }
-.barra span.normal  { background: var(--normal); }
+.bolsa-cheia.critico { fill: var(--critico); }
+.bolsa-cheia.atencao { fill: var(--atencao); }
+.bolsa-cheia.normal  { fill: var(--normal); }
 .acoes { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .acoes form { display: inline-flex; gap: 6px; align-items: center; margin: 0; }
 .acoes input[type=number] { width: 72px; padding: 7px 8px; }

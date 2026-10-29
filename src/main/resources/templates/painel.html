@@ -100,16 +100,37 @@
                       th:text="${s.nivel.descricao}">Crítico</span>
             </div>
 
-            <div class="percentual">
-                <span th:text="${s.percentualOcupacao}">18</span><small>%</small>
-            </div>
-            <div class="barra">
-                <span th:classappend="${s.nivel.name().toLowerCase()}"
-                      th:style="'width:' + ${s.percentualOcupacao > 100 ? 100 : s.percentualOcupacao} + '%'"></span>
-            </div>
-            <div class="detalhe">
-                <span th:text="${s.quantidadeBolsas}">11</span> de
-                <span th:text="${s.capacidadeAlvo}">60</span> bolsas
+            <div class="bloco-nivel">
+                <!--/* A bolsa preenchida diz o nivel de relance, como no painel de estoque do HEMOSC,
+                       que e a referencia visual de quem opera. Ela acompanha o numero e a etiqueta:
+                       cor sozinha nao carrega a informacao. O desenho e proprio, nao o deles. */-->
+                <svg class="bolsa" viewBox="0 0 44 66" aria-hidden="true" focusable="false"
+                     th:with="pct=${s.percentualOcupacao > 100 ? 100 : s.percentualOcupacao},
+                              corpo='M14 8 L30 8 L37 18 L37 52 Q37 60 29 60 L15 60 Q7 60 7 52 L7 18 Z'">
+                    <defs>
+                        <!--/* Um recorte por tipo: sem id proprio, as oito bolsas usariam o do primeiro. */-->
+                        <clipPath th:id="'bolsa-' + ${s.tipoSanguineo.name()}">
+                            <path th:d="${corpo}"/>
+                        </clipPath>
+                    </defs>
+                    <rect class="bolsa-tubo" x="20.5" y="58" width="3" height="7" rx="1.5"/>
+                    <rect class="bolsa-alca" x="18" y="1" width="8" height="6" rx="2"/>
+                    <path class="bolsa-vazia" th:d="${corpo}"/>
+                    <rect class="bolsa-cheia" th:classappend="${s.nivel.name().toLowerCase()}"
+                          th:clip-path="'url(#bolsa-' + ${s.tipoSanguineo.name()} + ')'"
+                          x="7" width="30"
+                          th:y="${60 - 52 * pct / 100.0}" th:height="${52 * pct / 100.0}"/>
+                    <path class="bolsa-contorno" th:d="${corpo}"/>
+                </svg>
+                <div>
+                    <div class="percentual">
+                        <span th:text="${s.percentualOcupacao}">18</span><small>%</small>
+                    </div>
+                    <div class="detalhe">
+                        <span th:text="${s.quantidadeBolsas}">11</span> de
+                        <span th:text="${s.capacidadeAlvo}">60</span> bolsas
+                    </div>
+                </div>
             </div>
 
             <form class="bloco-estoque" th:action="@{'/estoque/' + ${s.tipoSanguineo.sigla}}" method="post">
