@@ -3,10 +3,8 @@ package br.univille.sendhemosc.adapter.inbound.http.controller;
 import br.univille.sendhemosc.adapter.outbound.email.EnvioDeEmailRouter;
 import br.univille.sendhemosc.config.ModoEnvioEmail;
 import br.univille.sendhemosc.domain.dto.NovoDoador;
-import br.univille.sendhemosc.domain.dto.ResultadoConvocacao;
 import br.univille.sendhemosc.domain.dto.SituacaoEstoque;
 import br.univille.sendhemosc.domain.enums.NivelEstoque;
-import br.univille.sendhemosc.domain.enums.OrigemNotificacao;
 import br.univille.sendhemosc.domain.enums.Sexo;
 import br.univille.sendhemosc.domain.enums.TipoSanguineo;
 import br.univille.sendhemosc.domain.exception.NegocioException;
@@ -15,7 +13,6 @@ import br.univille.sendhemosc.domain.port.outbound.IEstoqueRepositoryPort;
 import br.univille.sendhemosc.usecase.doador.CriarDoadorUseCase;
 import br.univille.sendhemosc.usecase.estoque.AtualizarEstoqueUseCase;
 import br.univille.sendhemosc.usecase.estoque.ListarSituacaoEstoqueUseCase;
-import br.univille.sendhemosc.usecase.notificacao.ConvocarDoadoresUseCase;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Locale;
@@ -35,8 +32,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  * Painel web da equipe de captacao. E a tela usada para demonstrar o sistema aos profissionais
- * da instituicao: mostra a situacao do estoque por tipo sanguineo, permite cadastrar doadores
- * e disparar a convocacao segmentada manualmente.
+ * da instituicao: mostra a situacao do estoque por tipo sanguineo e permite cadastrar doadores.
+ * A convocacao manual, por tipo ou por selecao, e feita a partir daqui mas disparada na tela
+ * de doadores — um unico lugar para a acao, em vez de dois.
  */
 @Slf4j
 @Controller
@@ -47,7 +45,6 @@ public class PainelViewAdapter {
     private static final int MOVIMENTACOES_NO_PAINEL = 15;
 
     private final ListarSituacaoEstoqueUseCase listarSituacaoEstoque;
-    private final ConvocarDoadoresUseCase convocarDoadores;
     private final CriarDoadorUseCase criarDoador;
     private final AtualizarEstoqueUseCase atualizarEstoque;
     private final IEstoqueRepositoryPort estoqueRepository;
@@ -114,45 +111,6 @@ public class PainelViewAdapter {
         atributos.addFlashAttribute("novoDoador", novoDoador);
 
         return "redirect:/#cadastro";
-    }
-
-    @PostMapping("/convocar/{sigla}")
-    public String convocar(@PathVariable final String sigla, final RedirectAttributes atributos) {
-        final TipoSanguineo tipo = TipoSanguineo.doSigla(sigla);
-        final ResultadoConvocacao resultado = convocarDoadores.execute(tipo, OrigemNotificacao.MANUAL, true);
-
-        atributos.addFlashAttribute("aviso", descreverConvocacao(tipo, resultado));
-
-        return "redirect:/";
-    }
-
-    /**
-     * Explica o resultado incluindo quem os limites de contato deixaram de fora. Sem isso, convocar
-     * duas vezes seguidas e ver zero na segunda pareceria defeito, e nao a regra funcionando.
-     *
-     * @param tipo tipo convocado
-     * @param resultado desfecho da rodada
-     * @return texto exibido no painel
-     */
-    private String descreverConvocacao(final TipoSanguineo tipo, final ResultadoConvocacao resultado) {
-        if (resultado.totalEnviados() == 0 && resultado.totalRetidos() == 0) {
-            return "Nenhum doador apto encontrado para %s no momento.".formatted(tipo.getSigla());
-        }
-
-        if (resultado.totalEnviados() == 0) {
-            return "Nenhum doador convocado para %s: os %d aptos foram convocados há pouco tempo ou não "
-                    .formatted(tipo.getSigla(), resultado.totalRetidos())
-                    + "responderam às últimas convocações.";
-        }
-
-        final String convocados = "%d doador(es) apto(s) convocado(s) para %s."
-                .formatted(resultado.totalEnviados(), tipo.getSigla());
-
-        return resultado.totalRetidos() == 0
-                ? convocados
-                : convocados + " Outros %d ficaram de fora por terem sido convocados há pouco tempo ou por "
-                        .formatted(resultado.totalRetidos())
-                        + "não responderem às últimas convocações.";
     }
 
     @PostMapping("/estoque/{sigla}")

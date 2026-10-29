@@ -1,5 +1,6 @@
 package br.univille.sendhemosc.adapter.inbound.http.controller;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -9,6 +10,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
+import br.univille.sendhemosc.domain.dto.DoadorListado;
+import br.univille.sendhemosc.domain.enums.TipoSanguineo;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,6 +84,30 @@ class DoadorViewAdapterTest {
     }
 
     @Test
+    @WithMockUser(roles = "RESPONSAVEL")
+    @DisplayName("filtro por compatibilidade amplia o tipo exato para quem pode doar para ele")
+    void filtroPorCompatibilidade() throws Exception {
+        final var resultadoExato = mockMvc.perform(get("/doadores").param("tipo", "A+")).andReturn();
+        final var resultadoCompativel = mockMvc.perform(get("/doadores")
+                        .param("tipo", "A+").param("porCompatibilidade", "true"))
+                .andReturn();
+
+        @SuppressWarnings("unchecked")
+        final List<DoadorListado> doadoresExato =
+                (List<DoadorListado>) resultadoExato.getModelAndView().getModel().get("doadores");
+        @SuppressWarnings("unchecked")
+        final List<DoadorListado> doadoresCompativeis =
+                (List<DoadorListado>) resultadoCompativel.getModelAndView().getModel().get("doadores");
+
+        assertThat(doadoresExato).allSatisfy(doador ->
+                assertThat(doador.tipoSanguineo()).isEqualTo(TipoSanguineo.A_POSITIVO));
+        assertThat(doadoresCompativeis).allSatisfy(doador ->
+                assertThat(doador.tipoSanguineo()).isIn(TipoSanguineo.A_POSITIVO, TipoSanguineo.A_NEGATIVO,
+                        TipoSanguineo.O_POSITIVO, TipoSanguineo.O_NEGATIVO));
+        assertThat(doadoresCompativeis.size()).isGreaterThanOrEqualTo(doadoresExato.size());
+    }
+
+    @Test
     @DisplayName("sem autenticacao a listagem nao abre")
     void exigeLogin() throws Exception {
         mockMvc.perform(get("/doadores")).andExpect(status().is3xxRedirection());
@@ -101,5 +129,15 @@ class DoadorViewAdapterTest {
         mockMvc.perform(get("/doadores").param("pagina", "1"))
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("paginaDoadores", "urlPaginacao", "totalEncontrados"));
+    }
+
+    @Test
+    @WithMockUser(roles = "RESPONSAVEL")
+    @DisplayName("convocar todos sem tipo sanguineo e recusado: seria a base inteira")
+    void todosExigeTipo() throws Exception {
+        mockMvc.perform(post("/doadores/convocar").param("todos", "true").with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/doadores"))
+                .andExpect(flash().attribute("erro", "Para convocar todos de uma vez, escolha um tipo sanguíneo."));
     }
 }

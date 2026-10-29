@@ -60,7 +60,7 @@ public interface DoadorJpaRepository extends JpaRepository<DoadorEntity, Long> {
      * aqui: ele depende de regra de dominio e e aplicado depois, em um unico lugar.
      *
      * @param padraoBusca trecho de nome ou e-mail entre curingas, ou apenas curinga
-     * @param sigla sigla do tipo sanguineo, ou nulo para todos
+     * @param siglas siglas de tipo sanguineo aceitas pela busca (todas, quando sem filtro de tipo)
      * @param somenteComConsentimento quando true, descarta quem nao autorizou contato
      * @param inicioJanela data inicial da janela de doze meses
      * @param inicioPrazoTeto convocacoes sem resposta anteriores a este instante nao contam para o teto
@@ -88,12 +88,12 @@ public interface DoadorJpaRepository extends JpaRepository<DoadorEntity, Long> {
               FROM doador d
              WHERE d.ativo = TRUE
                AND (:somenteComConsentimento = FALSE OR d.aceita_contato = TRUE)
-               AND (CAST(:sigla AS VARCHAR) IS NULL OR d.tipo_sanguineo = :sigla)
+               AND d.tipo_sanguineo IN (:siglas)
                AND (LOWER(d.nome) LIKE :padraoBusca OR LOWER(d.email) LIKE :padraoBusca)
              ORDER BY d.nome
             """, nativeQuery = true)
     List<CandidatoProjection> buscarPorFiltro(@Param("padraoBusca") String padraoBusca,
-                                              @Param("sigla") String sigla,
+                                              @Param("siglas") Set<String> siglas,
                                               @Param("somenteComConsentimento") boolean somenteComConsentimento,
                                               @Param("inicioJanela") LocalDate inicioJanela,
                                               @Param("inicioPrazoTeto") LocalDateTime inicioPrazoTeto);
