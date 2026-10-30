@@ -1,24 +1,26 @@
 /* Estilo comum das telas. Identidade descrita em .claude/skills/design-hospitalar: fundo claro de
    ambiente clinico, azul-petroleo para a instituicao e vermelho reservado para sangue e urgencia. */
 :root {
-    --fundo: #f3f6f8; --cartao: #ffffff; --borda: #dbe3e8; --texto: #17262e; --suave: #566a74;
-    --primaria: #0b6e80; --primaria-forte: #095a69; --primaria-bg: #e3f1f4;
-    --sangue: #b8132c; --sangue-bg: #fdecee; --ouro: #c9962b;
+    --fundo: #f8f6f6; --cartao: #ffffff; --borda: #ece4e5; --texto: #241b1d; --suave: #6e6163;
+    --primaria: #c1121f; --primaria-forte: #9e0f19; --primaria-bg: #fdecee;
+    --botao: #c1121f; --botao-forte: #9e0f19; --perigo: #7d0a14;
+    --sangue: #8f0b16; --sangue-bg: #fdecee; --logo-raio: #e8737b;
     color-scheme: light;
     --critico: #b42318; --atencao: #a5470a; --normal: #08724a;
     --critico-bg: #fef3f2; --atencao-bg: #fff7e8; --normal-bg: #eaf8f0;
     --raio: 12px; --raio-controle: 8px;
     /* Profundidade por sombra em camadas; a borda transparente garante contorno no modo de alto contraste. */
-    --sombra-borda: 0 0 0 1px rgba(16, 40, 52, .07), 0 1px 2px -1px rgba(16, 40, 52, .08), 0 2px 4px 0 rgba(16, 40, 52, .05);
-    --sombra-flutuante: 0 0 0 1px rgba(16, 40, 52, .08), 0 8px 24px -4px rgba(16, 40, 52, .16);
+    --sombra-borda: 0 0 0 1px rgba(40, 20, 24, .07), 0 1px 2px -1px rgba(40, 20, 24, .08), 0 2px 4px 0 rgba(40, 20, 24, .05);
+    --sombra-flutuante: 0 0 0 1px rgba(40, 20, 24, .08), 0 8px 24px -4px rgba(40, 20, 24, .16);
 }
 /* Escuro: segue o sistema, a menos que a pessoa tenha escolhido claro na engrenagem;
    ou forcado quando ela escolheu escuro. */
 @media (prefers-color-scheme: dark) {
     :root:not([data-tema="claro"]) {
-        --fundo: #0e191e; --cartao: #15232a; --borda: #26363e; --texto: #e6eef1; --suave: #97aab3;
-        --primaria: #3fb6cc; --primaria-forte: #66c7d8; --primaria-bg: #0f3440;
-        --sangue: #f0566b; --sangue-bg: #3b141a; --ouro: #e0b04a;
+        --fundo: #131012; --cartao: #1c1719; --borda: #33292b; --texto: #f5eeef; --suave: #b5a7a9;
+        --primaria: #f2626b; --primaria-forte: #f78a91; --primaria-bg: #3a161a;
+        --botao: #d42a35; --botao-forte: #e2414b; --perigo: #a3121e;
+        --sangue: #ff8a92; --sangue-bg: #3a161a; --logo-raio: #f59aa0;
         color-scheme: dark;
         --critico: #f97066; --atencao: #f5b041; --normal: #4cc98d;
         --critico-bg: #3a1613; --atencao-bg: #36260b; --normal-bg: #0d2c1f;
@@ -27,9 +29,10 @@
     }
 }
 :root[data-tema="escuro"] {
-    --fundo: #0e191e; --cartao: #15232a; --borda: #26363e; --texto: #e6eef1; --suave: #97aab3;
-    --primaria: #3fb6cc; --primaria-forte: #66c7d8; --primaria-bg: #0f3440;
-    --sangue: #f0566b; --sangue-bg: #3b141a; --ouro: #e0b04a;
+    --fundo: #131012; --cartao: #1c1719; --borda: #33292b; --texto: #f5eeef; --suave: #b5a7a9;
+    --primaria: #f2626b; --primaria-forte: #f78a91; --primaria-bg: #3a161a;
+    --botao: #d42a35; --botao-forte: #e2414b; --perigo: #a3121e;
+    --sangue: #ff8a92; --sangue-bg: #3a161a; --logo-raio: #f59aa0;
     color-scheme: dark;
     --critico: #f97066; --atencao: #f5b041; --normal: #4cc98d;
     --critico-bg: #3a1613; --atencao-bg: #36260b; --normal-bg: #0d2c1f;
@@ -71,21 +74,21 @@ h2 { font-size: 17px; margin: 0 0 12px; letter-spacing: -.005em; }
 .erro { color: var(--critico); font-size: 13px; }
 .dica { font-size: 13px; color: var(--suave); margin: 4px 0 0; }
 
-/* Botoes. Principal em azul-petroleo; .perigo (vermelho) so para o que manda e-mail de verdade
-   ou nao tem volta; .secundario para o resto. */
+/* Botoes. Principal em vermelho da instituicao; .perigo, num vermelho mais fechado, para o que
+   manda e-mail de verdade ou nao tem volta (sempre com confirmacao); .secundario, branco, para o resto. */
 button, a.botao {
     display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px;
-    background: var(--primaria); color: #fff; border: 1px solid transparent; border-radius: var(--raio-controle);
+    background: var(--botao); color: #fff; border: 1px solid transparent; border-radius: var(--raio-controle);
     padding: 9px 18px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit;
     text-decoration: none; white-space: nowrap;
     transition-property: background-color, border-color, color; transition-duration: 150ms; transition-timing-function: ease-out;
 }
-button.perigo, a.botao.perigo { background: var(--sangue); }
+button.perigo, a.botao.perigo { background: var(--perigo); }
 button.secundario, a.botao.secundario { background: var(--cartao); color: var(--texto); border-color: var(--borda); }
 button.largo { width: 100%; }
 @media (hover: hover) {
-    button:not(:disabled):hover, a.botao:hover { background: var(--primaria-forte); }
-    button.perigo:not(:disabled):hover, a.botao.perigo:hover { background: var(--sangue); filter: brightness(1.08); }
+    button:not(:disabled):hover, a.botao:hover { background: var(--botao-forte); }
+    button.perigo:not(:disabled):hover, a.botao.perigo:hover { background: var(--perigo); filter: brightness(1.15); }
     button.secundario:not(:disabled):hover, a.botao.secundario:hover { background: var(--fundo); border-color: var(--suave); }
 }
 @media (prefers-reduced-motion: no-preference) {
@@ -123,7 +126,7 @@ th { font-size: 13px; color: var(--suave); font-weight: 600; }
 .lateral .marca svg { width: 40px; height: 40px; }
 /* Pelicano radiante da marca. */
 .gota { fill: var(--sangue); }
-.logo-raio { stroke: var(--ouro); }
+.logo-raio { stroke: var(--logo-raio); }
 .logo-corpo { fill: var(--primaria); }
 .logo-pescoco { stroke: var(--primaria); }
 .logo-pena { stroke: var(--cartao); }
@@ -163,7 +166,7 @@ th { font-size: 13px; color: var(--suave); font-weight: 600; }
     font-size: 10px; font-weight: 700; min-width: 18px; padding: 0 4px; line-height: 14px; text-align: center;
 }
 .estado {
-    background: var(--primaria); color: #fff; border: 2px solid var(--cartao);
+    background: var(--botao); color: #fff; border: 2px solid var(--cartao);
     border-radius: 999px; font-size: 9px; font-weight: 700; padding: 0 4px; line-height: 13px;
 }
 .rodape-lateral {
@@ -268,11 +271,11 @@ footer a { color: inherit; }
 /* =====================================================================
    Componentes comuns
    ===================================================================== */
-:root { --serie-a: #0b6e80; --serie-b: #08724a; }
+:root { --serie-a: #c1121f; --serie-b: #4a3d40; }
 @media (prefers-color-scheme: dark) {
-    :root:not([data-tema="claro"]) { --serie-a: #3fb6cc; --serie-b: #4cc98d; }
+    :root:not([data-tema="claro"]) { --serie-a: #f2626b; --serie-b: #cbbfc1; }
 }
-:root[data-tema="escuro"] { --serie-a: #3fb6cc; --serie-b: #4cc98d; }
+:root[data-tema="escuro"] { --serie-a: #f2626b; --serie-b: #cbbfc1; }
 button:disabled { opacity: .45; cursor: not-allowed; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 
@@ -332,7 +335,7 @@ fieldset.grupo-filtro { border: 0; padding: 0; margin: 0 0 14px; min-width: 0; }
     content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%;
     background: #fff; transition: transform 150ms ease-out;
 }
-.interruptor:checked { background: var(--primaria); }
+.interruptor:checked { background: var(--botao); }
 .interruptor:checked::after { transform: translateX(18px); }
 .interruptor-linha { display: flex; gap: 12px; align-items: flex-start; margin: 4px 0 18px; font-size: 14px; cursor: pointer; }
 .interruptor-linha .dica { display: block; }
