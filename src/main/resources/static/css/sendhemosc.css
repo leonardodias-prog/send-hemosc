@@ -3,7 +3,8 @@
 :root {
     --fundo: #f3f6f8; --cartao: #ffffff; --borda: #dbe3e8; --texto: #17262e; --suave: #566a74;
     --primaria: #0b6e80; --primaria-forte: #095a69; --primaria-bg: #e3f1f4;
-    --sangue: #b8132c; --sangue-bg: #fdecee;
+    --sangue: #b8132c; --sangue-bg: #fdecee; --ouro: #c9962b;
+    color-scheme: light;
     --critico: #b42318; --atencao: #a5470a; --normal: #08724a;
     --critico-bg: #fef3f2; --atencao-bg: #fff7e8; --normal-bg: #eaf8f0;
     --raio: 12px; --raio-controle: 8px;
@@ -11,16 +12,29 @@
     --sombra-borda: 0 0 0 1px rgba(16, 40, 52, .07), 0 1px 2px -1px rgba(16, 40, 52, .08), 0 2px 4px 0 rgba(16, 40, 52, .05);
     --sombra-flutuante: 0 0 0 1px rgba(16, 40, 52, .08), 0 8px 24px -4px rgba(16, 40, 52, .16);
 }
+/* Escuro: segue o sistema, a menos que a pessoa tenha escolhido claro na engrenagem;
+   ou forcado quando ela escolheu escuro. */
 @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not([data-tema="claro"]) {
         --fundo: #0e191e; --cartao: #15232a; --borda: #26363e; --texto: #e6eef1; --suave: #97aab3;
         --primaria: #3fb6cc; --primaria-forte: #66c7d8; --primaria-bg: #0f3440;
-        --sangue: #f0566b; --sangue-bg: #3b141a;
+        --sangue: #f0566b; --sangue-bg: #3b141a; --ouro: #e0b04a;
+        color-scheme: dark;
         --critico: #f97066; --atencao: #f5b041; --normal: #4cc98d;
         --critico-bg: #3a1613; --atencao-bg: #36260b; --normal-bg: #0d2c1f;
         --sombra-borda: 0 0 0 1px rgba(255, 255, 255, .07);
         --sombra-flutuante: 0 0 0 1px rgba(255, 255, 255, .1), 0 12px 32px -6px rgba(0, 0, 0, .6);
     }
+}
+:root[data-tema="escuro"] {
+    --fundo: #0e191e; --cartao: #15232a; --borda: #26363e; --texto: #e6eef1; --suave: #97aab3;
+    --primaria: #3fb6cc; --primaria-forte: #66c7d8; --primaria-bg: #0f3440;
+    --sangue: #f0566b; --sangue-bg: #3b141a; --ouro: #e0b04a;
+    color-scheme: dark;
+    --critico: #f97066; --atencao: #f5b041; --normal: #4cc98d;
+    --critico-bg: #3a1613; --atencao-bg: #36260b; --normal-bg: #0d2c1f;
+    --sombra-borda: 0 0 0 1px rgba(255, 255, 255, .07);
+    --sombra-flutuante: 0 0 0 1px rgba(255, 255, 255, .1), 0 12px 32px -6px rgba(0, 0, 0, .6);
 }
 * { box-sizing: border-box; }
 body {
@@ -106,9 +120,14 @@ th { font-size: 13px; color: var(--suave); font-weight: 600; }
     border-right: 1px solid var(--borda);
 }
 .lateral .marca { display: grid; place-items: center; width: 44px; height: 44px; margin-bottom: 14px; position: relative; }
-.lateral .marca svg { width: 34px; height: 34px; }
+.lateral .marca svg { width: 40px; height: 40px; }
+/* Pelicano radiante da marca. */
 .gota { fill: var(--sangue); }
-.pulso { fill: none; stroke: #fff; stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round; }
+.logo-raio { stroke: var(--ouro); }
+.logo-corpo { fill: var(--primaria); }
+.logo-pescoco { stroke: var(--primaria); }
+.logo-pena { stroke: var(--cartao); }
+.logo-olho { fill: var(--cartao); }
 .lateral .secao {
     position: relative; display: grid; place-items: center; width: 44px; height: 44px; min-height: 0;
     padding: 0; border: 0; border-radius: 10px; background: transparent; color: var(--suave);
@@ -251,8 +270,9 @@ footer a { color: inherit; }
    ===================================================================== */
 :root { --serie-a: #0b6e80; --serie-b: #08724a; }
 @media (prefers-color-scheme: dark) {
-    :root { --serie-a: #3fb6cc; --serie-b: #4cc98d; }
+    :root:not([data-tema="claro"]) { --serie-a: #3fb6cc; --serie-b: #4cc98d; }
 }
+:root[data-tema="escuro"] { --serie-a: #3fb6cc; --serie-b: #4cc98d; }
 button:disabled { opacity: .45; cursor: not-allowed; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 
@@ -462,3 +482,24 @@ fieldset { border: 0; padding: 0; margin: 0; }
 /* Estado vazio e cabecalho de secao do painel. */
 .secao-titulo { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 8px 0 12px; }
 .secao-titulo h2 { margin: 0; }
+
+/* Engrenagem de aparencia na lateral. */
+.menu-tema { position: relative; }
+.menu-tema > summary { list-style: none; }
+.menu-tema > summary::-webkit-details-marker { display: none; }
+.menu-tema[open] > summary { color: var(--primaria); background: var(--primaria-bg); }
+.menu-tema[open] > summary::after { display: none; }
+.painel-tema {
+    position: absolute; left: calc(100% + 14px); bottom: 0; z-index: 40; width: 220px;
+    background: var(--cartao); border: 1px solid transparent; border-radius: var(--raio);
+    box-shadow: var(--sombra-flutuante); padding: 12px; display: flex; flex-direction: column; gap: 4px;
+}
+.painel-tema strong { font-size: 13px; color: var(--suave); padding: 2px 6px 6px; }
+.opcao-tema { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: var(--raio-controle); cursor: pointer; font-size: 14px; }
+.opcao-tema input { accent-color: var(--primaria); width: 16px; height: 16px; margin: 0; }
+.opcao-tema small { display: block; font-size: 12px; color: var(--suave); }
+.opcao-tema:has(input:checked) { background: var(--primaria-bg); }
+@media (hover: hover) { .opcao-tema:hover { background: var(--fundo); } }
+@media (max-width: 760px) {
+    .painel-tema { left: auto; right: 0; bottom: auto; top: calc(100% + 8px); }
+}
