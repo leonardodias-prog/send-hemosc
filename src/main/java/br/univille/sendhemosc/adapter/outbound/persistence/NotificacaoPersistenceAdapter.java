@@ -92,4 +92,10 @@ public class NotificacaoPersistenceAdapter implements INotificacaoRepositoryPort
                 .map(tipo -> porSigla.getOrDefault(tipo.getSigla(), new ConversaoPorTipo(tipo, 0, 0)))
                 .toList();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<LocalDateTime> listarEnviosNoPeriodo(final LocalDate inicio, final LocalDate fim) {
+        return notificacaoRepository.listarEnvios(inicio.atStartOfDay(), fim.plusDays(1).atStartOfDay());
+    }
 }

@@ -31,11 +31,11 @@
     <a class="secao" th:href="@{/disparo-automatico}" sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')"
        th:classappend="${secao == 'disparo'} ? 'atual'"
        th:aria-current="${secao == 'disparo'} ? 'page' : null">
-        <span>Disparo automático</span>
+        <span>Envio de e-mail</span>
         <!--/* Ligado, ele manda e-mail sem ninguém clicar: precisa ser visível de qualquer tela,
                e não só de quem abre a configuração. */-->
         <span class="estado" th:if="${disparoAutomaticoLigado}"
-              title="As rodadas automáticas de convocação estão ligadas">ligado</span>
+              title="As rodadas automáticas de convocação estão ligadas">auto</span>
     </a>
 
     <a class="secao" th:href="@{/relatorios/conversao}"
@@ -75,6 +75,7 @@
 
     <div class="rodape-lateral">
         <span sec:authentication="name">usuario</span>
+        <span class="prototipo" title="Projeto de Extensão da UNIVILLE. Não é sistema oficial do HEMOSC.">Protótipo acadêmico</span>
         <form th:action="@{/sair}" method="post">
             <button type="submit" class="secundario">Sair</button>
         </form>

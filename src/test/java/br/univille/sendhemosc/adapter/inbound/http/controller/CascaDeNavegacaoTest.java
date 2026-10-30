@@ -146,8 +146,8 @@ class CascaDeNavegacaoTest {
                             .param("aceitaContato", "true")
                             .with(csrf()))
                     .andExpect(status().is3xxRedirection())
-                    .andExpect(redirectedUrl("/#cadastro"))
-                    .andExpect(flash().attributeExists("avisoCadastro"));
+                    .andExpect(redirectedUrl("/doadores/novo"))
+                    .andExpect(flash().attributeExists("aviso"));
         }
 
         @Test
@@ -159,7 +159,7 @@ class CascaDeNavegacaoTest {
                             .param("aceitaContato", "true")
                             .with(csrf()))
                     .andExpect(status().is3xxRedirection())
-                    .andExpect(redirectedUrl("/#cadastro"))
+                    .andExpect(redirectedUrl("/doadores/novo"))
                     .andExpect(flash().attributeExists("novoDoador"));
         }
     }

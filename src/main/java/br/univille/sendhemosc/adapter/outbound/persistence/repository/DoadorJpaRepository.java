@@ -196,4 +196,7 @@ public interface DoadorJpaRepository extends JpaRepository<DoadorEntity, Long> {
 
         LocalDateTime getUltimaConvocacao();
     }
+
+    @Query("SELECT d.tipoSanguineo, COUNT(d) FROM DoadorEntity d WHERE d.ativo = TRUE GROUP BY d.tipoSanguineo")
+    List<Object[]> contarAtivosPorTipo();
 }

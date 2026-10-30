@@ -29,14 +29,14 @@ public class EnvioViewAdapter {
 
         if (!ligar && !"desligar".equals(estado)) {
             atributos.addFlashAttribute("erro", "Ação de envio desconhecida.");
-            return "redirect:/";
+            return "redirect:/disparo-automatico";
         }
 
         if (ligar && !roteador.temProvedorConfigurado()) {
             atributos.addFlashAttribute("erro",
                     "Não há provedor de e-mail configurado neste ambiente. "
                             + "O envio continuará apenas registrando no log.");
-            return "redirect:/";
+            return "redirect:/disparo-automatico";
         }
 
         if (controle.definir(ligar)) {
@@ -48,6 +48,6 @@ public class EnvioViewAdapter {
                 ? "Envio de e-mail ligado. As convocações passam a chegar de verdade aos doadores."
                 : "Envio de e-mail desligado. As convocações ficam apenas registradas no log.");
 
-        return "redirect:/";
+        return "redirect:/disparo-automatico";
     }
 }

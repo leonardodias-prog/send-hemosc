@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Relatório de conversão — Send Hemosc</title>
+    <title>Relatórios — Send Hemosc</title>
     <link rel="stylesheet" th:href="@{/css/sendhemosc.css}"/>
+    <script th:src="@{/js/sendhemosc.js}" defer></script>
 </head>
 <body>
 <div class="app">
@@ -14,34 +15,38 @@
 <main class="conteudo">
 <div class="container">
 
-    <header>
-        <h1>Relatório de conversão</h1>
-        <p class="subtitulo">Quantos convocados viraram doação, por tipo sanguíneo e período</p>
+    <header class="cabecalho">
+        <div>
+            <h1>Relatórios</h1>
+            <p class="subtitulo"
+               th:text="'De ' + ${#temporals.format(relatorio.inicio, 'dd/MM/yyyy')} + ' a ' + ${#temporals.format(relatorio.fim, 'dd/MM/yyyy')}">
+                De 01/10/2026 a 30/10/2026
+            </p>
+        </div>
     </header>
 
-    <div class="cartao">
-        <h2>Período</h2>
-        <form th:action="@{/relatorios/conversao}" method="get" style="display:block;">
-            <div class="campos">
-                <div class="campo">
-                    <label for="dataInicio">De</label>
-                    <input type="date" id="dataInicio" name="dataInicio"
-                           th:value="${#temporals.format(relatorio.inicio, 'yyyy-MM-dd')}"/>
-                </div>
-                <div class="campo">
-                    <label for="dataFim">Até</label>
-                    <input type="date" id="dataFim" name="dataFim"
-                           th:value="${#temporals.format(relatorio.fim, 'yyyy-MM-dd')}"/>
-                </div>
-            </div>
-            <button type="submit">Aplicar período</button>
-        </form>
-    </div>
+    <!--/* Periodo: atalhos para os casos comuns, datas livres para o resto. */-->
+    <form class="cartao filtros" th:action="@{/relatorios/conversao}" method="get">
+        <div class="chips">
+            <a class="chip-link" th:each="d : ${ {7, 30, 90, 365} }" th:href="@{/relatorios/conversao(dias=${d})}"
+               th:classappend="${dias == d or (dias == null and d == 30 and param.dataInicio == null)} ? 'ativo'"
+               th:text="${d == 365 ? 'Último ano' : 'Últimos ' + d + ' dias'}">Últimos 30 dias</a>
+        </div>
+        <div class="linha-busca">
+            <label class="campo-inline">De
+                <input type="date" name="dataInicio" th:value="${#temporals.format(relatorio.inicio, 'yyyy-MM-dd')}"/>
+            </label>
+            <label class="campo-inline">até
+                <input type="date" name="dataFim" th:value="${#temporals.format(relatorio.fim, 'yyyy-MM-dd')}"/>
+            </label>
+            <button type="submit" class="secundario">Aplicar período</button>
+        </div>
+    </form>
 
     <div class="resumo">
         <div class="indicador">
             <div class="numero" th:text="${relatorio.totalConvocados()}">0</div>
-            <div class="rotulo">convocações enviadas no período</div>
+            <div class="rotulo">convocações enviadas</div>
         </div>
         <div class="indicador">
             <div class="numero normal" th:text="${relatorio.totalConvertidos()}">0</div>
@@ -49,38 +54,122 @@
         </div>
         <div class="indicador">
             <div class="numero" th:text="${#numbers.formatDecimal(relatorio.taxaConversaoGeral(), 1, 1)} + '%'">0%</div>
-            <div class="rotulo">taxa de conversão geral</div>
+            <div class="rotulo">taxa de conversão</div>
         </div>
     </div>
 
-    <div class="cartao">
-        <h2>Por tipo sanguíneo</h2>
-        <p class="dica" style="margin-bottom:12px;">
-            Uma convocação conta por envio, não por doador: quem recebeu duas convocações no
-            período conta duas vezes, como nos demais resumos de envio do sistema.
+    <!--/* Evolucao: colunas lado a lado por intervalo, na mesma escala. */-->
+    <section class="cartao">
+        <div class="titulo-secao">
+            <h2>Convocações e doações</h2>
+            <div class="legenda">
+                <span><i class="marca serie-convocacao"></i>Convocações</span>
+                <span><i class="marca serie-doacao"></i>Doações</span>
+            </div>
+        </div>
+        <p class="dica" th:text="'Uma coluna por ' + ${evolucao.intervalo} + '. Maior valor: ' + ${evolucao.maximo()}">
+            Uma coluna por dia.
         </p>
 
-        <div class="tabela-rolavel">
-        <table>
+        <div class="grafico-colunas" role="img"
+             th:aria-label="'Convocações e doações por ' + ${evolucao.intervalo} + ' no período'">
+            <div class="coluna" th:each="p : ${evolucao.pontos}"
+                 th:title="${p.rotulo} + ': ' + ${p.convocacoes} + ' convocação(ões), ' + ${p.doacoes} + ' doação(ões)'">
+                <div class="barras">
+                    <span class="serie-convocacao" th:style="'height:' + ${p.convocacoes * 100.0 / evolucao.maximo()} + '%'"></span>
+                    <span class="serie-doacao" th:style="'height:' + ${p.doacoes * 100.0 / evolucao.maximo()} + '%'"></span>
+                </div>
+                <span class="rotulo-eixo" th:text="${p.rotulo}">01/10</span>
+            </div>
+        </div>
+    </section>
+
+    <div class="grade-dupla">
+        <!--/* Conversao por tipo: barra = taxa; numeros ao lado para nao depender so do tamanho. */-->
+        <section class="cartao">
+            <h2>Conversão por tipo sanguíneo</h2>
+            <p class="dica">Quantas convocações viraram doação. Uma convocação conta por envio, não por doador.</p>
+            <ul class="barras-h">
+                <li th:each="linha : ${relatorio.porTipo()}">
+                    <span class="tipo-pilula" th:text="${linha.tipoSanguineo.sigla}">O-</span>
+                    <span class="trilho"><span class="preenchido serie-doacao"
+                          th:style="'width:' + ${linha.taxaConversao()} + '%'"></span></span>
+                    <span class="valor">
+                        <strong th:text="${#numbers.formatDecimal(linha.taxaConversao(), 1, 0)} + '%'">0%</strong>
+                        <span class="dica" th:text="${linha.totalConvertidos()} + '/' + ${linha.totalConvocados()}">0/0</span>
+                    </span>
+                </li>
+            </ul>
+        </section>
+
+        <!--/* Estoque agora: ocupacao com a cor do nivel. */-->
+        <section class="cartao">
+            <h2>Estoque agora</h2>
+            <p class="dica">Ocupação de cada tipo em relação à capacidade alvo.</p>
+            <ul class="barras-h">
+                <li th:each="s : ${situacoes}">
+                    <span class="tipo-pilula" th:text="${s.tipoSanguineo.sigla}">O-</span>
+                    <span class="trilho"><span class="preenchido" th:classappend="${s.nivel.name().toLowerCase()}"
+                          th:style="'width:' + ${s.percentualOcupacao > 100 ? 100 : s.percentualOcupacao} + '%'"></span></span>
+                    <span class="valor">
+                        <strong th:text="${s.percentualOcupacao} + '%'">18%</strong>
+                        <span class="dica" th:text="${s.quantidadeBolsas} + '/' + ${s.capacidadeAlvo}">11/60</span>
+                    </span>
+                </li>
+            </ul>
+        </section>
+    </div>
+
+    <!--/* Base de doadores: onde a captacao precisa de gente nova. */-->
+    <section class="cartao">
+        <h2>Doadores ativos por tipo</h2>
+        <p class="dica">Tipo com poucos doadores é onde vale concentrar a captação de cadastros.</p>
+        <ul class="barras-h">
+            <li th:each="t : ${tiposSanguineos}" th:with="total=${basePorTipo.get(t) != null ? basePorTipo.get(t) : 0}">
+                <span class="tipo-pilula" th:text="${t.sigla}">O-</span>
+                <span class="trilho"><span class="preenchido serie-convocacao"
+                      th:style="'width:' + ${total * 100.0 / maiorBase} + '%'"></span></span>
+                <span class="valor"><strong th:text="${total}">0</strong></span>
+            </li>
+        </ul>
+    </section>
+
+    <section class="cartao" id="movimentacoes">
+        <h2>Últimas movimentações do estoque</h2>
+        <p class="dica">Cada alteração de quantidade ou de capacidade alvo, com o valor anterior e quem alterou.</p>
+
+        <p class="dica" th:if="${#lists.isEmpty(movimentacoes)}">Nenhuma movimentação registrada ainda.</p>
+
+        <table class="tabela-doadores" th:unless="${#lists.isEmpty(movimentacoes)}">
             <thead>
             <tr>
+                <th>Quando</th>
                 <th>Tipo</th>
-                <th>Convocados</th>
-                <th>Converteram em doação</th>
-                <th>Taxa de conversão</th>
+                <th>Bolsas</th>
+                <th>Capacidade</th>
+                <th>Quem</th>
             </tr>
             </thead>
             <tbody>
-            <tr th:each="linha : ${relatorio.porTipo()}">
-                <td><strong th:text="${linha.tipoSanguineo.sigla}">O-</strong></td>
-                <td th:text="${linha.totalConvocados()}">0</td>
-                <td th:text="${linha.totalConvertidos()}">0</td>
-                <td th:text="${#numbers.formatDecimal(linha.taxaConversao(), 1, 1)} + '%'">0%</td>
+            <tr th:each="m : ${movimentacoes}">
+                <td class="col-data" th:text="${#temporals.format(m.ocorridoEm, 'dd/MM/yyyy HH:mm')}">24/09/2026 10:15</td>
+                <td class="col-tipo"><span class="tipo-pilula" th:text="${m.tipoSanguineo.sigla}">O-</span></td>
+                <td>
+                    <span th:text="${m.quantidadeAnterior} + ' → ' + ${m.quantidadeNova}">11 → 15</span>
+                    <span class="dica" th:if="${m.variacaoBolsas() != 0}"
+                          th:classappend="${m.variacaoBolsas() > 0} ? 'normal' : 'critico'"
+                          th:text="'(' + (${m.variacaoBolsas() > 0} ? '+' : '') + ${m.variacaoBolsas()} + ')'">(+4)</span>
+                </td>
+                <td>
+                    <span th:if="${m.capacidadeAlterada()}"
+                          th:text="${m.capacidadeAnterior} + ' → ' + ${m.capacidadeNova}">60 → 80</span>
+                    <span th:unless="${m.capacidadeAlterada()}" class="dica" th:text="${m.capacidadeNova}">60</span>
+                </td>
+                <td class="col-quebra" th:text="${m.responsavel}">operador@example.org</td>
             </tr>
             </tbody>
         </table>
-        </div>
-    </div>
+    </section>
 
 </div>
 </main>

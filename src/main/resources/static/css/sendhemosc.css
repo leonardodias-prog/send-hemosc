@@ -147,17 +147,11 @@ footer a { color: inherit; }
 .bloco.critico { border-top-color: var(--critico); }
 .bloco.atencao { border-top-color: var(--atencao); }
 .bloco.normal  { border-top-color: var(--normal); }
-.bloco-topo { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.bloco-topo { display: flex; align-items: center; gap: 8px; }
 .percentual { font-size: 30px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
 .percentual small { font-size: 15px; color: var(--suave); font-weight: 600; }
 .bloco-nivel { display: flex; align-items: center; gap: 14px; }
-.bloco-estoque { display: flex; gap: 6px; align-items: center; margin-top: auto; padding-top: 6px; }
-.bloco-estoque input {
-    flex: 1 1 0; min-width: 0; padding: 6px 7px; border: 1px solid var(--borda); border-radius: 6px;
-    background: var(--fundo); color: var(--texto); font: inherit; font-size: 14px;
-}
-.bloco-estoque button { padding: 6px 10px; font-size: 13px; }
-.sigla { font-size: 22px; font-weight: 700; }
+.sigla { font-size: 26px; font-weight: 800; letter-spacing: -.01em; line-height: 1; margin-right: auto; }
 /* --- Paginacao das listagens --- */
 .paginacao {
     display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
@@ -199,3 +193,222 @@ footer a { color: inherit; }
 }
 
 .estado-envio.ligado { border-color: var(--critico); background: var(--critico-bg); }
+
+/* =====================================================================
+   Componentes comuns
+   ===================================================================== */
+:root { --serie-a: #6366f1; --serie-b: #16a34a; --sombra: 0 8px 24px rgba(0, 0, 0, .18); }
+@media (prefers-color-scheme: dark) {
+    :root { --serie-a: #818cf8; --serie-b: #4ade80; --sombra: 0 8px 24px rgba(0, 0, 0, .5); }
+}
+button:disabled { opacity: .45; cursor: not-allowed; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+/* Cabecalho da tela: titulo a esquerda, acao principal a direita. */
+.cabecalho { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
+/* Link com cara e peso de botao. Navegacao continua sendo <a>; so a aparencia muda. */
+a.botao {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    background: var(--critico); color: #fff; border: 1px solid transparent; border-radius: 6px;
+    padding: 9px 16px; font-size: 14px; font-weight: 600; text-decoration: none; white-space: nowrap;
+}
+a.botao:hover { opacity: .9; }
+a.botao.secundario { background: transparent; color: var(--texto); border-color: var(--borda); }
+a.botao.pequeno, button.pequeno { padding: 5px 12px; font-size: 13px; }
+
+/* Botao so com icone (tres pontos). */
+.botao-icone {
+    display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 6px;
+    color: var(--suave); cursor: pointer; list-style: none; border: 1px solid transparent;
+}
+.botao-icone::-webkit-details-marker { display: none; }
+.botao-icone:hover, details[open] > .botao-icone { background: var(--fundo); color: var(--texto); border-color: var(--borda); }
+.botao-icone svg { width: 18px; height: 18px; fill: currentColor; }
+
+/* Menu e painel flutuantes abertos por <details>, sem script. */
+.menu-config, .menu-acoes { position: relative; }
+.painel-flutuante {
+    position: absolute; right: 0; top: calc(100% + 6px); z-index: 20; min-width: 220px;
+    background: var(--cartao); border: 1px solid var(--borda); border-radius: 8px; box-shadow: var(--sombra);
+    padding: 14px; display: flex; flex-direction: column; gap: 10px;
+}
+.painel-flutuante .campo { margin: 0; }
+.painel-flutuante.menu { padding: 6px; gap: 2px; min-width: 230px; }
+.item-menu {
+    display: block; width: 100%; text-align: left; background: transparent; color: var(--texto);
+    border: 0; border-radius: 6px; padding: 9px 10px; font-size: 14px; font-weight: 500; text-decoration: none;
+}
+.item-menu:hover { background: var(--fundo); opacity: 1; }
+
+/* Chips: escolha visivel com um clique, no lugar de caixa de selecao e lista suspensa. */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { position: relative; cursor: pointer; }
+.chip input { position: absolute; opacity: 0; pointer-events: none; }
+.chip span, a.chip-link {
+    display: inline-block; padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 600;
+    border: 1px solid var(--borda); color: var(--suave); background: var(--fundo); text-decoration: none;
+    transition: background .12s, color .12s, border-color .12s;
+}
+.chip:hover span, a.chip-link:hover { color: var(--texto); border-color: var(--suave); }
+.chip input:checked + span, a.chip-link.ativo { background: var(--texto); color: var(--fundo); border-color: var(--texto); }
+.chip input:focus-visible + span { outline: 2px solid var(--serie-a); outline-offset: 2px; }
+fieldset.grupo-filtro { border: 0; padding: 0; margin: 0 0 14px; min-width: 0; }
+.grupo-filtro { display: flex; flex-direction: column; gap: 6px; }
+.rotulo-filtro { font-size: 12px; color: var(--suave); font-weight: 600; padding: 0; }
+
+/* Interruptor: liga/desliga com cara de interruptor. */
+.interruptor {
+    appearance: none; -webkit-appearance: none; flex: none; width: 40px; height: 22px; margin: 1px 0 0;
+    border-radius: 999px; background: var(--borda); position: relative; cursor: pointer; transition: background .15s;
+}
+.interruptor::after {
+    content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%;
+    background: #fff; transition: transform .15s;
+}
+.interruptor:checked { background: var(--normal); }
+.interruptor:checked::after { transform: translateX(18px); }
+.interruptor-linha { display: flex; gap: 12px; align-items: flex-start; margin: 4px 0 18px; font-size: 14px; cursor: pointer; }
+.interruptor-linha .dica { display: block; }
+
+/* Caixa de selecao das linhas, na cor do sistema. */
+input.caixa { width: 17px; height: 17px; accent-color: var(--critico); cursor: pointer; }
+input.caixa:disabled { cursor: not-allowed; opacity: .3; }
+
+/* Pilula de estado (ligado/desligado). */
+.pilula-estado {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700;
+    padding: 4px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: .04em;
+}
+.pilula-estado::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.pilula-estado.ligado { background: var(--critico-bg); color: var(--critico); }
+.pilula-estado.desligado { background: var(--fundo); color: var(--suave); border: 1px solid var(--borda); }
+.titulo-secao { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+.titulo-secao h2 { margin: 0; }
+
+/* Cartao recolhivel. */
+details.recolhivel > summary { display: flex; align-items: baseline; gap: 12px; cursor: pointer; list-style: none; }
+details.recolhivel > summary::-webkit-details-marker { display: none; }
+details.recolhivel > summary h2 { margin: 0; }
+details.recolhivel > summary::after { content: "\25BE"; margin-left: auto; color: var(--suave); transition: transform .15s; }
+details.recolhivel[open] > summary { margin-bottom: 12px; }
+details.recolhivel[open] > summary::after { transform: rotate(180deg); }
+
+/* Dialogo de confirmacao. */
+dialog.dialogo {
+    border: 1px solid var(--borda); border-radius: 10px; background: var(--cartao); color: var(--texto);
+    padding: 22px; width: min(440px, calc(100vw - 32px)); box-shadow: var(--sombra);
+}
+dialog.dialogo::backdrop { background: rgba(0, 0, 0, .55); }
+.acoes-dialogo { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+.lista-plano { list-style: none; padding: 0; margin: 10px 0; display: flex; flex-direction: column; gap: 6px; }
+.lista-plano li { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 14px; }
+.lista-plano li > .dica:last-child { margin: 0 0 0 auto; }
+
+/* --- Painel --- */
+.bloco { position: relative; }
+
+/* --- Doadores --- */
+.filtros { display: flex; flex-direction: column; gap: 14px; }
+.linha-busca { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.linha-busca input[type=search] {
+    flex: 1 1 240px; min-width: 0; padding: 9px 12px; border: 1px solid var(--borda); border-radius: 6px;
+    background: var(--fundo); color: var(--texto); font: inherit; font-size: 14px;
+}
+.campo-inline { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--suave); }
+.campo-inline input {
+    padding: 7px 9px; border: 1px solid var(--borda); border-radius: 6px; background: var(--fundo);
+    color: var(--texto); font: inherit; font-size: 14px;
+}
+.barra-resultado { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+.contagem { margin: 0; font-size: 14px; color: var(--suave); }
+.contagem strong { color: var(--texto); }
+.contagem strong.normal { color: var(--normal); }
+.selecionados { font-size: 13px; font-weight: 600; }
+
+.tabela-doadores td { vertical-align: middle; }
+.tabela-doadores tbody tr:hover { background: color-mix(in srgb, var(--fundo) 60%, transparent); }
+.tabela-doadores tbody tr:has(input.caixa:checked) { background: color-mix(in srgb, var(--critico-bg) 70%, transparent); }
+.col-selecao { width: 36px; }
+.col-doador strong { display: block; font-weight: 600; }
+.col-doador .dica { margin: 0; overflow-wrap: anywhere; }
+.col-situacao .etiqueta { display: inline-block; margin: 2px 4px 2px 0; }
+.col-data { white-space: nowrap; color: var(--suave); font-size: 13px; }
+.col-acoes { width: 44px; text-align: right; }
+.col-quebra { overflow-wrap: anywhere; }
+.tabela-doadores tr.vazio td { color: var(--suave); text-align: center; padding: 28px 8px; }
+.tipo-pilula {
+    display: inline-block; min-width: 38px; text-align: center; font-weight: 800; font-size: 13px;
+    padding: 3px 8px; border-radius: 6px; background: var(--fundo); border: 1px solid var(--borda);
+}
+
+/* No celular cada linha vira um cartao: nada corre de lado. */
+@media (max-width: 760px) {
+    .tabela-doadores thead { display: none; }
+    .tabela-doadores, .tabela-doadores tbody { display: block; }
+    .tabela-doadores tr {
+        display: grid; grid-template-columns: auto 1fr auto; gap: 4px 10px; align-items: center;
+        padding: 12px 4px; border-bottom: 1px solid var(--borda);
+    }
+    .tabela-doadores td { border: 0; padding: 0; }
+    .tabela-doadores .col-selecao { grid-row: span 2; }
+    .tabela-doadores .col-doador { grid-column: 2; }
+    .tabela-doadores .col-acoes { grid-column: 3; grid-row: 1; }
+    .tabela-doadores .col-tipo, .tabela-doadores .col-situacao, .tabela-doadores .col-data { grid-column: 2 / 4; }
+}
+
+.estreito-medio { max-width: 720px; }
+fieldset { border: 0; padding: 0; margin: 0; }
+
+/* --- Envio de e-mail --- */
+.cartao-estado { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.cartao-estado.ligado { border-color: var(--critico); }
+.estado-texto p { margin: 8px 0 0; font-size: 14px; color: var(--suave); }
+.resumo-chave { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin: 12px 0; }
+.resumo-chave div { background: var(--fundo); border-radius: 8px; padding: 10px 12px; }
+.resumo-chave dt { font-size: 12px; color: var(--suave); }
+.resumo-chave dd { margin: 2px 0 0; font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+.form-frases { border-top: 1px solid var(--borda); margin-top: 16px; padding-top: 18px; }
+.form-frases .grupo-filtro { margin-bottom: 16px; }
+.form-frases .dica { margin-top: 2px; }
+.frase { font-size: 15px; line-height: 2.4; margin: 0 0 4px; }
+.frase select, .frase input {
+    padding: 6px 8px; border: 1px solid var(--borda); border-radius: 6px; background: var(--fundo);
+    color: var(--texto); font: inherit; font-size: 14px; font-weight: 600;
+}
+.frase .numero-curto { width: 80px; }
+
+/* --- Relatorios --- */
+.serie-convocacao { background: var(--serie-a); }
+.serie-doacao { background: var(--serie-b); }
+.legenda { display: flex; gap: 14px; font-size: 13px; color: var(--suave); }
+.legenda .marca { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.grafico-colunas {
+    display: flex; align-items: stretch; gap: 3px; height: 200px; margin-top: 12px; padding-bottom: 22px;
+    border-bottom: 1px solid var(--borda); overflow: hidden;
+}
+.grafico-colunas .coluna { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; position: relative; }
+.grafico-colunas .barras { flex: 1; display: flex; align-items: flex-end; gap: 1px; }
+.grafico-colunas .barras span { flex: 1; border-radius: 3px 3px 0 0; }
+.grafico-colunas .coluna:hover .barras { filter: brightness(1.15); }
+.rotulo-eixo {
+    position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%);
+    font-size: 10px; color: var(--suave); white-space: nowrap; font-variant-numeric: tabular-nums;
+}
+/* Com muitas colunas, so um rotulo a cada cinco cabe. */
+.grafico-colunas:has(.coluna:nth-child(15)) .coluna:not(:nth-child(5n+1)) .rotulo-eixo { display: none; }
+.grade-dupla { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 0 20px; }
+.barras-h { list-style: none; padding: 0; margin: 12px 0 0; display: flex; flex-direction: column; gap: 8px; }
+.barras-h li { display: grid; grid-template-columns: 44px 1fr 74px; align-items: center; gap: 10px; }
+.trilho { height: 10px; background: var(--fundo); border-radius: 999px; overflow: hidden; }
+.trilho .preenchido { display: block; height: 100%; border-radius: 999px; }
+.preenchido.critico { background: var(--critico); }
+.preenchido.atencao { background: var(--atencao); }
+.preenchido.normal { background: var(--normal); }
+.barras-h .valor { display: flex; gap: 6px; align-items: baseline; justify-content: flex-end; font-variant-numeric: tabular-nums; }
+.barras-h .valor .dica { margin: 0; }
+
+/* Lateral */
+.prototipo { display: block; font-size: 11px; opacity: .75; margin-top: 2px; }
+/* A classe de nivel no bloco pinta so a borda: o texto de dentro segue a cor normal. */
+.bloco.critico, .bloco.atencao, .bloco.normal { color: var(--texto); }

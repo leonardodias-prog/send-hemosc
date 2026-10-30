@@ -30,6 +30,7 @@ public class AuditoriaViewAdapter {
     private static final Map<String, String> NOMES = Map.ofEntries(
             Map.entry("CONVOCACAO_SELETIVA", "Convocação de selecionados"),
             Map.entry("CONVOCACAO_POR_TIPO", "Convocação por tipo sanguíneo"),
+            Map.entry("CONVOCACAO_GERAL", "Convocação geral do painel"),
             Map.entry("CONVOCACAO_AUTOMATICA", "Convocação automática"),
             Map.entry("ENVIO_LIGADO", "Envio de e-mail ligado"),
             Map.entry("ENVIO_DESLIGADO", "Envio de e-mail desligado"),

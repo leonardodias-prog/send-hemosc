@@ -6,6 +6,7 @@ import br.univille.sendhemosc.domain.dto.NovaDoacao;
 import br.univille.sendhemosc.domain.port.outbound.IDoacaoRepositoryPort;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -42,5 +43,11 @@ public class DoacaoPersistenceAdapter implements IDoacaoRepositoryPort {
     @Transactional(readOnly = true)
     public boolean existeNoDia(final Long doadorId, final LocalDate data) {
         return doacaoRepository.existsByDoadorIdAndDataDoacao(doadorId, data);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<LocalDate> listarDatasNoPeriodo(final LocalDate inicio, final LocalDate fim) {
+        return doacaoRepository.listarDatas(inicio, fim);
     }
 }

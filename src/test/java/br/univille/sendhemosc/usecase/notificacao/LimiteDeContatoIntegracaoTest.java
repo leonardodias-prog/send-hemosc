@@ -179,7 +179,7 @@ class LimiteDeContatoIntegracaoTest {
             convocacaoSemRespostaHa(primeiro, 5);
 
             mockMvc.perform(get("/doadores").param("busca", "limite.um"))
-                    .andExpect(content().string(containsString("Liberar contato")));
+                    .andExpect(content().string(containsString("Liberar limite de contato")));
 
             mockMvc.perform(post("/doadores/" + primeiro + "/liberar-contato").param("busca", "limite.um").with(csrf()))
                     .andExpect(status().is3xxRedirection())
@@ -189,7 +189,7 @@ class LimiteDeContatoIntegracaoTest {
             // Liberar zera o teto e tambem o intervalo: a convocacao de cinco dias atras deixa de contar.
             mockMvc.perform(get("/doadores").param("busca", "limite.um"))
                     .andExpect(content().string(containsString("Pode doar")))
-                    .andExpect(content().string(not(containsString("Liberar contato"))));
+                    .andExpect(content().string(not(containsString("Liberar limite de contato"))));
         }
 
         @Test

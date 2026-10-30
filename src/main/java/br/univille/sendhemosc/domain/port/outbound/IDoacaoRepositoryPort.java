@@ -2,6 +2,7 @@ package br.univille.sendhemosc.domain.port.outbound;
 
 import br.univille.sendhemosc.domain.dto.NovaDoacao;
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * Porta de saida para o historico de doacoes.
@@ -28,4 +29,13 @@ public interface IDoacaoRepositoryPort {
      * @return true quando ja ha registro no mesmo dia
      */
     boolean existeNoDia(Long doadorId, LocalDate data);
+
+    /**
+     * Datas das doacoes registradas no periodo, para a serie do relatorio.
+     *
+     * @param inicio data inicial do periodo, inclusive
+     * @param fim data final do periodo, inclusive
+     * @return uma data por doacao
+     */
+    List<LocalDate> listarDatasNoPeriodo(LocalDate inicio, LocalDate fim);
 }

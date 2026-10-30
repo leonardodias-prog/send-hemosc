@@ -16,9 +16,11 @@ import br.univille.sendhemosc.domain.port.outbound.IDoadorRepositoryPort;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -226,5 +228,13 @@ public class DoadorPersistenceAdapter implements IDoadorRepositoryPort {
                 entidade.isAtivo(),
                 entidade.getCriadoEm(),
                 entidade.getAtualizadoEm());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<TipoSanguineo, Long> contarAtivosPorTipo() {
+        return doadorRepository.contarAtivosPorTipo().stream()
+                .collect(Collectors.toMap(linha -> TipoSanguineo.doSigla((String) linha[0]),
+                        linha -> (Long) linha[1]));
     }
 }

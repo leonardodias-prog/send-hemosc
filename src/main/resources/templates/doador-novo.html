@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Novo doador — Send Hemosc</title>
+    <link rel="stylesheet" th:href="@{/css/sendhemosc.css}"/>
+</head>
+<body>
+<div class="app">
+
+<nav th:replace="~{fragmentos/casca :: lateral('doadores')}"></nav>
+
+<main class="conteudo">
+<div class="container estreito-medio">
+
+    <header class="cabecalho">
+        <div>
+            <h1>Novo doador</h1>
+            <p class="subtitulo">Depois de salvar, o formulário volta vazio para o próximo cadastro</p>
+        </div>
+        <a class="botao secundario" th:href="@{/doadores}">Voltar para doadores</a>
+    </header>
+
+    <div class="aviso" th:if="${aviso}" th:text="${aviso}">mensagem</div>
+
+    <form class="cartao" th:action="@{/doadores}" th:object="${novoDoador}" method="post">
+        <div class="campos">
+            <div class="campo">
+                <label for="nome">Nome completo</label>
+                <input type="text" id="nome" th:field="*{nome}" autofocus/>
+                <span class="erro" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></span>
+            </div>
+
+            <div class="campo">
+                <label for="email">E-mail</label>
+                <input type="email" id="email" th:field="*{email}"/>
+                <span class="erro" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+            </div>
+        </div>
+
+        <fieldset class="grupo-filtro">
+            <legend class="rotulo-filtro">Tipo sanguíneo</legend>
+            <div class="chips">
+                <label class="chip" th:each="t : ${tiposSanguineos}">
+                    <input type="radio" th:field="*{tipoSanguineo}" th:value="${t}"/>
+                    <span th:text="${t.sigla}">A+</span>
+                </label>
+            </div>
+            <span class="erro" th:if="${#fields.hasErrors('tipoSanguineo')}" th:errors="*{tipoSanguineo}"></span>
+        </fieldset>
+
+        <fieldset class="grupo-filtro">
+            <legend class="rotulo-filtro">Sexo</legend>
+            <div class="chips">
+                <label class="chip" th:each="sx : ${sexos}">
+                    <input type="radio" th:field="*{sexo}" th:value="${sx}"/>
+                    <span th:text="${sx == T(br.univille.sendhemosc.domain.enums.Sexo).MASCULINO
+                                    ? 'Masculino' : 'Feminino'}">Masculino</span>
+                </label>
+            </div>
+            <span class="erro" th:if="${#fields.hasErrors('sexo')}" th:errors="*{sexo}"></span>
+        </fieldset>
+
+        <div class="campos">
+            <div class="campo">
+                <label for="dataNascimento">Data de nascimento</label>
+                <input type="date" id="dataNascimento" th:field="*{dataNascimento}"/>
+                <span class="erro" th:if="${#fields.hasErrors('dataNascimento')}"
+                      th:errors="*{dataNascimento}"></span>
+            </div>
+
+            <div class="campo">
+                <label for="pesoKg">Peso (kg) &mdash; opcional</label>
+                <input type="number" id="pesoKg" step="0.1" min="0" th:field="*{pesoKg}"/>
+            </div>
+
+            <div class="campo">
+                <label for="telefone">Telefone &mdash; opcional</label>
+                <input type="text" id="telefone" th:field="*{telefone}"/>
+            </div>
+        </div>
+
+        <label class="interruptor-linha">
+            <input type="checkbox" class="interruptor" th:field="*{aceitaContato}"/>
+            <span>
+                <strong>Autoriza receber convocações por e-mail</strong> quando o tipo sanguíneo estiver em
+                falta. Pode cancelar a qualquer momento pelo link presente em toda mensagem.
+                <span class="dica">Sem esta autorização o doador não recebe convocação &mdash; exigência da LGPD.</span>
+            </span>
+        </label>
+
+        <div class="acoes">
+            <button type="submit">Cadastrar doador</button>
+        </div>
+    </form>
+
+</div>
+</main>
+
+</div>
+</body>
+</html>

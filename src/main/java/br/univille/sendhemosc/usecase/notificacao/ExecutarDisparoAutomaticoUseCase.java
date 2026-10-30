@@ -7,6 +7,7 @@ import br.univille.sendhemosc.domain.dto.ResultadoConvocacao;
 import br.univille.sendhemosc.domain.dto.SelecaoConvocacao;
 import br.univille.sendhemosc.domain.dto.SituacaoEstoque;
 import br.univille.sendhemosc.domain.enums.OrigemNotificacao;
+import br.univille.sendhemosc.domain.enums.TipoSanguineo;
 import br.univille.sendhemosc.domain.port.outbound.IAuditoriaPort;
 import br.univille.sendhemosc.domain.port.outbound.IDisparoAutomaticoRepositoryPort;
 import br.univille.sendhemosc.usecase.estoque.ListarSituacaoEstoqueUseCase;
@@ -14,6 +15,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -91,17 +93,31 @@ public class ExecutarDisparoAutomaticoUseCase {
      * @return o plano, do tipo mais critico ao menos critico
      */
     public PlanoDeRodada planejar(final ConfiguracaoDisparoAutomatico configuracao, final LocalDate referencia) {
+        return planejar(configuracao.tiposSanguineos(), configuracao.limitePorRodada(), referencia);
+    }
+
+    /**
+     * Mesmo plano, com os tipos e o limite informados. E tambem o da convocacao geral do painel,
+     * que considera todos os tipos e nao tem limite por rodada.
+     *
+     * @param tipos tipos sanguineos considerados
+     * @param limite maximo de pessoas convocadas, somando todos os tipos
+     * @param referencia data da rodada
+     * @return o plano, do tipo mais critico ao menos critico
+     */
+    public PlanoDeRodada planejar(final Collection<TipoSanguineo> tipos, final int limite,
+                                  final LocalDate referencia) {
         // A listagem ja vem ordenada da menor ocupacao para a maior.
         final List<SituacaoEstoque> emFalta = listarSituacaoEstoque.execute().stream()
                 .filter(situacao -> situacao.nivel().isExigeConvocacao())
-                .filter(situacao -> configuracao.tiposSanguineos().contains(situacao.tipoSanguineo()))
+                .filter(situacao -> tipos.contains(situacao.tipoSanguineo()))
                 .toList();
 
         final List<PlanoDeRodada.Item> itens = new ArrayList<>();
         final Set<Long> destinatarios = new HashSet<>();
         final Set<Long> retidos = new HashSet<>();
         final Set<Long> adiados = new HashSet<>();
-        int saldo = configuracao.limitePorRodada();
+        int saldo = limite;
 
         for (final SituacaoEstoque situacao : emFalta) {
             final SelecaoConvocacao selecao = convocarDoadores.selecionar(situacao, referencia);

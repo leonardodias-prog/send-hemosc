@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Send Hemosc — Painel de captação</title>
     <link rel="stylesheet" th:href="@{/css/sendhemosc.css}"/>
+    <script th:src="@{/js/sendhemosc.js}" defer></script>
 </head>
 <body>
 <div class="app">
@@ -15,59 +16,24 @@
 <main class="conteudo">
 <div class="container">
 
-    <header>
-        <h1>Send Hemosc</h1>
-        <p class="subtitulo">Painel de captação &middot; Agência Transfusional &middot; Joinville/SC</p>
-    </header>
+    <header class="cabecalho">
+        <div>
+            <h1>Painel de captação</h1>
+            <p class="subtitulo">Agência Transfusional &middot; Joinville/SC</p>
+        </div>
 
-    <div class="faixa">
-        <strong>Protótipo acadêmico.</strong> Projeto de Extensão da UNIVILLE — Vivências de Extensão III.
-        Não é sistema oficial do HEMOSC. Os dados aqui tratados incluem
-        <strong>tipo sanguíneo</strong>, que é dado pessoal sensível de saúde:
-        <a th:href="@{/termo}">leia o termo</a> antes de cadastrar alguém.
-    </div>
+        <!--/* O unico botao de convocacao do painel: todos os tipos em falta de uma vez. Um tipo
+               especifico ou pessoas escolhidas se convocam na tela de doadores. */-->
+        <button type="button" sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')"
+                data-abrir-dialogo="confirmar-convocacao" th:disabled="${totalEmFalta == 0}"
+                th:title="${totalEmFalta == 0} ? 'Nenhum tipo sanguíneo está em nível baixo' : null">
+            Convocar doadores aptos
+        </button>
+    </header>
 
     <div class="aviso" th:if="${aviso}" th:text="${aviso}">mensagem</div>
     <div class="erro-caixa" th:if="${erro}" th:text="${erro}">mensagem</div>
 
-    <div class="faixa" sec:authorize="hasRole('OPERADOR')">
-        Seu perfil cadastra doadores e atualiza o estoque. O disparo de convocação é atribuição
-        do responsável pela captação.
-    </div>
-
-    <div class="cartao" sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')"
-         th:classappend="${envioReal} ? 'estado-envio ligado' : 'estado-envio'">
-        <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
-            <div style="flex:1 1 320px;">
-                <h2 style="margin-bottom:2px;">
-                    Envio de e-mail:
-                    <span th:if="${envioReal}" class="critico">ligado</span>
-                    <span th:unless="${envioReal}" class="normal">desligado</span>
-                </h2>
-                <p class="dica" th:if="${envioReal and #strings.isEmpty(destinatarioTeste)}">
-                    As convocações estão chegando de verdade no e-mail de cada doador.
-                </p>
-                <p class="dica" th:if="${envioReal and !#strings.isEmpty(destinatarioTeste)}">
-                    Entregando, mas tudo redirecionado para
-                    <strong th:text="${destinatarioTeste}">endereço</strong>.
-                </p>
-                <p class="dica" th:unless="${envioReal}">
-                    <span th:if="${provedorConfigurado}">
-                        As convocações ficam apenas registradas no log. Ninguém recebe.
-                    </span>
-                    <span th:unless="${provedorConfigurado}">
-                        Não há provedor configurado neste ambiente, então nada é enviado.
-                    </span>
-                </p>
-            </div>
-            <form th:action="@{'/envio/' + ${envioReal ? 'desligar' : 'ligar'}}" method="post">
-                <button type="submit" th:classappend="${envioReal} ? 'secundario' : ''"
-                        th:text="${envioReal} ? 'Desligar envio' : 'Ligar envio'">Ligar envio</button>
-            </form>
-        </div>
-    </div>
-
-    <!--/* Indicadores no topo: o que a equipe precisa saber antes de olhar tipo a tipo. */-->
     <div class="resumo">
         <div class="indicador" th:classappend="${totalCriticos > 0} ? 'destaque-critico'">
             <div class="numero critico" th:text="${totalCriticos}">2</div>
@@ -89,8 +55,8 @@
 
     <h2>Estoque por tipo sanguíneo</h2>
 
-    <!--/* Um bloco por tipo, na ordem em que o estoque vem: a cor da borda e da etiqueta
-           diz o nível antes de qualquer leitura de número. */-->
+    <!--/* Um bloco por tipo, do mais baixo ao mais alto: a cor da borda, da etiqueta e da bolsa
+           diz o nivel antes de qualquer leitura de numero. */-->
     <div class="blocos">
         <div class="bloco" th:each="s : ${situacoes}" th:classappend="${s.nivel.name().toLowerCase()}">
             <div class="bloco-topo">
@@ -98,6 +64,29 @@
                       th:text="${s.tipoSanguineo.sigla}">O-</span>
                 <span class="etiqueta" th:classappend="${s.nivel.name().toLowerCase()}"
                       th:text="${s.nivel.descricao}">Crítico</span>
+
+                <!--/* Ajuste do estoque fica recolhido: abrir e o gesto de quem vai alterar. */-->
+                <details class="menu-config">
+                    <summary class="botao-icone" th:title="'Ajustar estoque de ' + ${s.tipoSanguineo.sigla}"
+                             th:aria-label="'Ajustar estoque de ' + ${s.tipoSanguineo.sigla}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="2"/>
+                            <circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+                    </summary>
+                    <form class="painel-flutuante" th:action="@{'/estoque/' + ${s.tipoSanguineo.sigla}}" method="post">
+                        <strong th:text="'Estoque de ' + ${s.tipoSanguineo.sigla}">Estoque de O-</strong>
+                        <div class="campo">
+                            <label th:for="'bolsas-' + ${s.tipoSanguineo.name()}">Bolsas disponíveis</label>
+                            <input type="number" name="quantidadeBolsas" min="0" required
+                                   th:id="'bolsas-' + ${s.tipoSanguineo.name()}" th:value="${s.quantidadeBolsas}"/>
+                        </div>
+                        <div class="campo">
+                            <label th:for="'capacidade-' + ${s.tipoSanguineo.name()}">Capacidade alvo</label>
+                            <input type="number" name="capacidadeAlvo" min="1" required
+                                   th:id="'capacidade-' + ${s.tipoSanguineo.name()}" th:value="${s.capacidadeAlvo}"/>
+                        </div>
+                        <button type="submit" class="largo">Salvar</button>
+                    </form>
+                </details>
             </div>
 
             <div class="bloco-nivel">
@@ -132,157 +121,40 @@
                     </div>
                 </div>
             </div>
-
-            <form class="bloco-estoque" th:action="@{'/estoque/' + ${s.tipoSanguineo.sigla}}" method="post">
-                <input type="number" name="quantidadeBolsas" min="0" required
-                       th:value="${s.quantidadeBolsas}" aria-label="Quantidade de bolsas"
-                       title="Quantidade de bolsas"/>
-                <span class="dica" style="margin:0;">de</span>
-                <input type="number" name="capacidadeAlvo" min="1" required
-                       th:value="${s.capacidadeAlvo}" aria-label="Capacidade alvo"
-                       title="Capacidade alvo"/>
-                <button type="submit" class="secundario">Salvar</button>
-            </form>
-
-            <a class="bloco-convocar" th:href="@{/doadores(tipo=${s.tipoSanguineo.sigla},porCompatibilidade=true)}"
-               sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')">
-                <button type="button" class="largo"
-                        th:classappend="${s.nivel.exigeConvocacao} ? '' : 'secundario'">Convocar doadores</button>
-            </a>
         </div>
     </div>
 
-    <div class="cartao" id="movimentacoes">
-        <h2>Últimas movimentações do estoque</h2>
-        <p class="dica">
-            Cada alteração de quantidade ou de capacidade alvo, com o valor anterior e quem alterou.
+    <!--/* Confirmacao da convocacao geral, com o que vai acontecer antes de acontecer. */-->
+    <dialog id="confirmar-convocacao" class="dialogo" sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')"
+            th:if="${planoGeral != null}">
+        <h2>Convocar doadores aptos</h2>
+
+        <p th:if="${planoGeral.totalDestinatarios > 0}">
+            <strong th:text="${planoGeral.totalDestinatarios}">12</strong> doador(es) recebem o convite, cada um
+            uma vez só, pelo tipo mais crítico com que é compatível:
+        </p>
+        <p th:if="${planoGeral.totalDestinatarios == 0}">
+            Ninguém pode ser convocado agora: os aptos foram convocados há pouco tempo ou não responderam às
+            últimas convocações.
         </p>
 
-        <p class="dica" th:if="${#lists.isEmpty(movimentacoes)}" style="margin-top:12px;">
-            Nenhuma movimentação registrada ainda.
+        <ul class="lista-plano" th:if="${planoGeral.totalDestinatarios > 0}">
+            <li th:each="item : ${planoGeral.itens}">
+                <span class="etiqueta" th:classappend="${item.selecao.situacao.nivel.name().toLowerCase()}"
+                      th:text="${item.selecao.situacao.tipoSanguineo.sigla}">O-</span>
+                <span th:text="${#lists.size(item.destinatarios)} + ' doador(es)'">7 doadores</span>
+            </li>
+        </ul>
+
+        <p class="dica" th:if="${planoGeral.totalRetidos > 0}">
+            <span th:text="${planoGeral.totalRetidos}">3</span> apto(s) ficam de fora pelo limite de contato.
         </p>
 
-        <table th:unless="${#lists.isEmpty(movimentacoes)}" style="margin-top:12px;">
-            <thead>
-            <tr>
-                <th>Quando</th>
-                <th>Tipo</th>
-                <th>Bolsas</th>
-                <th>Capacidade alvo</th>
-                <th>Quem</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="m : ${movimentacoes}">
-                <td th:text="${#temporals.format(m.ocorridoEm, 'dd/MM/yyyy HH:mm')}">24/09/2026 10:15</td>
-                <td><strong th:text="${m.tipoSanguineo.sigla}">O-</strong></td>
-                <td>
-                    <span th:text="${m.quantidadeAnterior} + ' → ' + ${m.quantidadeNova}">11 → 15</span>
-                    <span class="dica" th:if="${m.variacaoBolsas() != 0}"
-                          th:text="'(' + (${m.variacaoBolsas() > 0} ? '+' : '') + ${m.variacaoBolsas()} + ')'">(+4)</span>
-                </td>
-                <td>
-                    <span th:if="${m.capacidadeAlterada()}"
-                          th:text="${m.capacidadeAnterior} + ' → ' + ${m.capacidadeNova}">60 → 80</span>
-                    <span th:unless="${m.capacidadeAlterada()}" class="dica" style="margin:0;"
-                          th:text="${m.capacidadeNova}">60</span>
-                </td>
-                <td th:text="${m.responsavel}">operador@example.org</td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <!--/* A ancora e a confirmacao ficam aqui, e nao no topo: quem cadastra varios
-           doadores seguidos voltava para o inicio da pagina a cada salvamento e
-           tinha de rolar de novo ate o formulario. */-->
-    <div class="cartao" id="cadastro">
-        <h2>Cadastrar doador</h2>
-        <p class="dica">
-            Toda convocação, por tipo sanguíneo ou por seleção específica, é feita na
-            <a th:href="@{/doadores}">tela de doadores</a>, que tem filtros e seleção.
-        </p>
-
-        <div class="aviso" th:if="${avisoCadastro}" th:text="${avisoCadastro}"
-             style="margin-top:12px;">mensagem</div>
-
-        <form th:action="@{/doadores}" th:object="${novoDoador}" method="post" style="display:block;">
-            <div class="campos">
-                <div class="campo">
-                    <label for="nome">Nome completo</label>
-                    <input type="text" id="nome" th:field="*{nome}"/>
-                    <span class="erro" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></span>
-                </div>
-
-                <div class="campo">
-                    <label for="email">E-mail</label>
-                    <input type="email" id="email" th:field="*{email}"/>
-                    <span class="erro" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
-                </div>
-
-                <div class="campo">
-                    <label for="tipoSanguineo">Tipo sanguíneo</label>
-                    <select id="tipoSanguineo" th:field="*{tipoSanguineo}">
-                        <option value="">Selecione</option>
-                        <option th:each="t : ${tiposSanguineos}" th:value="${t}" th:text="${t.sigla}">A+</option>
-                    </select>
-                    <span class="erro" th:if="${#fields.hasErrors('tipoSanguineo')}" th:errors="*{tipoSanguineo}"></span>
-                </div>
-
-                <div class="campo">
-                    <label for="sexo">Sexo</label>
-                    <select id="sexo" th:field="*{sexo}">
-                        <option value="">Selecione</option>
-                        <option th:each="sx : ${sexos}" th:value="${sx}"
-                                th:text="${sx == T(br.univille.sendhemosc.domain.enums.Sexo).MASCULINO
-                                          ? 'Masculino' : 'Feminino'}">Masculino</option>
-                    </select>
-                    <span class="erro" th:if="${#fields.hasErrors('sexo')}" th:errors="*{sexo}"></span>
-                </div>
-
-                <div class="campo">
-                    <label for="dataNascimento">Data de nascimento</label>
-                    <input type="date" id="dataNascimento" th:field="*{dataNascimento}"/>
-                    <span class="erro" th:if="${#fields.hasErrors('dataNascimento')}"
-                          th:errors="*{dataNascimento}"></span>
-                </div>
-
-                <div class="campo">
-                    <label for="pesoKg">Peso (kg) &mdash; opcional</label>
-                    <input type="number" id="pesoKg" step="0.1" min="0" th:field="*{pesoKg}"/>
-                </div>
-
-                <div class="campo">
-                    <label for="telefone">Telefone &mdash; opcional</label>
-                    <input type="text" id="telefone" th:field="*{telefone}"/>
-                </div>
-            </div>
-
-            <label class="consentimento">
-                <input type="checkbox" th:field="*{aceitaContato}"/>
-                <span>
-                    Autorizo o recebimento de convocações por e-mail quando meu tipo sanguíneo estiver
-                    em falta. Posso cancelar a qualquer momento pelo link presente em toda mensagem.
-                    <strong>Sem esta autorização o doador não recebe convocação</strong> &mdash; exigência da LGPD.
-                </span>
-            </label>
-
-            <button type="submit">Cadastrar doador</button>
+        <form th:action="@{/convocar/em-falta}" method="post" class="acoes-dialogo">
+            <button type="button" class="secundario" data-fechar-dialogo>Cancelar</button>
+            <button type="submit" th:disabled="${planoGeral.totalDestinatarios == 0}">Convocar agora</button>
         </form>
-    </div>
-
-    <footer>
-        <p>
-            A convocação usa a tabela de compatibilidade transfusional: ao convocar para A+,
-            o sistema busca doadores A+, A&minus;, O+ e O&minus; que já cumpriram o intervalo mínimo
-            desde a última doação.
-        </p>
-        <p>
-            Código-fonte em
-            <a href="https://github.com/leonardodias-prog/send-hemosc">github.com/leonardodias-prog/send-hemosc</a>
-            &middot; API em <a href="/api/estoque">/api/estoque</a>
-        </p>
-    </footer>
+    </dialog>
 
 </div>
 </main>

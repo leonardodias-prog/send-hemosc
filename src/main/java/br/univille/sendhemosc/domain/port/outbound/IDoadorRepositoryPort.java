@@ -4,9 +4,11 @@ import br.univille.sendhemosc.domain.dto.CandidatoConvocacao;
 import br.univille.sendhemosc.domain.dto.DoadorCadastrado;
 import br.univille.sendhemosc.domain.dto.FiltroDoador;
 import br.univille.sendhemosc.domain.dto.NovoDoador;
+import br.univille.sendhemosc.domain.enums.TipoSanguineo;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -144,4 +146,11 @@ public interface IDoadorRepositoryPort {
      * @return true se o doador existia
      */
     boolean excluir(Long id);
+
+    /**
+     * Quantos doadores ativos ha de cada tipo sanguineo.
+     *
+     * @return total por tipo; tipo sem doador fica de fora
+     */
+    Map<TipoSanguineo, Long> contarAtivosPorTipo();
 }

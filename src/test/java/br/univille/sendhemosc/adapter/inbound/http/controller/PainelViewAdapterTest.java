@@ -91,7 +91,8 @@ class PainelViewAdapterTest {
                     .andExpect(status().is3xxRedirection())
                     .andExpect(flash().attribute("aviso", "Estoque de AB- atualizado."));
 
-            final var painel = mockMvc.perform(get("/"))
+            // O historico saiu do painel e foi para a tela de relatorios.
+            final var painel = mockMvc.perform(get("/relatorios/conversao"))
                     .andExpect(content().string(Matchers.containsString("Últimas movimentações")))
                     .andReturn();
 

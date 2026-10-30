@@ -52,6 +52,9 @@ public class DisparoAutomaticoViewAdapter {
     @Value("${sendhemosc.disparo-automatico.verificacao-ms:600000}")
     private long verificacaoMs;
 
+    @Value("${sendhemosc.email.destinatario-teste:}")
+    private String destinatarioTeste;
+
     @GetMapping("/disparo-automatico")
     public String exibir(final Model model) {
         final LocalDateTime agora = LocalDateTime.now(ConfiguracaoDisparoAutomatico.FUSO);
@@ -69,6 +72,8 @@ public class DisparoAutomaticoViewAdapter {
         model.addAttribute("tiposSanguineos", TipoSanguineo.values());
         model.addAttribute("frequencias", FREQUENCIAS);
         model.addAttribute("envioReal", roteadorDeEnvio.isEntregando());
+        model.addAttribute("provedorConfigurado", roteadorDeEnvio.temProvedorConfigurado());
+        model.addAttribute("destinatarioTeste", destinatarioTeste);
         model.addAttribute("intervaloReenvioDias", properties.notificacao().intervaloReenvioDias());
         model.addAttribute("maxConvocacoesSemResposta", properties.notificacao().maxConvocacoesSemResposta());
         model.addAttribute("prazoTetoDias", properties.notificacao().prazoTetoDias());

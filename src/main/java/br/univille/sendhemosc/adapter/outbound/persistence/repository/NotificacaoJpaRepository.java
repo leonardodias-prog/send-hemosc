@@ -78,4 +78,14 @@ public interface NotificacaoJpaRepository extends JpaRepository<NotificacaoEntit
             """)
     List<Object[]> contarConversaoPorTipo(@Param("inicio") LocalDateTime inicio,
                                           @Param("fimExclusivo") LocalDateTime fimExclusivo);
+
+    @Query("""
+            SELECT n.enviadaEm
+              FROM NotificacaoEntity n
+             WHERE n.status IN (br.univille.sendhemosc.domain.enums.StatusNotificacao.ENVIADA,
+                                 br.univille.sendhemosc.domain.enums.StatusNotificacao.COMPARECEU)
+               AND n.enviadaEm >= :inicio AND n.enviadaEm < :fimExclusivo
+            """)
+    List<LocalDateTime> listarEnvios(@Param("inicio") LocalDateTime inicio,
+                                     @Param("fimExclusivo") LocalDateTime fimExclusivo);
 }

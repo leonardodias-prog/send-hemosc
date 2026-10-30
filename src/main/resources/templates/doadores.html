@@ -16,78 +16,76 @@
 <main class="conteudo">
 <div class="container">
 
-    <header>
-        <h1>Doadores</h1>
-        <p class="subtitulo">
-            Busca, aptidão e convocação individual ou em grupo —
-            <a th:href="@{/doadores(apenasConvocados=true)}">ver quem foi convocado e ainda não respondeu</a>
-        </p>
+    <header class="cabecalho">
+        <div>
+            <h1>Doadores</h1>
+            <p class="subtitulo">Busca, aptidão e convocação individual ou em grupo</p>
+        </div>
+        <a class="botao" th:href="@{/doadores/novo}">+ Novo doador</a>
     </header>
 
     <div class="aviso" th:if="${aviso}" th:text="${aviso}">mensagem</div>
     <div class="erro-caixa" th:if="${erro}" th:text="${erro}">mensagem</div>
 
-    <div class="cartao">
-        <h2>Filtros</h2>
-        <form th:action="@{/doadores}" method="get" style="display:block;">
-            <div class="campos">
-                <div class="campo">
-                    <label for="busca">Nome ou e-mail</label>
-                    <input type="text" id="busca" name="busca" th:value="${filtro.busca}"
-                           placeholder="parte do nome ou do e-mail"/>
-                </div>
-                <div class="campo">
-                    <label for="tipo">Tipo sanguíneo</label>
-                    <select id="tipo" name="tipo">
-                        <option value="">Todos</option>
-                        <option th:each="t : ${tiposSanguineos}" th:value="${t.sigla}" th:text="${t.sigla}"
-                                th:selected="${filtro.tipoSanguineo != null and filtro.tipoSanguineo == t}">A+</option>
-                    </select>
-                </div>
+    <!--/* Filtros. Escolher um tipo ou ligar um recorte ja aplica: so a busca por texto
+           espera o botao, para nao recarregar a cada letra. */-->
+    <form class="cartao filtros" th:action="@{/doadores}" method="get" data-filtro-automatico>
+        <div class="linha-busca">
+            <input type="search" name="busca" th:value="${filtro.busca}" aria-label="Buscar por nome ou e-mail"
+                   placeholder="Buscar por nome ou e-mail"/>
+            <button type="submit">Buscar</button>
+            <a class="botao secundario"
+               th:if="${filtro.temBusca() or filtro.tipoSanguineo != null or filtro.apenasAptos
+                        or filtro.apenasComConsentimento or filtro.porCompatibilidade or filtro.apenasConvocados}"
+               th:href="@{/doadores}">Limpar filtros</a>
+        </div>
+
+        <div class="grupo-filtro">
+            <span class="rotulo-filtro">Tipo sanguíneo</span>
+            <div class="chips" role="radiogroup" aria-label="Tipo sanguíneo">
+                <label class="chip">
+                    <input type="radio" name="tipo" value="" th:checked="${filtro.tipoSanguineo == null}"/>
+                    <span>Todos</span>
+                </label>
+                <label class="chip" th:each="t : ${tiposSanguineos}">
+                    <input type="radio" name="tipo" th:value="${t.sigla}"
+                           th:checked="${filtro.tipoSanguineo != null and filtro.tipoSanguineo == t}"/>
+                    <span th:text="${t.sigla}">A+</span>
+                </label>
             </div>
-
-            <label class="consentimento">
-                <input type="checkbox" name="apenasAptos" value="true" th:checked="${filtro.apenasAptos}"/>
-                <span>Somente quem pode doar hoje</span>
-            </label>
-            <label class="consentimento">
-                <input type="checkbox" name="apenasComConsentimento" value="true"
-                       th:checked="${filtro.apenasComConsentimento}"/>
-                <span>Somente quem autorizou receber convocações</span>
-            </label>
-            <label class="consentimento">
-                <input type="checkbox" name="porCompatibilidade" value="true"
-                       th:checked="${filtro.porCompatibilidade}"/>
-                <span>Considerar tipos compatíveis com o tipo acima (ex.: A+ também convoca A−, O+ e O−)</span>
-            </label>
-            <label class="consentimento">
-                <input type="checkbox" name="apenasConvocados" value="true"
-                       th:checked="${filtro.apenasConvocados}"/>
-                <span>Somente quem foi convocado e ainda não respondeu</span>
-            </label>
-
-            <button type="submit">Aplicar filtros</button>
-            <a th:href="@{/doadores}"><button type="button" class="secundario">Limpar</button></a>
-        </form>
-    </div>
-
-    <div class="resumo">
-        <div class="indicador">
-            <div class="numero" th:text="${totalEncontrados}">0</div>
-            <div class="rotulo">doadores encontrados</div>
         </div>
-        <div class="indicador">
-            <div class="numero normal" th:text="${totalConvocaveis}">0</div>
-            <div class="rotulo">podem ser convocados agora</div>
-        </div>
-    </div>
 
-    <form th:action="@{/doadores/convocar}" method="post">
+        <div class="grupo-filtro">
+            <span class="rotulo-filtro">Mostrar só</span>
+            <div class="chips">
+                <label class="chip">
+                    <input type="checkbox" name="apenasAptos" value="true" th:checked="${filtro.apenasAptos}"/>
+                    <span>Podem doar hoje</span>
+                </label>
+                <label class="chip">
+                    <input type="checkbox" name="apenasComConsentimento" value="true"
+                           th:checked="${filtro.apenasComConsentimento}"/>
+                    <span>Autorizaram contato</span>
+                </label>
+                <label class="chip">
+                    <input type="checkbox" name="apenasConvocados" value="true" th:checked="${filtro.apenasConvocados}"/>
+                    <span>Convocados sem resposta</span>
+                </label>
+                <label class="chip" title="Com um tipo escolhido, inclui quem pode doar para ele (ex.: A+ também traz A−, O+ e O−)">
+                    <input type="checkbox" name="porCompatibilidade" value="true"
+                           th:checked="${filtro.porCompatibilidade}"/>
+                    <span>Incluir tipos compatíveis</span>
+                </label>
+            </div>
+        </div>
+    </form>
+
+    <form th:action="@{/doadores/convocar}" method="post" class="cartao" data-selecao>
         <input type="hidden" name="dataDoacao"
                th:value="${#temporals.format(#temporals.createToday(), 'yyyy-MM-dd')}"/>
 
-        <!--/* O filtro em uso viaja junto com a ação para que a lista volte como estava.
-               Vale para os três botões abaixo, que compartilham este formulário. */-->
+        <!--/* O filtro em uso viaja junto com a acao para que a lista volte como estava.
+               Vale para todos os botoes abaixo, que compartilham este formulario. */-->
         <input type="hidden" name="busca" th:if="${filtro.temBusca()}" th:value="${filtro.busca}"/>
         <input type="hidden" name="tipo" th:if="${filtro.tipoSanguineo != null}"
                th:value="${filtro.tipoSanguineo.sigla}"/>
@@ -98,139 +96,132 @@
         <input type="hidden" name="apenasConvocados" th:if="${filtro.apenasConvocados}" value="true"/>
         <input type="hidden" name="pagina" th:if="${paginaDoadores.numero > 1}"
                th:value="${paginaDoadores.numero}"/>
-        <div class="cartao">
-            <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
-                <h2 style="margin:0;flex:1;">Resultado</h2>
-                <button type="submit" class="secundario" sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')">
-                    Convocar selecionados
-                </button>
+
+        <div class="barra-resultado">
+            <p class="contagem">
+                <strong th:text="${totalEncontrados}">4</strong> encontrado(s) &middot;
+                <strong class="normal" th:text="${totalConvocaveis}">1</strong> pode(m) ser convocado(s) agora
+            </p>
+            <div class="acoes" sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')">
+                <span class="selecionados" data-contador-selecao hidden></span>
+                <button type="submit" class="secundario" data-precisa-selecao disabled>Convocar selecionados</button>
                 <!--/* Alcanca todas as paginas do filtro, nao so a visivel. */-->
                 <button type="submit" name="todos" value="true"
-                        sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')" th:if="${totalConvocaveis > 0 and filtro.tipoSanguineo != null}"
+                        th:if="${totalConvocaveis > 0 and filtro.tipoSanguineo != null}"
                         th:text="'Convocar todos os ' + ${totalConvocaveis} + ' aptos'">Convocar todos os 12 aptos</button>
             </div>
-
-            <p class="dica" sec:authorize="hasRole('OPERADOR')" style="margin-bottom:12px;">
-                Seu perfil consulta e cadastra. A convocação é atribuição do responsável.
-            </p>
-
-            <div class="tabela-rolavel">
-            <table>
-                <thead>
-                <tr>
-                    <th sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')" style="width:32px;">
-                        <input type="checkbox" data-marcar-todos aria-label="Selecionar todos"/>
-                    </th>
-                    <th>Nome</th>
-                    <th>E-mail</th>
-                    <th>Tipo</th>
-                    <th>Situação</th>
-                    <th>Última doação</th>
-                    <th>Doação</th>
-                    <th>Cadastro</th>
-                    <th sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')"></th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="d : ${doadores}">
-                    <td sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')">
-                        <input type="checkbox" name="selecionados" th:value="${d.id}"
-                               th:disabled="${!d.convocavel()}" th:aria-label="${d.nome}"/>
-                    </td>
-                    <td th:text="${d.nome}">Nome</td>
-                    <td th:text="${d.email}">email</td>
-                    <td><strong th:text="${d.tipoSanguineo.sigla}">O-</strong></td>
-                    <td>
-                        <span class="etiqueta ativo" th:if="${d.convocavel()}">Pode doar</span>
-                        <span class="etiqueta recusado" th:if="${!d.aceitaContato}">Sem autorização</span>
-                        <span class="etiqueta pendente" th:if="${d.aceitaContato and !d.apto}"
-                              th:title="${#strings.listJoin(d.motivosInaptidao, ', ')}">
-                            Apto em <span th:text="${#temporals.format(d.proximaDataApta, 'dd/MM/yyyy')}">data</span>
-                        </span>
-                        <!--/* Apto, mas os limites de contato seguram: ainda pode doar se aparecer. */-->
-                        <span class="etiqueta pendente"
-                              th:if="${d.aceitaContato and d.apto and d.contato.tetoAtingido}"
-                              th:title="'As convocações sem resposta deixam de contar depois de ' + ${prazoTetoDias}
-                                        + ' dias. Uma doação registrada, ou o administrador, liberam antes.'">
-                            Sem resposta a <span th:text="${d.convocacoesSemResposta}">3</span> convocações
-                        </span>
-                        <span class="etiqueta pendente"
-                              th:if="${d.aceitaContato and d.apto and !d.contato.liberado and !d.contato.tetoAtingido}"
-                              th:title="'Pode ser convocado de novo a partir de '
-                                        + ${#temporals.format(d.contato.liberadoEm, 'dd/MM/yyyy')}">
-                            Convocado em <span th:text="${#temporals.format(d.ultimaConvocacao, 'dd/MM/yyyy')}">data</span>
-                        </span>
-                    </td>
-                    <td th:text="${d.ultimaDoacao != null
-                            ? #temporals.format(d.ultimaDoacao, 'dd/MM/yyyy') : 'nunca doou'}">nunca</td>
-                    <td>
-                        <button type="submit" class="secundario"
-                                th:formaction="@{'/doadores/' + ${d.id} + '/doacao'}"
-                                th:title="'Registrar doação de ' + ${d.nome} + ' hoje'">
-                            Doou hoje
-                        </button>
-                    </td>
-                    <td>
-                        <a th:href="@{'/doadores/' + ${d.id} + '/editar'}" th:title="'Editar, desativar ou excluir ' + ${d.nome}">Editar</a>
-                    </td>
-                    <td sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')">
-                        <button type="submit" class="secundario" th:if="${d.convocavel()}"
-                                th:formaction="@{'/doadores/' + ${d.id} + '/convocar'}">
-                            Convocar só este
-                        </button>
-                        <!--/* Só o administrador desfaz o limite de alguém antes do prazo. */-->
-                        <button type="submit" class="secundario" sec:authorize="hasRole('MASTER')"
-                                th:if="${d.aceitaContato and d.apto and !d.contato.liberado}"
-                                th:formaction="@{'/doadores/' + ${d.id} + '/liberar-contato'}"
-                                th:title="'Zerar o limite de contato de ' + ${d.nome}
-                                          + ': as convocações anteriores deixam de contar'">
-                            Liberar contato
-                        </button>
-                    </td>
-                </tr>
-                <tr th:if="${#lists.isEmpty(doadores)}">
-                    <td colspan="9" style="color:var(--suave);">
-                        Nenhum doador encontrado com esses filtros.
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-            </div>
-
-            <nav th:replace="~{fragmentos/paginacao :: paginacao(${paginaDoadores}, ${urlPaginacao})}"></nav>
         </div>
+
+        <p class="dica" sec:authorize="hasRole('OPERADOR')" style="margin:0 0 12px;">
+            Seu perfil consulta e cadastra. A convocação é atribuição do responsável.
+        </p>
+
+        <table class="tabela-doadores">
+            <thead>
+            <tr>
+                <th class="col-selecao" sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')">
+                    <input type="checkbox" class="caixa" data-marcar-todos aria-label="Selecionar todos os aptos da página"
+                           title="Selecionar todos os aptos da página"/>
+                </th>
+                <th>Doador</th>
+                <th>Tipo</th>
+                <th>Situação</th>
+                <th>Última doação</th>
+                <th class="col-acoes"><span class="sr">Ações</span></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="d : ${doadores}" th:classappend="${d.convocavel()} ? 'convocavel'">
+                <td class="col-selecao" sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')">
+                    <input type="checkbox" class="caixa" name="selecionados" th:value="${d.id}"
+                           th:disabled="${!d.convocavel()}" th:aria-label="'Selecionar ' + ${d.nome}"
+                           th:title="${d.convocavel()} ? null : 'Não pode ser convocado agora'"/>
+                </td>
+                <td class="col-doador">
+                    <strong th:text="${d.nome}">Nome</strong>
+                    <span class="dica" th:text="${d.email}">email</span>
+                </td>
+                <td class="col-tipo"><span class="tipo-pilula" th:text="${d.tipoSanguineo.sigla}">O-</span></td>
+                <td class="col-situacao">
+                    <span class="etiqueta ativo" th:if="${d.convocavel()}">Pode doar</span>
+                    <span class="etiqueta recusado" th:if="${!d.aceitaContato}">Sem autorização</span>
+                    <span class="etiqueta pendente" th:if="${d.aceitaContato and !d.apto}"
+                          th:title="${#strings.listJoin(d.motivosInaptidao, ', ')}">
+                        Apto em <span th:text="${#temporals.format(d.proximaDataApta, 'dd/MM/yyyy')}">data</span>
+                    </span>
+                    <!--/* Apto, mas os limites de contato seguram: ainda pode doar se aparecer. */-->
+                    <span class="etiqueta pendente"
+                          th:if="${d.aceitaContato and d.apto and d.contato.tetoAtingido}"
+                          th:title="'As convocações sem resposta deixam de contar depois de ' + ${prazoTetoDias}
+                                    + ' dias. Uma doação registrada, ou o administrador, liberam antes.'">
+                        Sem resposta a <span th:text="${d.convocacoesSemResposta}">3</span> convocações
+                    </span>
+                    <span class="etiqueta pendente"
+                          th:if="${d.aceitaContato and d.apto and !d.contato.liberado and !d.contato.tetoAtingido}"
+                          th:title="'Pode ser convocado de novo a partir de '
+                                    + ${#temporals.format(d.contato.liberadoEm, 'dd/MM/yyyy')}">
+                        Convocado em <span th:text="${#temporals.format(d.ultimaConvocacao, 'dd/MM/yyyy')}">data</span>
+                    </span>
+                </td>
+                <td class="col-data" th:text="${d.ultimaDoacao != null
+                        ? #temporals.format(d.ultimaDoacao, 'dd/MM/yyyy') : 'nunca doou'}">nunca</td>
+                <td class="col-acoes">
+                    <details class="menu-acoes">
+                        <summary class="botao-icone" th:title="'Ações para ' + ${d.nome}"
+                                 th:aria-label="'Ações para ' + ${d.nome}">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="2"/>
+                                <circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+                        </summary>
+                        <div class="painel-flutuante menu">
+                            <button type="submit" class="item-menu"
+                                    th:formaction="@{'/doadores/' + ${d.id} + '/doacao'}">Registrar doação de hoje</button>
+                            <button type="submit" class="item-menu" th:if="${d.convocavel()}"
+                                    sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')"
+                                    th:formaction="@{'/doadores/' + ${d.id} + '/convocar'}">Convocar só este doador</button>
+                            <!--/* Só o administrador desfaz o limite de alguém antes do prazo. */-->
+                            <button type="submit" class="item-menu" sec:authorize="hasRole('MASTER')"
+                                    th:if="${d.aceitaContato and d.apto and !d.contato.liberado}"
+                                    th:formaction="@{'/doadores/' + ${d.id} + '/liberar-contato'}">Liberar limite de contato</button>
+                            <a class="item-menu" th:href="@{'/doadores/' + ${d.id} + '/editar'}">Editar cadastro</a>
+                        </div>
+                    </details>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(doadores)}" class="vazio">
+                <td colspan="6">Nenhum doador encontrado com esses filtros.</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <nav th:replace="~{fragmentos/paginacao :: paginacao(${paginaDoadores}, ${urlPaginacao})}"></nav>
     </form>
 
     <!--/* Desativados nao entram na busca nem nas convocacoes, mas precisam continuar
            alcancaveis: sem esta lista nao haveria como reativar ninguem. */-->
-    <div class="cartao" id="desativados" th:unless="${#lists.isEmpty(inativos)}">
-        <h2>Doadores desativados</h2>
-        <p class="dica" style="margin-bottom:12px;">
+    <details class="cartao recolhivel" id="desativados" th:unless="${#lists.isEmpty(inativos)}">
+        <summary>
+            <h2>Doadores desativados</h2>
+            <span class="dica" th:text="${#lists.size(inativos)} + ' doador(es)'">2 doadores</span>
+        </summary>
+        <p class="dica" style="margin:0 0 8px;">
             Não aparecem na busca acima nem recebem convocações. O histórico continua guardado.
         </p>
-        <div class="tabela-rolavel">
-            <table>
-                <thead>
-                <tr>
-                    <th>Nome</th>
-                    <th>E-mail</th>
-                    <th>Tipo</th>
-                    <th>Desde</th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="i : ${inativos}">
-                    <td th:text="${i.nome}">Nome</td>
-                    <td th:text="${i.email}">email</td>
-                    <td><strong th:text="${i.tipoSanguineo.sigla}">O-</strong></td>
-                    <td th:text="${#temporals.format(i.atualizadoEm, 'dd/MM/yyyy')}">data</td>
-                    <td><a th:href="@{'/doadores/' + ${i.id} + '/editar'}">Abrir</a></td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
+        <table class="tabela-doadores">
+            <tbody>
+            <tr th:each="i : ${inativos}">
+                <td class="col-doador">
+                    <strong th:text="${i.nome}">Nome</strong>
+                    <span class="dica" th:text="${i.email}">email</span>
+                </td>
+                <td class="col-tipo"><span class="tipo-pilula" th:text="${i.tipoSanguineo.sigla}">O-</span></td>
+                <td class="col-data" th:text="'desde ' + ${#temporals.format(i.atualizadoEm, 'dd/MM/yyyy')}">data</td>
+                <td class="col-acoes">
+                    <a class="botao secundario pequeno" th:href="@{'/doadores/' + ${i.id} + '/editar'}">Abrir</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </details>
 
     <footer>
         <p>

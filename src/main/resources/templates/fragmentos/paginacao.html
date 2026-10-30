@@ -12,9 +12,9 @@
     <span class="dica" style="margin:0;"
           th:text="${pagina.primeiroItem()} + '–' + ${pagina.ultimoItem()} + ' de ' + ${pagina.total}">1–30 de 120</span>
     <span class="paginas">
-        <a th:if="${pagina.temAnterior()}" th:href="@{${url + (pagina.numero - 1)}}" rel="prev">&larr; Anterior</a>
+        <a class="botao secundario pequeno" th:if="${pagina.temAnterior()}" th:href="@{${url + (pagina.numero - 1)}}" rel="prev">&larr; Anterior</a>
         <span th:text="'Página ' + ${pagina.numero} + ' de ' + ${pagina.totalPaginas()}">Página 1 de 4</span>
-        <a th:if="${pagina.temProxima()}" th:href="@{${url + (pagina.numero + 1)}}" rel="next">Próxima &rarr;</a>
+        <a class="botao secundario pequeno" th:if="${pagina.temProxima()}" th:href="@{${url + (pagina.numero + 1)}}" rel="next">Próxima &rarr;</a>
     </span>
 </nav>
 

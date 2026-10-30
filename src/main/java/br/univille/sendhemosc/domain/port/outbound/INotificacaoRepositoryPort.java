@@ -6,6 +6,7 @@ import br.univille.sendhemosc.domain.enums.OrigemNotificacao;
 import br.univille.sendhemosc.domain.enums.StatusNotificacao;
 import br.univille.sendhemosc.domain.enums.TipoSanguineo;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -68,4 +69,13 @@ public interface INotificacaoRepositoryPort {
      * @return uma linha por tipo sanguineo, incluindo os sem convocacao no periodo
      */
     List<ConversaoPorTipo> contarConversaoPorTipo(LocalDate inicio, LocalDate fim);
+
+    /**
+     * Instantes de envio das convocacoes enviadas no periodo, para a serie do relatorio.
+     *
+     * @param inicio data inicial do periodo, inclusive
+     * @param fim data final do periodo, inclusive
+     * @return um instante por convocacao enviada
+     */
+    List<LocalDateTime> listarEnviosNoPeriodo(LocalDate inicio, LocalDate fim);
 }

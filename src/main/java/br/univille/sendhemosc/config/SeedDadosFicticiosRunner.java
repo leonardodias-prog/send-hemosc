@@ -95,16 +95,18 @@ public class SeedDadosFicticiosRunner implements ApplicationRunner {
 
     private void construirHistoricoDoacoes(final DoadorEntity doador) {
         final int totalDoacoes = ThreadLocalRandom.current().nextInt(0, 4);
-        final List<DoacaoEntity> doacoes = new ArrayList<>(totalDoacoes);
-
-        for (int i = 0; i < totalDoacoes; i++) {
-            doacoes.add(DoacaoEntity.builder()
-                    .doadorId(doador.getId())
-                    .dataDoacao(LocalDate.now().minusDays(ThreadLocalRandom.current().nextInt(20, 900)))
-                    .localColeta("Agencia Transfusional - Joinville")
-                    .criadoEm(LocalDateTime.now())
-                    .build());
-        }
+        // Datas distintas: a mesma pessoa nao doa duas vezes no mesmo dia, e o banco recusa. Sorteio
+        // repetido derrubava a subida em dev de vez em quando.
+        final List<DoacaoEntity> doacoes = ThreadLocalRandom.current().ints(20, 900)
+                .distinct()
+                .limit(totalDoacoes)
+                .mapToObj(dias -> DoacaoEntity.builder()
+                        .doadorId(doador.getId())
+                        .dataDoacao(LocalDate.now().minusDays(dias))
+                        .localColeta("Agencia Transfusional - Joinville")
+                        .criadoEm(LocalDateTime.now())
+                        .build())
+                .toList();
 
         doacaoRepository.saveAll(doacoes);
     }
