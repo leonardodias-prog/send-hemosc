@@ -9,49 +9,72 @@
   Existe para que nenhuma tela seja um beco sem saída. Acrescentar uma seção nova
   é acrescentar uma linha aqui — as telas não repetem a lista de destinos.
 
+  A lateral mostra só ícones. O nome de cada destino aparece ao passar o mouse ou ao chegar
+  pelo teclado (data-rotulo), e continua no HTML para leitor de tela (span.sr).
+
   O parâmetro `secao` marca o item atual. Quem chama informa o próprio nome:
   th:replace="~{fragmentos/casca :: lateral('doadores')}"
 */-->
-<nav class="lateral" th:fragment="lateral(secao)">
+<nav class="lateral" th:fragment="lateral(secao)" aria-label="Navegação principal">
 
-    <a class="marca" th:href="@{/}">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gota"
-             d="M12 2.5c-.4 0-.7.2-.9.5C9.2 5.8 5 11.4 5 15a7 7 0 0 0 14 0c0-3.6-4.2-9.2-6.1-12-.2-.3-.5-.5-.9-.5Z"/></svg>
-        <span>Send Hemosc</span>
+    <a class="marca" th:href="@{/}" data-rotulo="Send Hemosc · protótipo acadêmico da UNIVILLE">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+            <path class="gota" d="M32 4C26 13 12 30 12 41a20 20 0 0 0 40 0C52 30 38 13 32 4Z"/>
+            <path class="pulso" d="M17 42h9l4-9 5 16 4-9h8"/>
+        </svg>
+        <span class="sr">Send Hemosc</span>
     </a>
 
-    <a class="secao" th:href="@{/}"
+    <a class="secao" th:href="@{/}" data-rotulo="Painel"
        th:classappend="${secao == 'painel'} ? 'atual'"
        th:aria-current="${secao == 'painel'} ? 'page' : null">
-        <span>Painel</span>
+        <svg class="icone" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/>
+            <rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>
+        </svg>
+        <span class="sr">Painel</span>
     </a>
 
-    <a class="secao" th:href="@{/doadores}"
+    <a class="secao" th:href="@{/doadores}" data-rotulo="Doadores"
        th:classappend="${secao == 'doadores'} ? 'atual'"
        th:aria-current="${secao == 'doadores'} ? 'page' : null">
-        <span>Doadores</span>
+        <svg class="icone" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="9" cy="8" r="4"/><path d="M2 21v-1a7 7 0 0 1 14 0v1"/>
+            <path d="M16 3.5a4 4 0 0 1 0 9"/><path d="M22 21v-1a7 7 0 0 0-4-6.3"/>
+        </svg>
+        <span class="sr">Doadores</span>
     </a>
 
     <a class="secao" th:href="@{/disparo-automatico}" sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')"
+       data-rotulo="Envio de e-mail"
        th:classappend="${secao == 'disparo'} ? 'atual'"
        th:aria-current="${secao == 'disparo'} ? 'page' : null">
-        <span>Envio de e-mail</span>
+        <svg class="icone" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="m3 6.5 9 6.5 9-6.5"/>
+        </svg>
+        <span class="sr">Envio de e-mail</span>
         <!--/* Ligado, ele manda e-mail sem ninguém clicar: precisa ser visível de qualquer tela,
                e não só de quem abre a configuração. */-->
         <span class="estado" th:if="${disparoAutomaticoLigado}"
               title="As rodadas automáticas de convocação estão ligadas">auto</span>
     </a>
 
-    <a class="secao" th:href="@{/relatorios/conversao}"
+    <a class="secao" th:href="@{/relatorios/conversao}" data-rotulo="Relatórios"
        th:classappend="${secao == 'relatorios'} ? 'atual'"
        th:aria-current="${secao == 'relatorios'} ? 'page' : null">
-        <span>Relatórios</span>
+        <svg class="icone" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3 3v18h18"/><path d="M8 17v-5"/><path d="M13 17V8"/><path d="M18 17v-8"/>
+        </svg>
+        <span class="sr">Relatórios</span>
     </a>
 
-    <a class="secao" th:href="@{/usuarios}" sec:authorize="hasRole('MASTER')"
+    <a class="secao" th:href="@{/usuarios}" sec:authorize="hasRole('MASTER')" data-rotulo="Contas"
        th:classappend="${secao == 'contas'} ? 'atual'"
        th:aria-current="${secao == 'contas'} ? 'page' : null">
-        <span>Contas</span>
+        <svg class="icone" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="10" cy="8" r="4"/><path d="M3 21v-1a7 7 0 0 1 11-5.7"/><path d="m16 19 2 2 4-4"/>
+        </svg>
+        <span class="sr">Contas</span>
         <!--/* O número de cadastros à espera aparece aqui para que ninguém precise
                abrir a tela só para descobrir que não havia nada a decidir. */-->
         <span class="pendencia" th:if="${aprovacoesPendentes != null and aprovacoesPendentes > 0}"
@@ -59,29 +82,43 @@
               th:title="${aprovacoesPendentes} + ' cadastro(s) aguardando decisão'">1</span>
     </a>
 
-    <a class="secao" th:href="@{/auditoria}" sec:authorize="hasRole('MASTER')"
+    <a class="secao" th:href="@{/auditoria}" sec:authorize="hasRole('MASTER')" data-rotulo="Auditoria"
        th:classappend="${secao == 'auditoria'} ? 'atual'"
        th:aria-current="${secao == 'auditoria'} ? 'page' : null">
-        <span>Auditoria</span>
-    </a>
-
-    <a class="secao" th:href="@{/conta/senha}"
-       th:classappend="${secao == 'senha'} ? 'atual'"
-       th:aria-current="${secao == 'senha'} ? 'page' : null">
-        <span>Minha senha</span>
-    </a>
-
-    <a class="secao" th:href="@{/termo}"
-       th:classappend="${secao == 'termo'} ? 'atual'"
-       th:aria-current="${secao == 'termo'} ? 'page' : null">
-        <span>Termo de uso</span>
+        <svg class="icone" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="5" y="3.5" width="14" height="18" rx="2"/><path d="M9 3.5h6v3H9z"/>
+            <path d="M9 12h6"/><path d="M9 16h4"/>
+        </svg>
+        <span class="sr">Auditoria</span>
     </a>
 
     <div class="rodape-lateral">
-        <span sec:authentication="name">usuario</span>
-        <span class="prototipo" title="Projeto de Extensão da UNIVILLE. Não é sistema oficial do HEMOSC.">Protótipo acadêmico</span>
+        <a class="secao" th:href="@{/termo}" data-rotulo="Termo de uso"
+           th:classappend="${secao == 'termo'} ? 'atual'"
+           th:aria-current="${secao == 'termo'} ? 'page' : null">
+            <svg class="icone" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>
+                <path d="M9 13h6"/><path d="M9 17h6"/>
+            </svg>
+            <span class="sr">Termo de uso</span>
+        </a>
+
+        <a class="secao" th:href="@{/conta/senha}" data-rotulo="Minha senha"
+           th:classappend="${secao == 'senha'} ? 'atual'"
+           th:aria-current="${secao == 'senha'} ? 'page' : null">
+            <svg class="icone" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="4" y="10.5" width="16" height="10.5" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/>
+            </svg>
+            <span class="sr">Minha senha</span>
+        </a>
+
         <form th:action="@{/sair}" method="post">
-            <button type="submit" class="secundario">Sair</button>
+            <button type="submit" class="secao" th:attr="data-rotulo='Sair (' + ${#authentication.name} + ')'">
+                <svg class="icone" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>
+                </svg>
+                <span class="sr">Sair</span>
+            </button>
         </form>
     </div>
 

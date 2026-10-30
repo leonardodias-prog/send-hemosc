@@ -94,64 +94,81 @@ th { font-size: 13px; color: var(--suave); font-weight: 600; }
 .etiqueta.recusado, .etiqueta.inativo { background: var(--critico-bg); color: var(--critico); }
 
 /* --- Casca de navegacao ---
-   Lateral fixa presente em toda tela autenticada. Uma unica origem: incluir uma secao
-   nova significa acrescentar uma linha em fragmentos/casca.html, e nada mais. */
+   Lateral fixa presente em toda tela autenticada, so com icones. O nome de cada destino
+   aparece numa etiqueta ao passar o mouse ou focar pelo teclado (data-rotulo). Uma unica
+   origem: incluir uma secao nova significa acrescentar uma linha em fragmentos/casca.html. */
 .app { display: flex; align-items: flex-start; }
 .conteudo { flex: 1; min-width: 0; }
 .lateral {
-    position: sticky; top: 0; width: 224px; flex: none; height: 100vh;
-    display: flex; flex-direction: column; gap: 2px;
-    padding: 22px 14px; background: var(--cartao);
+    position: sticky; top: 0; width: 72px; flex: none; height: 100vh; z-index: 30;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 18px 0; background: var(--cartao);
     border-right: 1px solid var(--borda);
 }
-.lateral .marca {
-    display: flex; align-items: center; gap: 10px;
-    font-size: 16px; font-weight: 700; color: var(--texto); text-decoration: none;
-    padding: 0 10px 22px; letter-spacing: -.01em;
-}
-.lateral .marca svg { width: 22px; height: 22px; flex: none; }
+.lateral .marca { display: grid; place-items: center; width: 44px; height: 44px; margin-bottom: 14px; position: relative; }
+.lateral .marca svg { width: 34px; height: 34px; }
 .gota { fill: var(--sangue); }
-.lateral a.secao {
-    display: flex; align-items: center; justify-content: space-between; gap: 8px;
-    padding: 9px 12px; border-radius: var(--raio-controle); font-size: 14px; font-weight: 500;
-    color: var(--suave); text-decoration: none;
+.pulso { fill: none; stroke: #fff; stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round; }
+.lateral .secao {
+    position: relative; display: grid; place-items: center; width: 44px; height: 44px; min-height: 0;
+    padding: 0; border: 0; border-radius: 10px; background: transparent; color: var(--suave);
+    text-decoration: none; cursor: pointer;
     transition: background-color 150ms ease-out, color 150ms ease-out;
 }
-@media (hover: hover) { .lateral a.secao:hover { color: var(--texto); background: var(--fundo); } }
-.lateral a.secao.atual { color: var(--primaria); background: var(--primaria-bg); font-weight: 600; }
+.lateral .icone {
+    width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.75;
+    stroke-linecap: round; stroke-linejoin: round;
+}
+@media (hover: hover) {
+    .lateral .secao:hover, .lateral button.secao:not(:disabled):hover { color: var(--texto); background: var(--fundo); }
+}
+.lateral .secao.atual { color: var(--primaria); background: var(--primaria-bg); }
+.lateral .secao.atual .icone { stroke-width: 2.1; }
+.lateral form { margin: 0; }
+
+/* Etiqueta com o nome do destino. */
+.lateral [data-rotulo]::after {
+    content: attr(data-rotulo); position: absolute; left: calc(100% + 12px); top: 50%;
+    translate: -4px -50%; opacity: 0; pointer-events: none; white-space: nowrap; z-index: 40;
+    background: var(--texto); color: var(--cartao); font-size: 13px; font-weight: 600; line-height: 1;
+    padding: 8px 10px; border-radius: 6px; box-shadow: var(--sombra-flutuante);
+    transition: opacity 120ms ease-out, translate 120ms ease-out;
+}
+.lateral [data-rotulo]:hover::after, .lateral [data-rotulo]:focus-visible::after { opacity: 1; translate: 0 -50%; }
+@media (prefers-reduced-motion: reduce) { .lateral [data-rotulo]::after { transition: none; translate: 0 -50%; } }
+
+/* Indicadores no canto do icone. */
+.lateral .pendencia, .lateral .estado { position: absolute; top: 2px; right: 0; }
 .pendencia {
-    background: var(--sangue); color: #fff; border-radius: 999px;
-    font-size: 11px; font-weight: 700; padding: 1px 7px; line-height: 1.6;
+    background: var(--sangue); color: #fff; border-radius: 999px; border: 2px solid var(--cartao);
+    font-size: 10px; font-weight: 700; min-width: 18px; padding: 0 4px; line-height: 14px; text-align: center;
 }
 .estado {
-    background: var(--primaria-bg); color: var(--primaria);
-    border-radius: 999px; font-size: 11px; font-weight: 700; padding: 0 8px; line-height: 1.7;
+    background: var(--primaria); color: #fff; border: 2px solid var(--cartao);
+    border-radius: 999px; font-size: 9px; font-weight: 700; padding: 0 4px; line-height: 13px;
 }
 .rodape-lateral {
-    margin-top: auto; padding: 14px 10px 0; border-top: 1px solid var(--borda);
-    font-size: 13px; color: var(--suave); overflow-wrap: anywhere;
+    margin-top: auto; padding-top: 12px; border-top: 1px solid var(--borda);
+    display: flex; flex-direction: column; align-items: center; gap: 6px; width: 48px;
 }
-.rodape-lateral button { margin-top: 10px; padding: 6px 14px; min-height: 34px; font-size: 13px; }
 
-/* Em tela estreita a lateral vira uma faixa rolavel no topo: a mesma ordem de
-   secoes, sem roubar largura da tabela de doadores. */
+/* Em tela estreita a lateral vira uma barra no topo, com os mesmos icones. */
 @media (max-width: 760px) {
     .container { padding: 0 16px 48px; }
     .app { display: block; }
     .lateral {
-        position: static; width: auto; height: auto;
-        flex-direction: row; align-items: center; gap: 4px;
-        overflow-x: auto; padding: 10px 12px; overscroll-behavior: contain;
+        position: sticky; width: auto; height: auto;
+        flex-direction: row; justify-content: flex-start; gap: 2px;
+        overflow-x: auto; padding: 8px 10px; overscroll-behavior: contain;
         border-right: 0; border-bottom: 1px solid var(--borda);
     }
-    .lateral .marca { padding: 0 10px 0 0; white-space: nowrap; }
-    .lateral a.secao { white-space: nowrap; }
+    .lateral .marca { margin: 0 6px 0 0; }
+    .lateral .secao { flex: none; }
+    .lateral [data-rotulo]::after { display: none; }
     .rodape-lateral {
-        margin-top: 0; margin-left: auto; padding: 0 0 0 12px;
+        flex-direction: row; width: auto; margin: 0 0 0 auto; padding: 0 0 0 8px;
         border-top: 0; border-left: 1px solid var(--borda);
-        display: flex; align-items: center; gap: 8px; white-space: nowrap;
     }
-    .rodape-lateral button { margin-top: 0; }
 }
 footer {
     margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--borda);
@@ -438,8 +455,6 @@ fieldset { border: 0; padding: 0; margin: 0; }
 .barras-h .valor { display: flex; gap: 6px; align-items: baseline; justify-content: flex-end; font-variant-numeric: tabular-nums; }
 .barras-h .valor .dica { margin: 0; }
 
-/* Lateral */
-.prototipo { display: block; font-size: 11px; opacity: .75; margin-top: 2px; }
 /* A classe de nivel no bloco pinta so a borda: o texto de dentro segue a cor normal. */
 .bloco.critico, .bloco.atencao, .bloco.normal { color: var(--texto); }
 

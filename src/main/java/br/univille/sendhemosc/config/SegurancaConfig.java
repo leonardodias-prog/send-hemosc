@@ -90,7 +90,7 @@ public class SegurancaConfig {
                     // identifica pelo token do link dos e-mails, o mesmo do descadastro.
                     .requestMatchers("/login", "/cadastro", "/senha/esqueci", "/senha/redefinir/**", "/termo",
                             "/descadastro/**", "/meus-dados/**", "/aprovacao/**",
-                            "/actuator/health", "/actuator/info", "/css/**", "/js/**").permitAll()
+                            "/actuator/health", "/actuator/info", "/css/**", "/js/**", "/favicon.svg").permitAll()
                     // Gerenciamento de contas
                     .requestMatchers("/usuarios/**").hasRole(PERFIL_MASTER)
                     // Rastro de quem fez o que, inclusive tentativas de entrada recusadas
