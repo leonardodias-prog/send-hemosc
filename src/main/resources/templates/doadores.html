@@ -19,7 +19,7 @@
     <header class="cabecalho">
         <div>
             <h1>Doadores</h1>
-            <p class="subtitulo">Busca, aptidão e convocação individual ou em grupo</p>
+            <p class="subtitulo">Quem pode doar, quando, e quem já foi chamado</p>
         </div>
         <a class="botao" th:href="@{/doadores/novo}">+ Novo doador</a>
     </header>
@@ -99,14 +99,14 @@
 
         <div class="barra-resultado">
             <p class="contagem">
-                <strong th:text="${totalEncontrados}">4</strong> encontrado(s) &middot;
-                <strong class="normal" th:text="${totalConvocaveis}">1</strong> pode(m) ser convocado(s) agora
+                <strong th:text="${totalEncontrados}">4</strong> doadores encontrados, e
+                <strong class="normal" th:text="${totalConvocaveis}">1</strong> podem ser convocados agora
             </p>
             <div class="acoes" sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')">
                 <span class="selecionados" data-contador-selecao hidden></span>
                 <button type="submit" class="secundario" data-precisa-selecao disabled>Convocar selecionados</button>
                 <!--/* Alcanca todas as paginas do filtro, nao so a visivel. */-->
-                <button type="submit" name="todos" value="true"
+                <button type="submit" name="todos" value="true" class="perigo"
                         th:if="${totalConvocaveis > 0 and filtro.tipoSanguineo != null}"
                         th:text="'Convocar todos os ' + ${totalConvocaveis} + ' aptos'">Convocar todos os 12 aptos</button>
             </div>
@@ -188,7 +188,7 @@
                 </td>
             </tr>
             <tr th:if="${#lists.isEmpty(doadores)}" class="vazio">
-                <td colspan="6">Nenhum doador encontrado com esses filtros.</td>
+                <td colspan="6">Nenhum doador com esses filtros. Tente tirar um deles ou buscar por outro nome.</td>
             </tr>
             </tbody>
         </table>

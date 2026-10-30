@@ -19,12 +19,12 @@
     <header class="cabecalho">
         <div>
             <h1>Painel de captação</h1>
-            <p class="subtitulo">Agência Transfusional &middot; Joinville/SC</p>
+            <p class="subtitulo">Agência Transfusional de Joinville</p>
         </div>
 
         <!--/* O unico botao de convocacao do painel: todos os tipos em falta de uma vez. Um tipo
                especifico ou pessoas escolhidas se convocam na tela de doadores. */-->
-        <button type="button" sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')"
+        <button type="button" class="perigo" sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')"
                 data-abrir-dialogo="confirmar-convocacao" th:disabled="${totalEmFalta == 0}"
                 th:title="${totalEmFalta == 0} ? 'Nenhum tipo sanguíneo está em nível baixo' : null">
             Convocar doadores aptos
@@ -130,8 +130,8 @@
         <h2>Convocar doadores aptos</h2>
 
         <p th:if="${planoGeral.totalDestinatarios > 0}">
-            <strong th:text="${planoGeral.totalDestinatarios}">12</strong> doador(es) recebem o convite, cada um
-            uma vez só, pelo tipo mais crítico com que é compatível:
+            <strong th:text="${planoGeral.totalDestinatarios}">12</strong> doadores vão receber um e-mail
+            pedindo que venham doar. Cada pessoa recebe um convite só, pelo tipo mais urgente que ela pode ajudar:
         </p>
         <p th:if="${planoGeral.totalDestinatarios == 0}">
             Ninguém pode ser convocado agora: os aptos foram convocados há pouco tempo ou não responderam às
@@ -142,17 +142,18 @@
             <li th:each="item : ${planoGeral.itens}">
                 <span class="etiqueta" th:classappend="${item.selecao.situacao.nivel.name().toLowerCase()}"
                       th:text="${item.selecao.situacao.tipoSanguineo.sigla}">O-</span>
-                <span th:text="${#lists.size(item.destinatarios)} + ' doador(es)'">7 doadores</span>
+                <span th:text="${#lists.size(item.destinatarios)} == 1 ? '1 doador' : ${#lists.size(item.destinatarios)} + ' doadores'">7 doadores</span>
             </li>
         </ul>
 
         <p class="dica" th:if="${planoGeral.totalRetidos > 0}">
-            <span th:text="${planoGeral.totalRetidos}">3</span> apto(s) ficam de fora pelo limite de contato.
+            <span th:text="${planoGeral.totalRetidos}">3</span> pessoas aptas não recebem agora porque foram
+            convocadas há pouco tempo ou não responderam às últimas mensagens.
         </p>
 
         <form th:action="@{/convocar/em-falta}" method="post" class="acoes-dialogo">
             <button type="button" class="secundario" data-fechar-dialogo>Cancelar</button>
-            <button type="submit" th:disabled="${planoGeral.totalDestinatarios == 0}">Convocar agora</button>
+            <button type="submit" class="perigo" th:disabled="${planoGeral.totalDestinatarios == 0}">Enviar convocação</button>
         </form>
     </dialog>
 

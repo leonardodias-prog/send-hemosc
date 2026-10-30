@@ -46,7 +46,7 @@
         </div>
         <form th:action="@{'/envio/' + ${envioReal ? 'desligar' : 'ligar'}}" method="post"
               th:if="${envioReal or provedorConfigurado}">
-            <button type="submit" th:classappend="${envioReal} ? 'secundario' : ''"
+            <button type="submit" th:classappend="${envioReal} ? 'secundario' : 'perigo'"
                     th:attr="data-confirmar=${envioReal} ? null : 'Ligar o envio? As convocações passam a chegar no e-mail dos doadores.'"
                     th:text="${envioReal} ? 'Desligar envio' : 'Ligar envio'">Ligar envio</button>
         </form>
@@ -159,7 +159,7 @@
                 <span>
                     <strong th:text="${#lists.size(item.destinatarios)}">7</strong> convocado(s)
                     <span class="dica" th:if="${#lists.size(item.selecao.retidos) > 0}"
-                          th:text="'· ' + ${#lists.size(item.selecao.retidos)} + ' retido(s) pelo limite de contato'">· 3 retidos</span>
+                          th:text="'(' + ${#lists.size(item.selecao.retidos)} + ' esperam o intervalo entre convocações)'">(3 esperam)</span>
                 </span>
                 <span class="dica" th:text="${item.selecao.situacao.quantidadeBolsas} + ' de ' + ${item.selecao.situacao.capacidadeAlvo} + ' bolsas'">11 de 60</span>
             </li>

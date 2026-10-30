@@ -14,7 +14,11 @@
 */-->
 <nav class="lateral" th:fragment="lateral(secao)">
 
-    <a class="marca" th:href="@{/}">Send Hemosc</a>
+    <a class="marca" th:href="@{/}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gota"
+             d="M12 2.5c-.4 0-.7.2-.9.5C9.2 5.8 5 11.4 5 15a7 7 0 0 0 14 0c0-3.6-4.2-9.2-6.1-12-.2-.3-.5-.5-.9-.5Z"/></svg>
+        <span>Send Hemosc</span>
+    </a>
 
     <a class="secao" th:href="@{/}"
        th:classappend="${secao == 'painel'} ? 'atual'"

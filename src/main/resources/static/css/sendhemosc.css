@@ -1,64 +1,93 @@
-/* Estilo comum das telas. Extraido do painel para nao repetir a folha em cada pagina. */
+/* Estilo comum das telas. Identidade descrita em .claude/skills/design-hospitalar: fundo claro de
+   ambiente clinico, azul-petroleo para a instituicao e vermelho reservado para sangue e urgencia. */
 :root {
-    --fundo: #f4f4f5; --cartao: #ffffff; --borda: #e4e4e7; --texto: #18181b; --suave: #71717a;
-    --critico: #b91c1c; --atencao: #b45309; --normal: #15803d;
-    --critico-bg: #fef2f2; --atencao-bg: #fffbeb; --normal-bg: #f0fdf4;
+    --fundo: #f3f6f8; --cartao: #ffffff; --borda: #dbe3e8; --texto: #17262e; --suave: #566a74;
+    --primaria: #0b6e80; --primaria-forte: #095a69; --primaria-bg: #e3f1f4;
+    --sangue: #b8132c; --sangue-bg: #fdecee;
+    --critico: #b42318; --atencao: #a5470a; --normal: #08724a;
+    --critico-bg: #fef3f2; --atencao-bg: #fff7e8; --normal-bg: #eaf8f0;
+    --raio: 12px; --raio-controle: 8px;
+    /* Profundidade por sombra em camadas; a borda transparente garante contorno no modo de alto contraste. */
+    --sombra-borda: 0 0 0 1px rgba(16, 40, 52, .07), 0 1px 2px -1px rgba(16, 40, 52, .08), 0 2px 4px 0 rgba(16, 40, 52, .05);
+    --sombra-flutuante: 0 0 0 1px rgba(16, 40, 52, .08), 0 8px 24px -4px rgba(16, 40, 52, .16);
 }
 @media (prefers-color-scheme: dark) {
     :root {
-        --fundo: #18181b; --cartao: #27272a; --borda: #3f3f46; --texto: #fafafa; --suave: #a1a1aa;
-        --critico: #f87171; --atencao: #fbbf24; --normal: #4ade80;
-        --critico-bg: #450a0a; --atencao-bg: #451a03; --normal-bg: #052e16;
+        --fundo: #0e191e; --cartao: #15232a; --borda: #26363e; --texto: #e6eef1; --suave: #97aab3;
+        --primaria: #3fb6cc; --primaria-forte: #66c7d8; --primaria-bg: #0f3440;
+        --sangue: #f0566b; --sangue-bg: #3b141a;
+        --critico: #f97066; --atencao: #f5b041; --normal: #4cc98d;
+        --critico-bg: #3a1613; --atencao-bg: #36260b; --normal-bg: #0d2c1f;
+        --sombra-borda: 0 0 0 1px rgba(255, 255, 255, .07);
+        --sombra-flutuante: 0 0 0 1px rgba(255, 255, 255, .1), 0 12px 32px -6px rgba(0, 0, 0, .6);
     }
 }
 * { box-sizing: border-box; }
 body {
     margin: 0; padding: 0; background: var(--fundo); color: var(--texto);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-    line-height: 1.5;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px; line-height: 1.55; -webkit-font-smoothing: antialiased;
 }
-/* Sem cor propria, link ficava no azul padrao do navegador, ilegivel no tema escuro. */
-a { color: var(--texto); text-underline-offset: 2px; }
-.container { max-width: 900px; margin: 0 auto; padding: 0 16px 48px; }
+a { color: var(--primaria); text-underline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--primaria); outline-offset: 2px; }
+.container { max-width: 1080px; margin: 0 auto; padding: 0 24px 56px; }
 .estreito { max-width: 420px; }
-header { padding: 32px 0 24px; border-bottom: 1px solid var(--borda); margin-bottom: 24px; }
-h1 { margin: 0 0 4px; font-size: 24px; }
-h2 { font-size: 17px; margin: 0 0 12px; }
-.subtitulo { margin: 0; color: var(--suave); font-size: 14px; }
+header { padding: 36px 0 24px; margin-bottom: 8px; }
+h1 { margin: 0 0 4px; font-size: 26px; line-height: 1.2; letter-spacing: -.01em; text-wrap: balance; }
+h2 { font-size: 17px; margin: 0 0 12px; letter-spacing: -.005em; }
+.subtitulo { margin: 0; color: var(--suave); font-size: 15px; }
 .cartao {
-    background: var(--cartao); border: 1px solid var(--borda); border-radius: 8px;
-    padding: 20px; margin-bottom: 20px;
+    background: var(--cartao); border: 1px solid transparent; border-radius: var(--raio);
+    box-shadow: var(--sombra-borda); padding: 22px; margin-bottom: 20px;
 }
 .aviso, .erro-caixa, .faixa {
-    border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; font-size: 14px;
+    border-radius: var(--raio-controle); padding: 12px 16px; margin-bottom: 20px; font-size: 14px;
+    border: 1px solid transparent;
 }
-.aviso { background: var(--normal-bg); border: 1px solid var(--normal); }
-.erro-caixa { background: var(--critico-bg); border: 1px solid var(--critico); }
-.faixa { background: var(--atencao-bg); border: 1px solid var(--atencao); font-size: 13px; }
-.campo { display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; }
-.campo label { font-size: 12px; color: var(--suave); }
+.aviso { background: var(--normal-bg); color: var(--texto); border-left: 4px solid var(--normal); }
+.erro-caixa { background: var(--critico-bg); border-left: 4px solid var(--critico); }
+.faixa { background: var(--atencao-bg); border-left: 4px solid var(--atencao); font-size: 14px; }
+.campo { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+.campo label { font-size: 13px; color: var(--suave); font-weight: 500; }
 .campo input, .campo select {
-    padding: 9px 10px; border: 1px solid var(--borda); border-radius: 6px;
-    background: var(--fundo); color: var(--texto); font-family: inherit; font-size: 14px; width: 100%;
+    padding: 10px 12px; border: 1px solid var(--borda); border-radius: var(--raio-controle);
+    background: var(--cartao); color: var(--texto); font-family: inherit; font-size: 15px; width: 100%;
 }
-.erro { color: var(--critico); font-size: 12px; }
-.dica { font-size: 12px; color: var(--suave); margin: 4px 0 0; }
-button {
-    background: var(--critico); color: #fff; border: 0; border-radius: 6px; padding: 9px 16px;
-    font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit;
+.campo input:focus, .campo select:focus { border-color: var(--primaria); }
+.erro { color: var(--critico); font-size: 13px; }
+.dica { font-size: 13px; color: var(--suave); margin: 4px 0 0; }
+
+/* Botoes. Principal em azul-petroleo; .perigo (vermelho) so para o que manda e-mail de verdade
+   ou nao tem volta; .secundario para o resto. */
+button, a.botao {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px;
+    background: var(--primaria); color: #fff; border: 1px solid transparent; border-radius: var(--raio-controle);
+    padding: 9px 18px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit;
+    text-decoration: none; white-space: nowrap;
+    transition-property: background-color, border-color, color; transition-duration: 150ms; transition-timing-function: ease-out;
 }
-button:hover { opacity: .9; }
-button.secundario { background: transparent; color: var(--texto); border: 1px solid var(--borda); }
+button.perigo, a.botao.perigo { background: var(--sangue); }
+button.secundario, a.botao.secundario { background: var(--cartao); color: var(--texto); border-color: var(--borda); }
 button.largo { width: 100%; }
+@media (hover: hover) {
+    button:not(:disabled):hover, a.botao:hover { background: var(--primaria-forte); }
+    button.perigo:not(:disabled):hover, a.botao.perigo:hover { background: var(--sangue); filter: brightness(1.08); }
+    button.secundario:not(:disabled):hover, a.botao.secundario:hover { background: var(--fundo); border-color: var(--suave); }
+}
+@media (prefers-reduced-motion: no-preference) {
+    button, a.botao { transition-property: background-color, border-color, color, scale; }
+    button:not(:disabled):active, a.botao:active { scale: .96; }
+}
+
 /* Tabela larga rola dentro do proprio quadro. Quando e a pagina inteira que corre
    de lado, a casca sai da tela junto e a pessoa perde a referencia de onde esta. */
 .tabela-rolavel { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
-th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--borda); }
-th { font-size: 12px; color: var(--suave); font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--borda); }
+th { font-size: 13px; color: var(--suave); font-weight: 600; }
 .etiqueta {
-    font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px;
-    text-transform: uppercase; letter-spacing: .04em; white-space: nowrap;
+    display: inline-block; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px;
+    white-space: nowrap; line-height: 1.5;
 }
 .etiqueta.pendente { background: var(--atencao-bg); color: var(--atencao); }
 .etiqueta.ativo { background: var(--normal-bg); color: var(--normal); }
@@ -70,44 +99,49 @@ th { font-size: 12px; color: var(--suave); font-weight: 600; text-transform: upp
 .app { display: flex; align-items: flex-start; }
 .conteudo { flex: 1; min-width: 0; }
 .lateral {
-    position: sticky; top: 0; width: 208px; flex: none; height: 100vh;
+    position: sticky; top: 0; width: 224px; flex: none; height: 100vh;
     display: flex; flex-direction: column; gap: 2px;
-    padding: 20px 12px; background: var(--cartao);
+    padding: 22px 14px; background: var(--cartao);
     border-right: 1px solid var(--borda);
 }
 .lateral .marca {
-    font-size: 15px; font-weight: 700; color: var(--texto); text-decoration: none;
-    padding: 0 10px 18px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 16px; font-weight: 700; color: var(--texto); text-decoration: none;
+    padding: 0 10px 22px; letter-spacing: -.01em;
 }
+.lateral .marca svg { width: 22px; height: 22px; flex: none; }
+.gota { fill: var(--sangue); }
 .lateral a.secao {
     display: flex; align-items: center; justify-content: space-between; gap: 8px;
-    padding: 8px 10px; border-radius: 6px; font-size: 14px;
+    padding: 9px 12px; border-radius: var(--raio-controle); font-size: 14px; font-weight: 500;
     color: var(--suave); text-decoration: none;
+    transition: background-color 150ms ease-out, color 150ms ease-out;
 }
-.lateral a.secao:hover { color: var(--texto); background: var(--fundo); }
-.lateral a.secao.atual { color: var(--texto); background: var(--fundo); font-weight: 600; }
+@media (hover: hover) { .lateral a.secao:hover { color: var(--texto); background: var(--fundo); } }
+.lateral a.secao.atual { color: var(--primaria); background: var(--primaria-bg); font-weight: 600; }
 .pendencia {
-    background: var(--critico); color: #fff; border-radius: 999px;
+    background: var(--sangue); color: #fff; border-radius: 999px;
     font-size: 11px; font-weight: 700; padding: 1px 7px; line-height: 1.6;
 }
 .estado {
-    background: var(--atencao-bg); color: var(--atencao); border: 1px solid var(--atencao);
-    border-radius: 999px; font-size: 11px; font-weight: 700; padding: 0 7px; line-height: 1.6;
+    background: var(--primaria-bg); color: var(--primaria);
+    border-radius: 999px; font-size: 11px; font-weight: 700; padding: 0 8px; line-height: 1.7;
 }
 .rodape-lateral {
     margin-top: auto; padding: 14px 10px 0; border-top: 1px solid var(--borda);
-    font-size: 12px; color: var(--suave); overflow-wrap: anywhere;
+    font-size: 13px; color: var(--suave); overflow-wrap: anywhere;
 }
-.rodape-lateral button { margin-top: 8px; padding: 6px 12px; font-size: 13px; }
+.rodape-lateral button { margin-top: 10px; padding: 6px 14px; min-height: 34px; font-size: 13px; }
 
 /* Em tela estreita a lateral vira uma faixa rolavel no topo: a mesma ordem de
    secoes, sem roubar largura da tabela de doadores. */
 @media (max-width: 760px) {
+    .container { padding: 0 16px 48px; }
     .app { display: block; }
     .lateral {
         position: static; width: auto; height: auto;
         flex-direction: row; align-items: center; gap: 4px;
-        overflow-x: auto; padding: 10px 12px;
+        overflow-x: auto; padding: 10px 12px; overscroll-behavior: contain;
         border-right: 0; border-bottom: 1px solid var(--borda);
     }
     .lateral .marca { padding: 0 10px 0 0; white-space: nowrap; }
@@ -121,28 +155,29 @@ th { font-size: 12px; color: var(--suave); font-weight: 600; text-transform: upp
 }
 footer {
     margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--borda);
-    font-size: 12px; color: var(--suave);
+    font-size: 13px; color: var(--suave);
 }
 footer a { color: inherit; }
 
 /* --- Painel de estoque --- */
 .resumo { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
 .indicador {
-    flex: 1 1 140px; background: var(--cartao); border: 1px solid var(--borda);
-    border-radius: 8px; padding: 16px;
+    flex: 1 1 160px; background: var(--cartao); border: 1px solid transparent; box-shadow: var(--sombra-borda);
+    border-radius: var(--raio); padding: 18px 20px;
 }
-.indicador .numero { font-size: 28px; font-weight: 700; line-height: 1; }
-.indicador .rotulo { font-size: 12px; color: var(--suave); margin-top: 4px; }
-.indicador.destaque-critico { border-color: var(--critico); background: var(--critico-bg); }
-.indicador.destaque-atencao { border-color: var(--atencao); background: var(--atencao-bg); }
+.indicador .numero { font-size: 30px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.indicador .rotulo { font-size: 13px; color: var(--suave); margin-top: 6px; }
+.indicador.destaque-critico { background: var(--critico-bg); box-shadow: inset 4px 0 0 var(--critico), var(--sombra-borda); }
+.indicador.destaque-atencao { background: var(--atencao-bg); box-shadow: inset 4px 0 0 var(--atencao), var(--sombra-borda); }
 /* Um bloco por tipo sanguineo. Quatro por linha em tela larga, um por linha no celular. */
 .blocos {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-    gap: 12px; margin-bottom: 24px;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 16px; margin-bottom: 24px;
 }
 .bloco {
-    background: var(--cartao); border: 1px solid var(--borda); border-top-width: 4px;
-    border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 8px;
+    background: var(--cartao); border: 1px solid transparent; box-shadow: var(--sombra-borda);
+    border-radius: var(--raio); padding: 16px 16px 18px; display: flex; flex-direction: column; gap: 12px;
+    border-top: 4px solid var(--borda);
 }
 .bloco.critico { border-top-color: var(--critico); }
 .bloco.atencao { border-top-color: var(--atencao); }
@@ -151,7 +186,7 @@ footer a { color: inherit; }
 .percentual { font-size: 30px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
 .percentual small { font-size: 15px; color: var(--suave); font-weight: 600; }
 .bloco-nivel { display: flex; align-items: center; gap: 14px; }
-.sigla { font-size: 26px; font-weight: 800; letter-spacing: -.01em; line-height: 1; margin-right: auto; }
+.sigla { font-size: 28px; font-weight: 800; letter-spacing: -.02em; line-height: 1; margin-right: auto; }
 /* --- Paginacao das listagens --- */
 .paginacao {
     display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
@@ -173,7 +208,7 @@ footer a { color: inherit; }
 .etiqueta.atencao { background: var(--atencao-bg); }
 .etiqueta.normal  { background: var(--normal-bg); }
 .bolsa-cheia.critico { fill: var(--critico); }
-.bolsa-cheia.atencao { fill: var(--atencao); }
+.bolsa-cheia.atencao { fill: #dc8a12; }
 .bolsa-cheia.normal  { fill: var(--normal); }
 .acoes { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .acoes form { display: inline-flex; gap: 6px; align-items: center; margin: 0; }
@@ -197,9 +232,9 @@ footer a { color: inherit; }
 /* =====================================================================
    Componentes comuns
    ===================================================================== */
-:root { --serie-a: #6366f1; --serie-b: #16a34a; --sombra: 0 8px 24px rgba(0, 0, 0, .18); }
+:root { --serie-a: #0b6e80; --serie-b: #08724a; }
 @media (prefers-color-scheme: dark) {
-    :root { --serie-a: #818cf8; --serie-b: #4ade80; --sombra: 0 8px 24px rgba(0, 0, 0, .5); }
+    :root { --serie-a: #3fb6cc; --serie-b: #4cc98d; }
 }
 button:disabled { opacity: .45; cursor: not-allowed; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
@@ -207,19 +242,11 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 /* Cabecalho da tela: titulo a esquerda, acao principal a direita. */
 .cabecalho { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 
-/* Link com cara e peso de botao. Navegacao continua sendo <a>; so a aparencia muda. */
-a.botao {
-    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-    background: var(--critico); color: #fff; border: 1px solid transparent; border-radius: 6px;
-    padding: 9px 16px; font-size: 14px; font-weight: 600; text-decoration: none; white-space: nowrap;
-}
-a.botao:hover { opacity: .9; }
-a.botao.secundario { background: transparent; color: var(--texto); border-color: var(--borda); }
-a.botao.pequeno, button.pequeno { padding: 5px 12px; font-size: 13px; }
+a.botao.pequeno, button.pequeno { padding: 5px 12px; min-height: 32px; font-size: 13px; }
 
 /* Botao so com icone (tres pontos). */
 .botao-icone {
-    display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 6px;
+    display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: var(--raio-controle);
     color: var(--suave); cursor: pointer; list-style: none; border: 1px solid transparent;
 }
 .botao-icone::-webkit-details-marker { display: none; }
@@ -230,16 +257,18 @@ a.botao.pequeno, button.pequeno { padding: 5px 12px; font-size: 13px; }
 .menu-config, .menu-acoes { position: relative; }
 .painel-flutuante {
     position: absolute; right: 0; top: calc(100% + 6px); z-index: 20; min-width: 220px;
-    background: var(--cartao); border: 1px solid var(--borda); border-radius: 8px; box-shadow: var(--sombra);
+    background: var(--cartao); border: 1px solid transparent; border-radius: var(--raio); box-shadow: var(--sombra-flutuante);
+    overscroll-behavior: contain;
     padding: 14px; display: flex; flex-direction: column; gap: 10px;
 }
 .painel-flutuante .campo { margin: 0; }
 .painel-flutuante.menu { padding: 6px; gap: 2px; min-width: 230px; }
 .item-menu {
     display: block; width: 100%; text-align: left; background: transparent; color: var(--texto);
-    border: 0; border-radius: 6px; padding: 9px 10px; font-size: 14px; font-weight: 500; text-decoration: none;
+    border: 0; border-radius: 6px; padding: 9px 10px; min-height: 0; justify-content: flex-start;
+    font-size: 14px; font-weight: 500; text-decoration: none;
 }
-.item-menu:hover { background: var(--fundo); opacity: 1; }
+@media (hover: hover) { button.item-menu:not(:disabled):hover, a.item-menu:hover { background: var(--fundo); color: var(--texto); } }
 
 /* Chips: escolha visivel com um clique, no lugar de caixa de selecao e lista suspensa. */
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -247,11 +276,11 @@ a.botao.pequeno, button.pequeno { padding: 5px 12px; font-size: 13px; }
 .chip input { position: absolute; opacity: 0; pointer-events: none; }
 .chip span, a.chip-link {
     display: inline-block; padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 600;
-    border: 1px solid var(--borda); color: var(--suave); background: var(--fundo); text-decoration: none;
-    transition: background .12s, color .12s, border-color .12s;
+    border: 1px solid var(--borda); color: var(--suave); background: var(--cartao); text-decoration: none;
+    transition-property: background-color, color, border-color; transition-duration: 150ms; transition-timing-function: ease-out;
 }
-.chip:hover span, a.chip-link:hover { color: var(--texto); border-color: var(--suave); }
-.chip input:checked + span, a.chip-link.ativo { background: var(--texto); color: var(--fundo); border-color: var(--texto); }
+@media (hover: hover) { .chip:hover span, a.chip-link:hover { color: var(--texto); border-color: var(--suave); } }
+.chip input:checked + span, a.chip-link.ativo { background: var(--primaria-bg); color: var(--primaria); border-color: var(--primaria); }
 .chip input:focus-visible + span { outline: 2px solid var(--serie-a); outline-offset: 2px; }
 fieldset.grupo-filtro { border: 0; padding: 0; margin: 0 0 14px; min-width: 0; }
 .grupo-filtro { display: flex; flex-direction: column; gap: 6px; }
@@ -260,28 +289,28 @@ fieldset.grupo-filtro { border: 0; padding: 0; margin: 0 0 14px; min-width: 0; }
 /* Interruptor: liga/desliga com cara de interruptor. */
 .interruptor {
     appearance: none; -webkit-appearance: none; flex: none; width: 40px; height: 22px; margin: 1px 0 0;
-    border-radius: 999px; background: var(--borda); position: relative; cursor: pointer; transition: background .15s;
+    border-radius: 999px; background: var(--borda); position: relative; cursor: pointer; transition: background-color 150ms ease-out;
 }
 .interruptor::after {
     content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%;
-    background: #fff; transition: transform .15s;
+    background: #fff; transition: transform 150ms ease-out;
 }
-.interruptor:checked { background: var(--normal); }
+.interruptor:checked { background: var(--primaria); }
 .interruptor:checked::after { transform: translateX(18px); }
 .interruptor-linha { display: flex; gap: 12px; align-items: flex-start; margin: 4px 0 18px; font-size: 14px; cursor: pointer; }
 .interruptor-linha .dica { display: block; }
 
 /* Caixa de selecao das linhas, na cor do sistema. */
-input.caixa { width: 17px; height: 17px; accent-color: var(--critico); cursor: pointer; }
+input.caixa { width: 18px; height: 18px; accent-color: var(--primaria); cursor: pointer; }
 input.caixa:disabled { cursor: not-allowed; opacity: .3; }
 
 /* Pilula de estado (ligado/desligado). */
 .pilula-estado {
     display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700;
-    padding: 4px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: .04em;
+    padding: 4px 12px; border-radius: 999px;
 }
 .pilula-estado::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
-.pilula-estado.ligado { background: var(--critico-bg); color: var(--critico); }
+.pilula-estado.ligado { background: var(--sangue-bg); color: var(--sangue); }
 .pilula-estado.desligado { background: var(--fundo); color: var(--suave); border: 1px solid var(--borda); }
 .titulo-secao { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
 .titulo-secao h2 { margin: 0; }
@@ -296,10 +325,11 @@ details.recolhivel[open] > summary::after { transform: rotate(180deg); }
 
 /* Dialogo de confirmacao. */
 dialog.dialogo {
-    border: 1px solid var(--borda); border-radius: 10px; background: var(--cartao); color: var(--texto);
-    padding: 22px; width: min(440px, calc(100vw - 32px)); box-shadow: var(--sombra);
+    border: 1px solid transparent; border-radius: 16px; background: var(--cartao); color: var(--texto);
+    overscroll-behavior: contain;
+    padding: 22px; width: min(440px, calc(100vw - 32px)); box-shadow: var(--sombra-flutuante);
 }
-dialog.dialogo::backdrop { background: rgba(0, 0, 0, .55); }
+dialog.dialogo::backdrop { background: rgba(14, 30, 38, .45); }
 .acoes-dialogo { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
 .lista-plano { list-style: none; padding: 0; margin: 10px 0; display: flex; flex-direction: column; gap: 6px; }
 .lista-plano li { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 14px; }
@@ -312,12 +342,12 @@ dialog.dialogo::backdrop { background: rgba(0, 0, 0, .55); }
 .filtros { display: flex; flex-direction: column; gap: 14px; }
 .linha-busca { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .linha-busca input[type=search] {
-    flex: 1 1 240px; min-width: 0; padding: 9px 12px; border: 1px solid var(--borda); border-radius: 6px;
-    background: var(--fundo); color: var(--texto); font: inherit; font-size: 14px;
+    flex: 1 1 240px; min-width: 0; min-height: 40px; padding: 9px 14px; border: 1px solid var(--borda); border-radius: var(--raio-controle);
+    background: var(--cartao); color: var(--texto); font: inherit; font-size: 14px;
 }
 .campo-inline { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--suave); }
 .campo-inline input {
-    padding: 7px 9px; border: 1px solid var(--borda); border-radius: 6px; background: var(--fundo);
+    padding: 8px 10px; border: 1px solid var(--borda); border-radius: var(--raio-controle); background: var(--cartao);
     color: var(--texto); font: inherit; font-size: 14px;
 }
 .barra-resultado { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
@@ -327,8 +357,8 @@ dialog.dialogo::backdrop { background: rgba(0, 0, 0, .55); }
 .selecionados { font-size: 13px; font-weight: 600; }
 
 .tabela-doadores td { vertical-align: middle; }
-.tabela-doadores tbody tr:hover { background: color-mix(in srgb, var(--fundo) 60%, transparent); }
-.tabela-doadores tbody tr:has(input.caixa:checked) { background: color-mix(in srgb, var(--critico-bg) 70%, transparent); }
+@media (hover: hover) { .tabela-doadores tbody tr:hover { background: color-mix(in srgb, var(--fundo) 70%, transparent); } }
+.tabela-doadores tbody tr:has(input.caixa:checked) { background: var(--primaria-bg); }
 .col-selecao { width: 36px; }
 .col-doador strong { display: block; font-weight: 600; }
 .col-doador .dica { margin: 0; overflow-wrap: anywhere; }
@@ -339,7 +369,7 @@ dialog.dialogo::backdrop { background: rgba(0, 0, 0, .55); }
 .tabela-doadores tr.vazio td { color: var(--suave); text-align: center; padding: 28px 8px; }
 .tipo-pilula {
     display: inline-block; min-width: 38px; text-align: center; font-weight: 800; font-size: 13px;
-    padding: 3px 8px; border-radius: 6px; background: var(--fundo); border: 1px solid var(--borda);
+    padding: 3px 8px; border-radius: 6px; background: var(--sangue-bg); color: var(--sangue); border: 0;
 }
 
 /* No celular cada linha vira um cartao: nada corre de lado. */
@@ -362,10 +392,10 @@ fieldset { border: 0; padding: 0; margin: 0; }
 
 /* --- Envio de e-mail --- */
 .cartao-estado { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-.cartao-estado.ligado { border-color: var(--critico); }
+.cartao-estado.ligado { box-shadow: inset 4px 0 0 var(--sangue), var(--sombra-borda); }
 .estado-texto p { margin: 8px 0 0; font-size: 14px; color: var(--suave); }
 .resumo-chave { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin: 12px 0; }
-.resumo-chave div { background: var(--fundo); border-radius: 8px; padding: 10px 12px; }
+.resumo-chave div { background: var(--fundo); border-radius: var(--raio-controle); padding: 12px 14px; }
 .resumo-chave dt { font-size: 12px; color: var(--suave); }
 .resumo-chave dd { margin: 2px 0 0; font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
 .form-frases { border-top: 1px solid var(--borda); margin-top: 16px; padding-top: 18px; }
@@ -373,7 +403,7 @@ fieldset { border: 0; padding: 0; margin: 0; }
 .form-frases .dica { margin-top: 2px; }
 .frase { font-size: 15px; line-height: 2.4; margin: 0 0 4px; }
 .frase select, .frase input {
-    padding: 6px 8px; border: 1px solid var(--borda); border-radius: 6px; background: var(--fundo);
+    padding: 7px 10px; border: 1px solid var(--borda); border-radius: var(--raio-controle); background: var(--cartao);
     color: var(--texto); font: inherit; font-size: 14px; font-weight: 600;
 }
 .frase .numero-curto { width: 80px; }
@@ -412,3 +442,8 @@ fieldset { border: 0; padding: 0; margin: 0; }
 .prototipo { display: block; font-size: 11px; opacity: .75; margin-top: 2px; }
 /* A classe de nivel no bloco pinta so a borda: o texto de dentro segue a cor normal. */
 .bloco.critico, .bloco.atencao, .bloco.normal { color: var(--texto); }
+
+
+/* Estado vazio e cabecalho de secao do painel. */
+.secao-titulo { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 8px 0 12px; }
+.secao-titulo h2 { margin: 0; }
