@@ -7,7 +7,9 @@ import br.univille.sendhemosc.domain.dto.RegistroAuditoria;
 import br.univille.sendhemosc.domain.port.outbound.IAuditoriaPort;
 import br.univille.sendhemosc.domain.util.MascaraDeEmail;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -63,20 +65,17 @@ public class AuditoriaPersistenceAdapter implements IAuditoriaPort {
 
     @Override
     @Transactional(readOnly = true)
-    public Pagina<RegistroAuditoria> listar(final String acao, final int pagina, final int tamanho) {
+    public Pagina<RegistroAuditoria> listar(final Collection<String> acoes, final String busca,
+                                            final int pagina, final int tamanho) {
         final PageRequest pedido = PageRequest.of(Math.max(0, pagina - 1), tamanho);
-        final Page<AuditoriaEntity> trecho = acao == null || acao.isBlank()
-                ? auditoriaRepository.findAllByOrderByOcorridoEmDescIdDesc(pedido)
-                : auditoriaRepository.findByAcaoOrderByOcorridoEmDescIdDesc(acao, pedido);
+        final boolean todas = acoes == null;
+        final boolean semBusca = busca == null || busca.isBlank();
+        final String padrao = semBusca ? "%" : "%" + busca.trim().toLowerCase(Locale.ROOT) + "%";
+        final Page<AuditoriaEntity> trecho = auditoriaRepository.buscar(todas,
+                todas || acoes.isEmpty() ? List.of("-") : acoes, semBusca, padrao, pedido);
 
         return new Pagina<>(trecho.map(entidade -> new RegistroAuditoria(entidade.getAcao(),
                         entidade.getDetalhe(), entidade.getUsuarioEmail(), entidade.getOcorridoEm())).getContent(),
                 trecho.getNumber() + 1, tamanho, trecho.getTotalElements());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<String> acoesRegistradas() {
-        return auditoriaRepository.listarAcoes();
     }
 }

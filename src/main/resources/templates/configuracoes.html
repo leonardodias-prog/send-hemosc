@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Configurações — Send Hemosc</title>
+    <script th:src="@{/js/tema.js}"></script>
+    <link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/css/sendhemosc.css}"/>
+</head>
+<body>
+<div class="app">
+
+<nav th:replace="~{fragmentos/casca :: lateral('config')}"></nav>
+
+<main class="conteudo">
+<div class="container">
+
+    <header class="cabecalho">
+        <div>
+            <h1>Configurações</h1>
+            <p class="subtitulo" th:text="'Conectado como ' + ${#authentication.name}">Conectado como admin@sendhemosc.local</p>
+        </div>
+    </header>
+
+    <!--/* Aparencia muda na hora, sem salvar: a escolha fica neste navegador (js/tema.js). */-->
+    <section class="cartao">
+        <h2>Aparência</h2>
+        <p class="dica">Vale só para este navegador. Cada pessoa escolhe a sua.</p>
+        <div class="escolha-tema" role="radiogroup" aria-label="Tema da tela">
+            <label class="opcao-cartao">
+                <input type="radio" name="tema" value="automatico" checked/>
+                <span class="amostra automatico" aria-hidden="true"></span>
+                <span><strong>Automático</strong><small>Segue o computador</small></span>
+            </label>
+            <label class="opcao-cartao">
+                <input type="radio" name="tema" value="claro"/>
+                <span class="amostra claro" aria-hidden="true"></span>
+                <span><strong>Claro</strong><small>Fundo branco</small></span>
+            </label>
+            <label class="opcao-cartao">
+                <input type="radio" name="tema" value="escuro"/>
+                <span class="amostra escuro" aria-hidden="true"></span>
+                <span><strong>Escuro</strong><small>Descansa a vista à noite</small></span>
+            </label>
+        </div>
+    </section>
+
+    <div class="grade-atalhos">
+        <a class="atalho" th:href="@{/conta/senha}">
+            <svg class="icone" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="4" y="10.5" width="16" height="10.5" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/>
+            </svg>
+            <span><strong>Minha senha</strong><small>Trocar a senha da sua conta</small></span>
+        </a>
+
+        <a class="atalho" th:href="@{/usuarios}" sec:authorize="hasRole('MASTER')">
+            <svg class="icone" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="9" cy="8" r="4"/><path d="M2 21v-1a7 7 0 0 1 14 0v1"/>
+                <path d="M16 3.5a4 4 0 0 1 0 9"/><path d="M22 21v-1a7 7 0 0 0-4-6.3"/>
+            </svg>
+            <span><strong>Contas de acesso</strong><small>Criar, aprovar e gerenciar quem entra</small></span>
+            <span class="pendencia" th:if="${aprovacoesPendentes != null and aprovacoesPendentes > 0}"
+                  th:text="${aprovacoesPendentes}"
+                  th:title="${aprovacoesPendentes} + ' cadastro(s) aguardando decisão'">1</span>
+        </a>
+
+        <a class="atalho" th:href="@{/auditoria}" sec:authorize="hasRole('MASTER')">
+            <svg class="icone" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="5" y="3.5" width="14" height="18" rx="2"/><path d="M9 3.5h6v3H9z"/>
+                <path d="M9 12h6"/><path d="M9 16h4"/>
+            </svg>
+            <span><strong>Auditoria</strong><small>Quem fez o quê, e quando</small></span>
+        </a>
+
+        <a class="atalho" th:href="@{/termo}">
+            <svg class="icone" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>
+                <path d="M9 13h6"/><path d="M9 17h6"/>
+            </svg>
+            <span><strong>Termo de uso e privacidade</strong><small>Como os dados dos doadores são tratados</small></span>
+        </a>
+    </div>
+
+    <form th:action="@{/sair}" method="post" class="sair-conta">
+        <button type="submit" class="secundario">Sair da conta</button>
+    </form>
+
+</div>
+</main>
+
+</div>
+</body>
+</html>

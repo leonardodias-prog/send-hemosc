@@ -54,6 +54,25 @@ document.addEventListener('click', (evento) => {
     }
 });
 
+// Editar conta: o dialogo e um so, preenchido com os dados da linha escolhida.
+document.addEventListener('click', (evento) => {
+    const botao = evento.target.closest('[data-editar-conta]');
+    const dialogo = document.getElementById('editar-conta');
+
+    if (!botao || !dialogo) {
+        return;
+    }
+
+    const formulario = dialogo.querySelector('form[data-form-edicao]');
+    formulario.action = formulario.action.replace(/\/usuarios\/[^/]+$/, '/usuarios/' + botao.dataset.id);
+    formulario.elements.nome.value = botao.dataset.nome;
+    formulario.elements.email.value = botao.dataset.email;
+    formulario.elements.perfil.value = botao.dataset.perfil;
+    formulario.elements.situacao.value = botao.dataset.situacao;
+    botao.closest('details')?.removeAttribute('open');
+    dialogo.showModal();
+});
+
 // Menus de tres pontos: abrir um fecha os outros, e clicar fora fecha todos.
 document.addEventListener('click', (evento) => {
     document.querySelectorAll('details.menu-acoes[open], details.menu-config[open]').forEach((menu) => {

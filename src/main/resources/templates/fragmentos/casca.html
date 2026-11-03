@@ -79,74 +79,22 @@
         <span class="sr">Relatórios</span>
     </a>
 
-    <a class="secao" th:href="@{/usuarios}" sec:authorize="hasRole('MASTER')" data-rotulo="Contas"
-       th:classappend="${secao == 'contas'} ? 'atual'"
-       th:aria-current="${secao == 'contas'} ? 'page' : null">
-        <svg class="icone" viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="10" cy="8" r="4"/><path d="M3 21v-1a7 7 0 0 1 11-5.7"/><path d="m16 19 2 2 4-4"/>
-        </svg>
-        <span class="sr">Contas</span>
-        <!--/* O número de cadastros à espera aparece aqui para que ninguém precise
-               abrir a tela só para descobrir que não havia nada a decidir. */-->
-        <span class="pendencia" th:if="${aprovacoesPendentes != null and aprovacoesPendentes > 0}"
-              th:text="${aprovacoesPendentes}"
-              th:title="${aprovacoesPendentes} + ' cadastro(s) aguardando decisão'">1</span>
-    </a>
-
-    <a class="secao" th:href="@{/auditoria}" sec:authorize="hasRole('MASTER')" data-rotulo="Auditoria"
-       th:classappend="${secao == 'auditoria'} ? 'atual'"
-       th:aria-current="${secao == 'auditoria'} ? 'page' : null">
-        <svg class="icone" viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="5" y="3.5" width="14" height="18" rx="2"/><path d="M9 3.5h6v3H9z"/>
-            <path d="M9 12h6"/><path d="M9 16h4"/>
-        </svg>
-        <span class="sr">Auditoria</span>
-    </a>
-
     <div class="rodape-lateral">
-        <!--/* Aparencia: a escolha fica neste navegador (static/js/tema.js). */-->
-        <details class="menu-tema">
-            <summary class="secao" data-rotulo="Aparência">
-                <svg class="icone" viewBox="0 0 24 24" aria-hidden="true">
-                    <circle cx="12" cy="12" r="3"/>
-                    <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/>
-                </svg>
-                <span class="sr">Aparência</span>
-            </summary>
-            <div class="painel-tema" role="radiogroup" aria-label="Tema da tela">
-                <strong>Aparência</strong>
-                <label class="opcao-tema">
-                    <input type="radio" name="tema" value="automatico" checked/>
-                    <span>Automático <small>segue o computador</small></span>
-                </label>
-                <label class="opcao-tema">
-                    <input type="radio" name="tema" value="claro"/>
-                    <span>Claro</span>
-                </label>
-                <label class="opcao-tema">
-                    <input type="radio" name="tema" value="escuro"/>
-                    <span>Escuro</span>
-                </label>
-            </div>
-        </details>
-
-        <a class="secao" th:href="@{/termo}" data-rotulo="Termo de uso"
-           th:classappend="${secao == 'termo'} ? 'atual'"
-           th:aria-current="${secao == 'termo'} ? 'page' : null">
+        <!--/* Configuracoes reune aparencia, senha, termo e, para o administrador, contas e
+               auditoria. O numero de cadastros a espera aparece na engrenagem para que ninguem
+               precise abrir a tela so para descobrir que nao havia nada a decidir. */-->
+        <a class="secao" th:href="@{/configuracoes}" data-rotulo="Configurações"
+           th:with="emConfig=${secao == 'config' or secao == 'contas' or secao == 'auditoria' or secao == 'senha' or secao == 'termo'}"
+           th:classappend="${emConfig} ? 'atual'"
+           th:aria-current="${emConfig} ? 'page' : null">
             <svg class="icone" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>
-                <path d="M9 13h6"/><path d="M9 17h6"/>
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/>
             </svg>
-            <span class="sr">Termo de uso</span>
-        </a>
-
-        <a class="secao" th:href="@{/conta/senha}" data-rotulo="Minha senha"
-           th:classappend="${secao == 'senha'} ? 'atual'"
-           th:aria-current="${secao == 'senha'} ? 'page' : null">
-            <svg class="icone" viewBox="0 0 24 24" aria-hidden="true">
-                <rect x="4" y="10.5" width="16" height="10.5" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/>
-            </svg>
-            <span class="sr">Minha senha</span>
+            <span class="sr">Configurações</span>
+            <span class="pendencia" th:if="${aprovacoesPendentes != null and aprovacoesPendentes > 0}"
+                  th:text="${aprovacoesPendentes}"
+                  th:title="${aprovacoesPendentes} + ' cadastro(s) aguardando decisão'">1</span>
         </a>
 
         <form th:action="@{/sair}" method="post">

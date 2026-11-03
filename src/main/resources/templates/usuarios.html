@@ -18,117 +18,210 @@
 <main class="conteudo">
 <div class="container">
 
-    <header>
-        <h1>Contas de acesso</h1>
-        <p class="subtitulo">Criação, alteração, senha e exclusão de contas</p>
+    <header class="cabecalho">
+        <div>
+            <a class="voltar" th:href="@{/configuracoes}">Configurações</a>
+            <h1>Contas de acesso</h1>
+            <p class="subtitulo">Quem entra no sistema e o que cada um pode fazer</p>
+        </div>
+        <button type="button" data-abrir-dialogo="nova-conta">+ Nova conta</button>
     </header>
 
     <div class="aviso" th:if="${aviso}" th:text="${aviso}">mensagem</div>
     <div class="erro-caixa" th:if="${erro}" th:text="${erro}">mensagem</div>
 
-    <div class="faixa" th:if="${pendentes > 0}">
-        <strong th:text="${pendentes}">1</strong> cadastro(s) aguardando decisão.
-        Aprovar um responsável libera o disparo de e-mail para a base de doadores.
-    </div>
+    <!--/* O que pede decisao fica no topo, fora dos filtros. */-->
+    <section class="cartao aguardando" th:unless="${#lists.isEmpty(aguardando)}">
+        <div class="titulo-secao">
+            <h2>Aguardando sua decisão</h2>
+            <span class="pilula-estado ligado" th:text="${pendentes} == 1 ? '1 cadastro' : ${pendentes} + ' cadastros'">2 cadastros</span>
+        </div>
+        <p class="dica">Aprovar um responsável libera o envio de convocações para a base de doadores.</p>
+        <ul class="lista-contas">
+            <li th:each="u : ${aguardando}">
+                <span class="avatar" th:text="${#strings.toUpperCase(#strings.substring(u.nome, 0, 1))}">R</span>
+                <span class="conta-nome">
+                    <strong th:text="${u.nome}">Rafaela</strong>
+                    <span class="dica" th:text="${u.email} + ', pediu acesso como ' + ${u.perfil.descricao}">email</span>
+                </span>
+                <form th:action="@{'/usuarios/' + ${u.id} + '/aprovar'}" method="post">
+                    <button type="submit" class="pequeno">Aprovar</button>
+                </form>
+                <form th:action="@{'/usuarios/' + ${u.id} + '/recusar'}" method="post">
+                    <button type="submit" class="secundario pequeno">Recusar</button>
+                </form>
+            </li>
+        </ul>
+    </section>
 
-    <details class="cartao">
-        <summary style="cursor:pointer;font-weight:600;">Criar conta</summary>
-        <p class="dica" style="margin:12px 0;">
-            Conta criada aqui já nasce ativa, sem passar por aprovação: quem cria é a própria
-            autoridade que aprovaria.
-        </p>
-        <form th:action="@{/usuarios}" method="post" style="display:block;">
-            <div class="campos">
-                <div class="campo">
-                    <label for="novoNome">Nome completo</label>
-                    <input type="text" id="novoNome" name="nome" required/>
-                </div>
-                <div class="campo">
-                    <label for="novoEmail">E-mail</label>
-                    <input type="email" id="novoEmail" name="email" required/>
-                </div>
-                <div class="campo">
-                    <label for="novaSenha">Senha</label>
-                    <input type="password" id="novaSenha" name="senha" minlength="8" required/>
-                </div>
-                <div class="campo">
-                    <label for="novoPerfil">Perfil</label>
-                    <select id="novoPerfil" name="perfil" required>
-                        <option th:each="p : ${perfis}" th:value="${p}" th:text="${p.descricao}">Operador</option>
-                    </select>
-                </div>
+    <!--/* Filtros: perfil e situacao se aplicam ao clicar; o texto espera o botao. */-->
+    <form class="cartao filtros" th:action="@{/usuarios}" method="get" data-filtro-automatico>
+        <div class="linha-busca">
+            <input type="search" name="busca" th:value="${busca}" aria-label="Buscar por nome ou e-mail"
+                   placeholder="Buscar por nome ou e-mail"/>
+            <button type="submit">Buscar</button>
+            <a class="botao secundario" th:if="${(busca != null and busca != '') or perfilFiltro != null or situacaoFiltro != null}"
+               th:href="@{/usuarios}">Limpar filtros</a>
+        </div>
+        <div class="grupo-filtro">
+            <span class="rotulo-filtro">Perfil</span>
+            <div class="chips">
+                <label class="chip">
+                    <input type="radio" name="perfil" value="" th:checked="${perfilFiltro == null}"/>
+                    <span th:text="'Todos (' + ${totalContas} + ')'">Todos (12)</span>
+                </label>
+                <label class="chip" th:each="p : ${perfis}">
+                    <input type="radio" name="perfil" th:value="${p}" th:checked="${perfilFiltro == p}"/>
+                    <span th:text="${p.descricao} + ' (' + ${porPerfil.get(p) != null ? porPerfil.get(p) : 0} + ')'">Operador (3)</span>
+                </label>
             </div>
-            <button type="submit">Criar conta</button>
+        </div>
+        <div class="grupo-filtro">
+            <span class="rotulo-filtro">Situação</span>
+            <div class="chips">
+                <label class="chip">
+                    <input type="radio" name="situacao" value="" th:checked="${situacaoFiltro == null}"/>
+                    <span>Todas</span>
+                </label>
+                <label class="chip" th:each="s : ${situacoes}">
+                    <input type="radio" name="situacao" th:value="${s}" th:checked="${situacaoFiltro == s}"/>
+                    <span th:text="${s.descricao} + ' (' + ${porSituacao.get(s) != null ? porSituacao.get(s) : 0} + ')'">Ativo (9)</span>
+                </label>
+            </div>
+        </div>
+    </form>
+
+    <section class="cartao">
+        <table class="tabela-doadores tabela-contas">
+            <thead>
+            <tr>
+                <th>Conta</th>
+                <th>Perfil</th>
+                <th>Situação</th>
+                <th>Último acesso</th>
+                <th class="col-acoes"><span class="sr">Ações</span></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="u : ${usuarios}">
+                <td class="col-doador">
+                    <span class="conta-linha">
+                        <span class="avatar" th:text="${#strings.toUpperCase(#strings.substring(u.nome, 0, 1))}">R</span>
+                        <span>
+                            <strong th:text="${u.nome}">Rafaela</strong>
+                            <span class="dica" th:text="${u.email}">rafa@example.org</span>
+                        </span>
+                    </span>
+                </td>
+                <td class="col-tipo"><span class="etiqueta perfil" th:text="${u.perfil.descricao}"
+                                           th:title="${u.perfil.atribuicoes}">Responsável</span></td>
+                <td class="col-situacao">
+                    <span class="etiqueta" th:classappend="${u.situacao.name().toLowerCase()}"
+                          th:text="${u.situacao.descricao}">Ativo</span>
+                </td>
+                <td class="col-data" th:text="${u.ultimoAcessoEm != null
+                        ? #temporals.format(u.ultimoAcessoEm, 'dd/MM/yyyy HH:mm') : 'nunca entrou'}">25/09/2026 02:21</td>
+                <td class="col-acoes">
+                    <details class="menu-acoes">
+                        <summary class="botao-icone" th:title="'Ações para ' + ${u.nome}" th:aria-label="'Ações para ' + ${u.nome}">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="2"/>
+                                <circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+                        </summary>
+                        <div class="painel-flutuante menu">
+                            <button type="button" class="item-menu" data-editar-conta
+                                    th:attr="data-id=${u.id},data-nome=${u.nome},data-email=${u.email},data-perfil=${u.perfil},data-situacao=${u.situacao}">
+                                Editar conta</button>
+                            <form th:action="@{'/usuarios/' + ${u.id} + '/senha'}" method="post">
+                                <button type="submit" class="item-menu"
+                                        data-confirmar="Gerar uma senha nova para esta conta? A senha atual deixa de valer.">
+                                    Gerar senha nova</button>
+                            </form>
+                            <form th:action="@{'/usuarios/' + ${u.id} + '/excluir'}" method="post">
+                                <button type="submit" class="item-menu perigo-texto"
+                                        data-confirmar="Excluir esta conta definitivamente? Isso não pode ser desfeito.">
+                                    Excluir conta</button>
+                            </form>
+                        </div>
+                    </details>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(usuarios)}" class="vazio">
+                <td colspan="5">Nenhuma conta com esses filtros. Tente tirar um deles.</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <nav th:replace="~{fragmentos/paginacao :: paginacao(${paginaContas}, ${urlPaginacao})}"></nav>
+    </section>
+
+    <!--/* Criar conta. */-->
+    <dialog id="nova-conta" class="dialogo">
+        <h2>Nova conta</h2>
+        <p class="dica">Conta criada aqui já nasce ativa, sem passar por aprovação.</p>
+        <form th:action="@{/usuarios}" method="post">
+            <div class="campo">
+                <label for="novoNome">Nome completo</label>
+                <input type="text" id="novoNome" name="nome" required/>
+            </div>
+            <div class="campo">
+                <label for="novoEmail">E-mail</label>
+                <input type="email" id="novoEmail" name="email" required/>
+            </div>
+            <div class="campo">
+                <label for="novaSenha">Senha inicial</label>
+                <input type="password" id="novaSenha" name="senha" minlength="8" required autocomplete="new-password"/>
+                <span class="dica">A pessoa troca depois em Configurações, Minha senha.</span>
+            </div>
+            <fieldset class="grupo-filtro">
+                <legend class="rotulo-filtro">Perfil</legend>
+                <label class="opcao-tema" th:each="p, i : ${perfis}">
+                    <input type="radio" name="perfil" th:value="${p}" th:checked="${i.first}" required/>
+                    <span><span th:text="${p.descricao}">Operador</span>
+                        <small th:text="${p.atribuicoes}">atribuições</small></span>
+                </label>
+            </fieldset>
+            <div class="acoes-dialogo">
+                <button type="button" class="secundario" data-fechar-dialogo>Cancelar</button>
+                <button type="submit">Criar conta</button>
+            </div>
         </form>
-    </details>
+    </dialog>
 
-    <div class="cartao" th:each="u : ${usuarios}">
-        <form th:action="@{'/usuarios/' + ${u.id}}" method="post" style="display:block;">
-            <div class="campos">
-                <div class="campo">
-                    <label th:for="'nome-' + ${u.id}">Nome</label>
-                    <input type="text" th:id="'nome-' + ${u.id}" name="nome" th:value="${u.nome}" required/>
-                </div>
-                <div class="campo">
-                    <label th:for="'email-' + ${u.id}">E-mail</label>
-                    <input type="email" th:id="'email-' + ${u.id}" name="email" th:value="${u.email}" required/>
-                </div>
-                <div class="campo">
-                    <label th:for="'perfil-' + ${u.id}">Perfil</label>
-                    <select th:id="'perfil-' + ${u.id}" name="perfil">
-                        <option th:each="p : ${perfis}" th:value="${p}" th:text="${p.descricao}"
-                                th:selected="${u.perfil == p}">Operador</option>
-                    </select>
-                </div>
-                <div class="campo">
-                    <label th:for="'situacao-' + ${u.id}">Situação</label>
-                    <select th:id="'situacao-' + ${u.id}" name="situacao">
-                        <option th:each="s : ${situacoes}" th:value="${s}" th:text="${s.descricao}"
-                                th:selected="${u.situacao == s}">Ativo</option>
-                    </select>
-                </div>
+    <!--/* Editar conta: um dialogo so, preenchido pela linha escolhida (js/sendhemosc.js). */-->
+    <dialog id="editar-conta" class="dialogo">
+        <h2>Editar conta</h2>
+        <form th:action="@{/usuarios/0}" method="post" data-form-edicao>
+            <div class="campo">
+                <label for="editarNome">Nome</label>
+                <input type="text" id="editarNome" name="nome" required/>
             </div>
-
-            <p class="dica">
-                Criada em <span th:text="${#temporals.format(u.criadoEm, 'dd/MM/yyyy')}">data</span> &middot;
-                último acesso
-                <span th:text="${u.ultimoAcessoEm != null
-                        ? #temporals.format(u.ultimoAcessoEm, 'dd/MM/yyyy HH:mm') : 'nunca'}">nunca</span>
-                &middot; <span th:text="${u.perfil.atribuicoes}">atribuições</span>
-            </p>
-
-            <div class="acoes" style="margin-top:12px;">
+            <div class="campo">
+                <label for="editarEmail">E-mail</label>
+                <input type="email" id="editarEmail" name="email" required/>
+            </div>
+            <div class="campo">
+                <label for="editarPerfil">Perfil</label>
+                <select id="editarPerfil" name="perfil">
+                    <option th:each="p : ${perfis}" th:value="${p}" th:text="${p.descricao}">Operador</option>
+                </select>
+            </div>
+            <div class="campo">
+                <label for="editarSituacao">Situação</label>
+                <select id="editarSituacao" name="situacao">
+                    <option th:each="s : ${situacoes}" th:value="${s}" th:text="${s.descricao}">Ativo</option>
+                </select>
+            </div>
+            <div class="acoes-dialogo">
+                <button type="button" class="secundario" data-fechar-dialogo>Cancelar</button>
                 <button type="submit">Salvar alterações</button>
-
-                <button type="submit" class="secundario" th:if="${u.situacao.name() == 'PENDENTE'}"
-                        th:formaction="@{'/usuarios/' + ${u.id} + '/aprovar'}">Aprovar</button>
-                <button type="submit" class="secundario" th:if="${u.situacao.name() == 'PENDENTE'}"
-                        th:formaction="@{'/usuarios/' + ${u.id} + '/recusar'}">Recusar</button>
-
-                <button type="submit" class="secundario"
-                        th:formaction="@{'/usuarios/' + ${u.id} + '/senha'}"
-                        data-confirmar="Gerar uma senha nova para esta conta? A senha atual deixa de valer.">
-                    Redefinir senha
-                </button>
-
-                <button type="submit" class="secundario"
-                        th:formaction="@{'/usuarios/' + ${u.id} + '/excluir'}"
-                        data-confirmar="Excluir esta conta definitivamente? Isso não pode ser desfeito.">
-                    Excluir
-                </button>
             </div>
         </form>
-    </div>
-
-    <div class="cartao" th:if="${#lists.isEmpty(usuarios)}">
-        <p style="color:var(--suave);margin:0;">Nenhuma conta cadastrada.</p>
-    </div>
+    </dialog>
 
     <footer>
         <p>
-            Duas ações são recusadas pelo sistema: alterar o próprio perfil, desativar-se ou
-            excluir-se, e remover a última conta de administrador ativa. Ambas deixariam o
-            sistema sem ninguém capaz de gerenciar contas.
+            O sistema recusa duas ações: mudar o próprio perfil, desativar-se ou excluir-se, e remover a
+            última conta de administrador ativa. As duas deixariam o sistema sem ninguém para gerenciar contas.
         </p>
     </footer>
 

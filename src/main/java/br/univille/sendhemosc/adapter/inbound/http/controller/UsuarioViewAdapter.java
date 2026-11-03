@@ -2,6 +2,7 @@ package br.univille.sendhemosc.adapter.inbound.http.controller;
 
 import br.univille.sendhemosc.config.SegurancaProperties;
 import br.univille.sendhemosc.domain.dto.CadastroPendente;
+import br.univille.sendhemosc.domain.dto.Pagina;
 import br.univille.sendhemosc.domain.dto.UsuarioResumo;
 import br.univille.sendhemosc.domain.enums.PerfilUsuario;
 import br.univille.sendhemosc.domain.enums.SituacaoUsuario;
@@ -11,9 +12,13 @@ import br.univille.sendhemosc.domain.port.outbound.IUsuarioRepositoryPort;
 import br.univille.sendhemosc.usecase.usuario.GerenciarUsuarioUseCase;
 import br.univille.sendhemosc.usecase.usuario.ResolverAprovacaoUseCase;
 import java.security.Principal;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
@@ -24,6 +29,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Gerenciamento de contas, restrito ao administrador, e os links de decisao enviados por
@@ -39,6 +45,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class UsuarioViewAdapter {
 
     private static final Locale PT_BR = Locale.of("pt", "BR");
+    private static final int POR_PAGINA = 20;
 
     private final IUsuarioRepositoryPort usuarioRepository;
     private final ResolverAprovacaoUseCase resolverAprovacao;
@@ -46,18 +53,53 @@ public class UsuarioViewAdapter {
     private final SegurancaProperties seguranca;
     private final MessageSource messageSource;
 
+    /**
+     * Lista as contas com busca, filtro por perfil e situacao, e paginacao. Os cadastros que
+     * aguardam decisao aparecem a parte, no topo, seja qual for o filtro: sao o que pede acao.
+     */
     @GetMapping("/usuarios")
-    public String listar(final Model model) {
+    public String listar(@RequestParam(required = false) final String busca,
+                         @RequestParam(required = false) final PerfilUsuario perfil,
+                         @RequestParam(required = false) final SituacaoUsuario situacao,
+                         @RequestParam(defaultValue = "1") final int pagina,
+                         final Model model) {
         final List<UsuarioResumo> todos = usuarioRepository.listarTodos();
-
-        model.addAttribute("usuarios", todos);
-        model.addAttribute("pendentes", todos.stream()
+        final String termo = busca == null ? "" : busca.trim().toLowerCase(Locale.ROOT);
+        final List<UsuarioResumo> filtrados = todos.stream()
+                .filter(usuario -> termo.isEmpty() || usuario.nome().toLowerCase(Locale.ROOT).contains(termo)
+                        || usuario.email().toLowerCase(Locale.ROOT).contains(termo))
+                .filter(usuario -> perfil == null || usuario.perfil() == perfil)
+                .filter(usuario -> situacao == null || usuario.situacao() == situacao)
+                .sorted(Comparator.comparing(UsuarioResumo::nome, String.CASE_INSENSITIVE_ORDER))
+                .toList();
+        final Pagina<UsuarioResumo> trecho = Pagina.recortar(filtrados, pagina, POR_PAGINA);
+        final List<UsuarioResumo> aguardando = todos.stream()
                 .filter(usuario -> usuario.situacao() == SituacaoUsuario.PENDENTE)
-                .count());
+                .toList();
+
+        model.addAttribute("usuarios", trecho.itens());
+        model.addAttribute("paginaContas", trecho);
+        model.addAttribute("totalContas", todos.size());
+        model.addAttribute("pendentes", aguardando.size());
+        model.addAttribute("aguardando", aguardando);
+        model.addAttribute("porPerfil", contar(todos, UsuarioResumo::perfil));
+        model.addAttribute("porSituacao", contar(todos, UsuarioResumo::situacao));
+        model.addAttribute("busca", busca);
+        model.addAttribute("perfilFiltro", perfil);
+        model.addAttribute("situacaoFiltro", situacao);
         model.addAttribute("perfis", PerfilUsuario.values());
         model.addAttribute("situacoes", SituacaoUsuario.values());
+        model.addAttribute("urlPaginacao", ParaPaginacao.url(UriComponentsBuilder.fromPath("/usuarios")
+                .queryParamIfPresent("busca", Optional.ofNullable(busca).filter(b -> !b.isBlank()))
+                .queryParamIfPresent("perfil", Optional.ofNullable(perfil))
+                .queryParamIfPresent("situacao", Optional.ofNullable(situacao))));
 
         return "usuarios";
+    }
+
+    private static <T> Map<T, Long> contar(final List<UsuarioResumo> contas,
+                                           final Function<UsuarioResumo, T> chave) {
+        return contas.stream().collect(Collectors.groupingBy(chave, Collectors.counting()));
     }
 
     @PostMapping("/usuarios")

@@ -104,4 +104,27 @@ class TelasReorganizadasTest {
         mockMvc.perform(get("/relatorios"))
                 .andExpect(redirectedUrl("/relatorios/conversao"));
     }
+
+    @Test
+    @WithMockUser(username = "admin@example.org", roles = "MASTER")
+    @DisplayName("configuracoes reune aparencia, senha, termo, contas e auditoria; a lateral fica enxuta")
+    void configuracoes() throws Exception {
+        mockMvc.perform(get("/configuracoes"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("name=\"tema\"")))
+                .andExpect(content().string(containsString("href=\"/conta/senha\"")))
+                .andExpect(content().string(containsString("href=\"/usuarios\"")))
+                .andExpect(content().string(containsString("href=\"/termo\"")));
+        mockMvc.perform(get("/"))
+                .andExpect(content().string(not(containsString("href=\"/usuarios\""))));
+    }
+
+    @Test
+    @WithMockUser(username = "admin@example.org", roles = "MASTER")
+    @DisplayName("contas filtram por perfil e busca")
+    void contasFiltradas() throws Exception {
+        mockMvc.perform(get("/usuarios").param("perfil", "MASTER").param("busca", "admin"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("paginaContas", "aguardando", "porPerfil"));
+    }
 }

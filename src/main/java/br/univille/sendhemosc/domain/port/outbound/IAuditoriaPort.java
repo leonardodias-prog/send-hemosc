@@ -2,7 +2,7 @@ package br.univille.sendhemosc.domain.port.outbound;
 
 import br.univille.sendhemosc.domain.dto.Pagina;
 import br.univille.sendhemosc.domain.dto.RegistroAuditoria;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * Porta de saida para o registro de auditoria. Toda acao que produz efeito fora do sistema
@@ -31,17 +31,11 @@ public interface IAuditoriaPort {
     /**
      * Lista os registros, do mais novo para o mais antigo.
      *
-     * @param acao somente esta acao; nulo ou vazio traz todas
+     * @param acoes somente estas acoes; nulo traz todas
+     * @param busca trecho procurado no detalhe ou no autor; nulo ou vazio dispensa
      * @param pagina trecho pedido, a partir de 1
      * @param tamanho registros por trecho
      * @return o trecho pedido
      */
-    Pagina<RegistroAuditoria> listar(String acao, int pagina, int tamanho);
-
-    /**
-     * Acoes que ja aparecem no registro, para o filtro da tela.
-     *
-     * @return identificadores em ordem alfabetica
-     */
-    List<String> acoesRegistradas();
+    Pagina<RegistroAuditoria> listar(Collection<String> acoes, String busca, int pagina, int tamanho);
 }

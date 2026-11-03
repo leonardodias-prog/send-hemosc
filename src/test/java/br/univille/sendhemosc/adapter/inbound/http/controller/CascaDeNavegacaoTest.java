@@ -62,7 +62,7 @@ class CascaDeNavegacaoTest {
             mockMvc.perform(get("/conta/senha"))
                     .andExpect(status().isOk())
                     .andExpect(content().string(containsString(MARCA_DA_CASCA)))
-                    .andExpect(content().string(containsString("href=\"/conta/senha\"")));
+                    .andExpect(content().string(containsString("href=\"/configuracoes\"")));
         }
 
         @Test

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
  * Alimenta a casca de navegacao com o que ela precisa em qualquer tela.
  *
  * <p>Sao dois indicadores ao lado dos itens da lateral. O numero de cadastros a espera de
- * decisao, ao lado de Contas: sem ele o administrador so descobre que ha alguem esperando se abrir
+ * decisao, na engrenagem de Configuracoes: sem ele o administrador so descobre que ha alguem esperando se abrir
  * a tela por acaso. E o aviso de disparo automatico ligado: ligado, ele manda e-mail sem ninguem
  * clicar, e isso precisa estar a vista de quem pode desliga-lo.</p>
  *

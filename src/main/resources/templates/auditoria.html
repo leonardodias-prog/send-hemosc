@@ -7,6 +7,7 @@
     <script th:src="@{/js/tema.js}"></script>
     <link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}"/>
     <link rel="stylesheet" th:href="@{/css/sendhemosc.css}"/>
+    <script th:src="@{/js/sendhemosc.js}" defer></script>
 </head>
 <body>
 <div class="app">
@@ -16,59 +17,75 @@
 <main class="conteudo">
 <div class="container">
 
-    <header>
-        <h1>Auditoria</h1>
-        <p class="subtitulo">Quem fez o quê: convocações, envio de e-mail, contas e doadores</p>
+    <header class="cabecalho">
+        <div>
+            <a class="voltar" th:href="@{/configuracoes}">Configurações</a>
+            <h1>Auditoria</h1>
+            <p class="subtitulo">Quem fez o quê: convocações, envio de e-mail, contas e doadores</p>
+        </div>
     </header>
 
-    <div class="cartao">
-        <form th:action="@{/auditoria}" method="get" class="acoes">
-            <div class="campo" style="margin:0;flex:1 1 240px;">
-                <label for="acao">Ação</label>
-                <select id="acao" name="acao">
-                    <option value="">Todas</option>
-                    <option th:each="a : ${acoes}" th:value="${a}" th:text="${nomes[a]}"
-                            th:selected="${a == acao}">Convocação</option>
-                </select>
-            </div>
-            <button type="submit" style="align-self:flex-end;">Filtrar</button>
-        </form>
+    <!--/* Categoria se aplica ao clicar; o texto espera o botão. */-->
+    <form class="cartao filtros" th:action="@{/auditoria}" method="get" data-filtro-automatico>
+        <div class="linha-busca">
+            <input type="search" name="busca" th:value="${busca}" aria-label="Buscar por pessoa, e-mail ou detalhe"
+                   placeholder="Buscar por pessoa, e-mail ou detalhe"/>
+            <button type="submit">Buscar</button>
+            <a class="botao secundario" th:if="${categoria != '' or (busca != null and busca != '')}"
+               th:href="@{/auditoria}">Limpar filtros</a>
+        </div>
+        <div class="chips" role="radiogroup" aria-label="Categoria">
+            <label class="chip">
+                <input type="radio" name="categoria" value="" th:checked="${categoria == ''}"/>
+                <span>Tudo</span>
+            </label>
+            <label class="chip" th:each="c : ${categorias}">
+                <input type="radio" name="categoria" th:value="${c.chave}" th:checked="${categoria == c.chave}"/>
+                <span th:text="${c.nome}">Convocações</span>
+            </label>
+        </div>
+    </form>
+
+    <div class="cartao vazio-cartao" th:if="${#lists.isEmpty(dias)}">
+        <p>Nenhuma ação registrada com esses filtros. Tente outra categoria ou limpe a busca.</p>
     </div>
 
-    <div class="cartao">
-        <p class="dica" th:if="${#lists.isEmpty(registros.itens)}" style="margin:0;">
-            Nenhuma ação registrada<span th:if="${acao != null and acao != ''}"> com esse filtro</span>.
-        </p>
-
-        <div class="tabela-rolavel" th:unless="${#lists.isEmpty(registros.itens)}">
-            <table>
-                <thead>
-                <tr>
-                    <th>Quando</th>
-                    <th>Ação</th>
-                    <th>Quem</th>
-                    <th>Detalhe</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="r : ${registros.itens}">
-                    <td style="white-space:nowrap;"
-                        th:text="${#temporals.format(r.ocorridoEm, 'dd/MM/yyyy HH:mm')}">29/10/2026 10:15</td>
-                    <td style="white-space:nowrap;"><strong th:text="${nomes[r.acao]}">Envio ligado</strong></td>
-                    <td th:text="${r.autor != null ? r.autor : 'sistema'}">admin@sendhemosc.local</td>
-                    <td th:text="${r.detalhe}">detalhe</td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
+    <section class="cartao linha-do-tempo" th:unless="${#lists.isEmpty(dias)}">
+        <th:block th:each="dia : ${dias}">
+            <h2 class="dia" th:text="${dia.rotulo}">Hoje</h2>
+            <ol class="eventos">
+                <li class="evento" th:each="l : ${dia.linhas}" th:classappend="${l.categoria}">
+                    <span class="marcador" aria-hidden="true" th:switch="${l.categoria}">
+                        <svg th:case="'convocacoes'" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                        <svg th:case="'envio'" viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="m3 6.5 9 6.5 9-6.5"/></svg>
+                        <svg th:case="'doadores'" viewBox="0 0 24 24"><path d="M12 3c-.6 0-5.5 6.2-5.5 10.5a5.5 5.5 0 0 0 11 0C17.5 9.2 12.6 3 12 3Z"/></svg>
+                        <svg th:case="'contas'" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></svg>
+                        <svg th:case="'seguranca'" viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 4.6 3.4 8.4 8 9 4.6-.6 8-4.4 8-9V6Z"/><path d="M12 9v4"/><path d="M12 16.5v.01"/></svg>
+                        <svg th:case="*" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg>
+                    </span>
+                    <div class="evento-texto">
+                        <div class="evento-titulo">
+                            <strong th:text="${l.nome}">Envio de e-mail ligado</strong>
+                            <span class="evento-hora" th:text="${#temporals.format(l.registro.ocorridoEm, 'HH:mm')}">19:09</span>
+                        </div>
+                        <p class="evento-detalhe" th:text="${l.registro.detalhe}">detalhe</p>
+                        <p class="evento-autor">
+                            <span th:if="${l.registro.autor != null and l.registro.autor != 'sistema'}"
+                                  th:text="'por ' + ${l.registro.autor}">por admin@sendhemosc.local</span>
+                            <span th:unless="${l.registro.autor != null and l.registro.autor != 'sistema'}">pelo sistema</span>
+                        </p>
+                    </div>
+                </li>
+            </ol>
+        </th:block>
 
         <nav th:replace="~{fragmentos/paginacao :: paginacao(${registros}, ${urlPaginacao})}"></nav>
-    </div>
+    </section>
 
     <footer>
         <p>
             O registro só cresce: nada aqui pode ser editado ou apagado pela tela. Ações feitas pelas
-            rotinas agendadas aparecem como sistema.
+            rotinas agendadas e tentativas de entrada aparecem como feitas pelo sistema.
         </p>
     </footer>
 

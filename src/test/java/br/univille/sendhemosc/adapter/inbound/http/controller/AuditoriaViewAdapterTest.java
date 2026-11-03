@@ -38,6 +38,9 @@ class AuditoriaViewAdapterTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Envio ligado pelo teste de auditoria")))
                 .andExpect(content().string(containsString("Envio de e-mail ligado")))
+                .andExpect(content().string(containsString("Hoje")));
+        // O atalho fica em Configuracoes, e so para o administrador.
+        mockMvc.perform(get("/configuracoes"))
                 .andExpect(content().string(containsString("href=\"/auditoria\"")));
     }
 
@@ -60,7 +63,7 @@ class AuditoriaViewAdapterTest {
     void responsavelNaoVe() throws Exception {
         mockMvc.perform(get("/auditoria"))
                 .andExpect(status().isForbidden());
-        mockMvc.perform(get("/"))
+        mockMvc.perform(get("/configuracoes"))
                 .andExpect(content().string(not(containsString("href=\"/auditoria\""))));
     }
 
@@ -70,5 +73,20 @@ class AuditoriaViewAdapterTest {
     void operadorNaoVe() throws Exception {
         mockMvc.perform(get("/auditoria"))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "admin@example.org", roles = "MASTER")
+    @DisplayName("a categoria junta as acoes do mesmo assunto, e a busca acha pelo detalhe")
+    void categoriaEBusca() throws Exception {
+        auditoria.registrar("ENTRADA_RECUSADA", "tentativa com senha errada de fulano");
+        auditoria.registrar("ENVIO_LIGADO", "registro de outra categoria");
+
+        mockMvc.perform(get("/auditoria").param("categoria", "seguranca"))
+                .andExpect(content().string(containsString("tentativa com senha errada de fulano")))
+                .andExpect(content().string(not(containsString("registro de outra categoria"))));
+        mockMvc.perform(get("/auditoria").param("busca", "FULANO"))
+                .andExpect(content().string(containsString("tentativa com senha errada de fulano")))
+                .andExpect(content().string(not(containsString("registro de outra categoria"))));
     }
 }
