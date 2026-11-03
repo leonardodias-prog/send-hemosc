@@ -48,12 +48,38 @@
         });
     });
 
-    // A engrenagem fecha ao clicar fora dela.
-    document.addEventListener('click', function (evento) {
-        document.querySelectorAll('details.menu-tema[open]').forEach(function (menu) {
-            if (!menu.contains(evento.target)) {
-                menu.open = false;
+    // Menu da engrenagem: o clique abre e fecha (no toque nao ha hover); clicar fora ou Esc fecha.
+    // Fica aqui, e nao em sendhemosc.js, porque este arquivo esta em toda tela com a lateral.
+    function fecharMenus(excecao) {
+        document.querySelectorAll('.menu-lateral.aberto').forEach(function (menu) {
+            if (menu !== excecao) {
+                menu.classList.remove('aberto');
+                menu.querySelector('[data-alternar-menu]').setAttribute('aria-expanded', 'false');
             }
         });
+    }
+
+    document.addEventListener('click', function (evento) {
+        var botao = evento.target.closest && evento.target.closest('[data-alternar-menu]');
+        var menu = botao ? botao.closest('.menu-lateral') : null;
+
+        if (menu) {
+            var abrir = !menu.classList.contains('aberto');
+            menu.classList.toggle('aberto', abrir);
+            botao.setAttribute('aria-expanded', String(abrir));
+            if (!abrir) {
+                botao.blur();
+            }
+        }
+        fecharMenus(menu || (evento.target.closest && evento.target.closest('.menu-lateral')));
+    });
+
+    document.addEventListener('keydown', function (evento) {
+        if (evento.key === 'Escape') {
+            fecharMenus(null);
+            if (document.activeElement && document.activeElement.closest('.menu-lateral')) {
+                document.activeElement.blur();
+            }
+        }
     });
 })();

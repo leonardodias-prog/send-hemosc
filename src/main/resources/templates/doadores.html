@@ -21,7 +21,6 @@
     <header class="cabecalho">
         <div>
             <h1>Doadores</h1>
-            <p class="subtitulo">Quem pode doar, quando, e quem já foi chamado</p>
         </div>
         <a class="botao" th:href="@{/doadores/novo}">+ Novo doador</a>
     </header>
@@ -114,9 +113,6 @@
             </div>
         </div>
 
-        <p class="dica" sec:authorize="hasRole('OPERADOR')" style="margin:0 0 12px;">
-            Seu perfil consulta e cadastra. A convocação é atribuição do responsável.
-        </p>
 
         <table class="tabela-doadores">
             <thead>
@@ -205,9 +201,6 @@
             <h2>Doadores desativados</h2>
             <span class="dica" th:text="${#lists.size(inativos)} + ' doador(es)'">2 doadores</span>
         </summary>
-        <p class="dica" style="margin:0 0 8px;">
-            Não aparecem na busca acima nem recebem convocações. O histórico continua guardado.
-        </p>
         <table class="tabela-doadores">
             <tbody>
             <tr th:each="i : ${inativos}">
@@ -225,16 +218,6 @@
         </table>
     </details>
 
-    <footer>
-        <p>
-            Quem não autorizou o contato, não cumpriu o intervalo mínimo ou atingiu o limite de
-            convocações não pode ser selecionado: escolher a quem oferecer não dispensa a regra.
-        </p>
-        <p>
-            Registrar a doação fecha as convocações que a pessoa tinha em aberto e recalcula
-            quando ela volta a poder doar — é o que impede que ela seja chamada de novo.
-        </p>
-    </footer>
 
 </div>
 </main>

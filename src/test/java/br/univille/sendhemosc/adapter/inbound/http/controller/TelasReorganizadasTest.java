@@ -100,23 +100,22 @@ class TelasReorganizadasTest {
         mockMvc.perform(get("/relatorios/conversao").param("dias", "90"))
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("evolucao", "situacoes", "basePorTipo", "movimentacoes"))
-                .andExpect(content().string(containsString("Uma coluna por semana")));
+                .andExpect(content().string(containsString("grafico-colunas")));
         mockMvc.perform(get("/relatorios"))
                 .andExpect(redirectedUrl("/relatorios/conversao"));
     }
 
     @Test
     @WithMockUser(username = "admin@example.org", roles = "MASTER")
-    @DisplayName("configuracoes reune aparencia, senha, termo, contas e auditoria; a lateral fica enxuta")
-    void configuracoes() throws Exception {
-        mockMvc.perform(get("/configuracoes"))
+    @DisplayName("o menu da engrenagem reune aparencia, senha, termo, contas e auditoria")
+    void menuDaEngrenagem() throws Exception {
+        mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
+                .andExpect(content().string(containsString("data-alternar-menu")))
                 .andExpect(content().string(containsString("name=\"tema\"")))
                 .andExpect(content().string(containsString("href=\"/conta/senha\"")))
                 .andExpect(content().string(containsString("href=\"/usuarios\"")))
                 .andExpect(content().string(containsString("href=\"/termo\"")));
-        mockMvc.perform(get("/"))
-                .andExpect(content().string(not(containsString("href=\"/usuarios\""))));
     }
 
     @Test

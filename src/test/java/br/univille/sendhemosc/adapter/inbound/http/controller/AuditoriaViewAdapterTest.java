@@ -39,8 +39,8 @@ class AuditoriaViewAdapterTest {
                 .andExpect(content().string(containsString("Envio ligado pelo teste de auditoria")))
                 .andExpect(content().string(containsString("Envio de e-mail ligado")))
                 .andExpect(content().string(containsString("Hoje")));
-        // O atalho fica em Configuracoes, e so para o administrador.
-        mockMvc.perform(get("/configuracoes"))
+        // O atalho fica no menu da engrenagem, e so para o administrador.
+        mockMvc.perform(get("/"))
                 .andExpect(content().string(containsString("href=\"/auditoria\"")));
     }
 
@@ -63,7 +63,7 @@ class AuditoriaViewAdapterTest {
     void responsavelNaoVe() throws Exception {
         mockMvc.perform(get("/auditoria"))
                 .andExpect(status().isForbidden());
-        mockMvc.perform(get("/configuracoes"))
+        mockMvc.perform(get("/"))
                 .andExpect(content().string(not(containsString("href=\"/auditoria\""))));
     }
 

@@ -18,11 +18,10 @@
 <div class="container">
 
     <header>
+        <a class="voltar" th:href="@{/doadores}">Doadores</a>
         <h1 th:text="${doador.nome}">Nome do doador</h1>
         <p class="subtitulo">
-            <a th:href="@{/doadores}">&larr; Doadores</a> &middot;
-            cadastrado em <span th:text="${#temporals.format(doador.criadoEm, 'dd/MM/yyyy')}">data</span>
-            &middot;
+            Cadastrado em <span th:text="${#temporals.format(doador.criadoEm, 'dd/MM/yyyy')}">data</span>
             <span class="etiqueta ativo" th:if="${doador.ativo}">Ativo</span>
             <span class="etiqueta recusado" th:unless="${doador.ativo}">Desativado</span>
         </p>
@@ -102,18 +101,13 @@
     <div class="cartao">
         <h2>Situação do cadastro</h2>
         <th:block th:if="${doador.ativo}">
-            <p class="dica">
-                Desativar tira o doador da busca e das convocações sem apagar nada. Serve para quem
-                deixou de doar ou mudou de cidade, e pode ser desfeito.
-            </p>
+            <p class="dica">Sai da busca e das convocações, sem apagar nada. Dá para reativar.</p>
             <form th:action="@{'/doadores/' + ${doador.id} + '/desativar'}" method="post" style="margin-top:12px;">
                 <button type="submit" class="secundario">Desativar doador</button>
             </form>
         </th:block>
         <th:block th:unless="${doador.ativo}">
-            <p class="dica">
-                Este doador está desativado: não aparece na busca nem recebe convocações.
-            </p>
+            <p class="dica">Fora da busca e das convocações.</p>
             <form th:action="@{'/doadores/' + ${doador.id} + '/reativar'}" method="post" style="margin-top:12px;">
                 <button type="submit">Reativar doador</button>
             </form>
@@ -122,25 +116,15 @@
 
     <div class="cartao">
         <h2>Dados do titular (LGPD)</h2>
-        <p class="dica">
-            Cópia de tudo o que o sistema guarda sobre esta pessoa — cadastro, consentimentos,
-            doações e convocações —, para atender a um pedido de acesso ou portabilidade feito à
-            equipe. O próprio doador também consegue baixar pelo link dos e-mails. Fica registrado
-            em auditoria.
-        </p>
+        <p class="dica">Tudo o que o sistema guarda sobre esta pessoa, para um pedido de acesso.</p>
         <p style="margin:12px 0 0;">
-            <a th:href="@{'/doadores/' + ${doador.id} + '/exportar'}">
-                <button type="button" class="secundario">Baixar dados (JSON)</button>
-            </a>
+            <a class="botao secundario" th:href="@{'/doadores/' + ${doador.id} + '/exportar'}">Baixar dados (JSON)</a>
         </p>
     </div>
 
     <div class="cartao" sec:authorize="hasAnyRole('RESPONSAVEL','MASTER')">
         <h2>Excluir doador</h2>
-        <p class="dica">
-            Apaga o cadastro e, junto, as doações, convocações e consentimentos. <strong>Não tem
-            volta.</strong> Para só tirar a pessoa das convocações, prefira desativar.
-        </p>
+        <p class="dica">Apaga cadastro, doações e convocações. <strong>Não tem volta.</strong></p>
         <form th:action="@{'/doadores/' + ${doador.id} + '/excluir'}" method="post"
               style="display:block;margin-top:12px;">
             <label class="consentimento">

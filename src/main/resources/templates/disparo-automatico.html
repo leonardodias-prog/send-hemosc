@@ -21,7 +21,6 @@
     <header class="cabecalho">
         <div>
             <h1>Envio de e-mail</h1>
-            <p class="subtitulo">Se as convocações saem de verdade, e quando o sistema convoca sozinho</p>
         </div>
     </header>
 
@@ -110,7 +109,6 @@
                         <span th:text="${t.sigla}">A+</span>
                     </label>
                 </div>
-                <p class="dica">Só entra na rodada o tipo marcado que estiver em atenção ou crítico.</p>
             </div>
 
             <p class="frase">
@@ -134,10 +132,6 @@
                 <input type="number" name="limitePorRodada" min="1" max="1000" required class="numero-curto"
                        aria-label="Limite de envios por rodada" th:value="${ajuste.limitePorRodada}"/>
                 e-mails por rodada.
-            </p>
-            <p class="dica">
-                O limite soma todos os tipos. Antes de aumentá-lo, confira o limite diário do plano do Brevo:
-                estourá-lo bloqueia o envio até o dia seguinte.
             </p>
 
             <div class="acoes">
@@ -184,18 +178,8 @@
             <strong th:text="${prazoTetoDias}">180</strong> dias; uma doação registrada zera a contagem; e o
             administrador pode liberar uma pessoa na hora, pela tela de doadores.
         </p>
-        <p class="dica" style="margin:0;">
-            Vale também para a convocação manual: para quem recebe, o e-mail é o mesmo, seja qual for o
-            botão que o disparou.
-        </p>
     </details>
 
-    <footer>
-        <p>
-            A rotina confere a cada <span th:text="${verificacaoMinutos}">10</span> minutos se a rodada é devida,
-            e só enquanto o serviço está no ar. Toda alteração desta tela e toda rodada ficam em auditoria.
-        </p>
-    </footer>
 
 </div>
 </main>

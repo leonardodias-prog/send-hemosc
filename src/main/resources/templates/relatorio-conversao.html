@@ -69,9 +69,6 @@
                 <span><i class="marca serie-doacao"></i>Doações</span>
             </div>
         </div>
-        <p class="dica" th:text="'Uma coluna por ' + ${evolucao.intervalo} + '. Maior valor: ' + ${evolucao.maximo()}">
-            Uma coluna por dia.
-        </p>
 
         <div class="grafico-colunas" role="img"
              th:aria-label="'Convocações e doações por ' + ${evolucao.intervalo} + ' no período'">
@@ -90,7 +87,6 @@
         <!--/* Conversao por tipo: barra = taxa; numeros ao lado para nao depender so do tamanho. */-->
         <section class="cartao">
             <h2>Conversão por tipo sanguíneo</h2>
-            <p class="dica">Quantas convocações viraram doação. Uma convocação conta por envio, não por doador.</p>
             <ul class="barras-h">
                 <li th:each="linha : ${relatorio.porTipo()}">
                     <span class="tipo-pilula" th:text="${linha.tipoSanguineo.sigla}">O-</span>
@@ -107,7 +103,6 @@
         <!--/* Estoque agora: ocupacao com a cor do nivel. */-->
         <section class="cartao">
             <h2>Estoque agora</h2>
-            <p class="dica">Ocupação de cada tipo em relação à capacidade alvo.</p>
             <ul class="barras-h">
                 <li th:each="s : ${situacoes}">
                     <span class="tipo-pilula" th:text="${s.tipoSanguineo.sigla}">O-</span>
@@ -125,7 +120,6 @@
     <!--/* Base de doadores: onde a captacao precisa de gente nova. */-->
     <section class="cartao">
         <h2>Doadores ativos por tipo</h2>
-        <p class="dica">Tipo com poucos doadores é onde vale concentrar a captação de cadastros.</p>
         <ul class="barras-h">
             <li th:each="t : ${tiposSanguineos}" th:with="total=${basePorTipo.get(t) != null ? basePorTipo.get(t) : 0}">
                 <span class="tipo-pilula" th:text="${t.sigla}">O-</span>
@@ -138,7 +132,6 @@
 
     <section class="cartao" id="movimentacoes">
         <h2>Últimas movimentações do estoque</h2>
-        <p class="dica">Cada alteração de quantidade ou de capacidade alvo, com o valor anterior e quem alterou.</p>
 
         <p class="dica" th:if="${#lists.isEmpty(movimentacoes)}">Nenhuma movimentação registrada ainda.</p>
 

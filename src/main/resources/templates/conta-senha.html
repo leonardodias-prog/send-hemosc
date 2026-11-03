@@ -17,9 +17,7 @@
 <div class="container estreito">
 
     <header>
-        <a class="voltar" th:href="@{/configuracoes}">Configurações</a>
         <h1>Minha senha</h1>
-        <p class="subtitulo">Troca da senha da sua própria conta</p>
     </header>
 
     <div class="aviso" th:if="${aviso}" th:text="${aviso}">mensagem</div>
@@ -50,17 +48,6 @@
         </form>
     </div>
 
-    <footer>
-        <p>
-            A senha atual é pedida mesmo com você já dentro do sistema: uma sessão esquecida aberta
-            não basta para trocar a senha de ninguém. A troca fica registrada na auditoria, sem a
-            senha.
-        </p>
-        <p>
-            Não lembra a senha atual? Saia e use "Esqueci minha senha" na tela de entrada, ou peça a
-            um administrador que a redefina.
-        </p>
-    </footer>
 
 </div>
 </main>

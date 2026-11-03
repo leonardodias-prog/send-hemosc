@@ -19,9 +19,7 @@
 
     <header class="cabecalho">
         <div>
-            <a class="voltar" th:href="@{/configuracoes}">Configurações</a>
             <h1>Auditoria</h1>
-            <p class="subtitulo">Quem fez o quê: convocações, envio de e-mail, contas e doadores</p>
         </div>
     </header>
 
@@ -82,12 +80,6 @@
         <nav th:replace="~{fragmentos/paginacao :: paginacao(${registros}, ${urlPaginacao})}"></nav>
     </section>
 
-    <footer>
-        <p>
-            O registro só cresce: nada aqui pode ser editado ou apagado pela tela. Ações feitas pelas
-            rotinas agendadas e tentativas de entrada aparecem como feitas pelo sistema.
-        </p>
-    </footer>
 
 </div>
 </main>

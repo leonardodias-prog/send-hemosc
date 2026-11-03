@@ -20,9 +20,7 @@
 
     <header class="cabecalho">
         <div>
-            <a class="voltar" th:href="@{/configuracoes}">Configurações</a>
             <h1>Contas de acesso</h1>
-            <p class="subtitulo">Quem entra no sistema e o que cada um pode fazer</p>
         </div>
         <button type="button" data-abrir-dialogo="nova-conta">+ Nova conta</button>
     </header>
@@ -36,7 +34,6 @@
             <h2>Aguardando sua decisão</h2>
             <span class="pilula-estado ligado" th:text="${pendentes} == 1 ? '1 cadastro' : ${pendentes} + ' cadastros'">2 cadastros</span>
         </div>
-        <p class="dica">Aprovar um responsável libera o envio de convocações para a base de doadores.</p>
         <ul class="lista-contas">
             <li th:each="u : ${aguardando}">
                 <span class="avatar" th:text="${#strings.toUpperCase(#strings.substring(u.nome, 0, 1))}">R</span>
@@ -157,7 +154,6 @@
     <!--/* Criar conta. */-->
     <dialog id="nova-conta" class="dialogo">
         <h2>Nova conta</h2>
-        <p class="dica">Conta criada aqui já nasce ativa, sem passar por aprovação.</p>
         <form th:action="@{/usuarios}" method="post">
             <div class="campo">
                 <label for="novoNome">Nome completo</label>
@@ -170,14 +166,12 @@
             <div class="campo">
                 <label for="novaSenha">Senha inicial</label>
                 <input type="password" id="novaSenha" name="senha" minlength="8" required autocomplete="new-password"/>
-                <span class="dica">A pessoa troca depois em Configurações, Minha senha.</span>
             </div>
             <fieldset class="grupo-filtro">
                 <legend class="rotulo-filtro">Perfil</legend>
                 <label class="opcao-tema" th:each="p, i : ${perfis}">
                     <input type="radio" name="perfil" th:value="${p}" th:checked="${i.first}" required/>
-                    <span><span th:text="${p.descricao}">Operador</span>
-                        <small th:text="${p.atribuicoes}">atribuições</small></span>
+                    <span th:text="${p.descricao}" th:title="${p.atribuicoes}">Operador</span>
                 </label>
             </fieldset>
             <div class="acoes-dialogo">
@@ -218,12 +212,6 @@
         </form>
     </dialog>
 
-    <footer>
-        <p>
-            O sistema recusa duas ações: mudar o próprio perfil, desativar-se ou excluir-se, e remover a
-            última conta de administrador ativa. As duas deixariam o sistema sem ninguém para gerenciar contas.
-        </p>
-    </footer>
 
 </div>
 </main>

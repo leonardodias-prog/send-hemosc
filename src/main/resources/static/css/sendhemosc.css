@@ -502,53 +502,6 @@ a.voltar {
 a.voltar::before { content: "←"; }
 @media (hover: hover) { a.voltar:hover { color: var(--primaria); } }
 
-/* --- Configuracoes --- */
-.escolha-tema { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 12px; }
-.opcao-cartao {
-    position: relative; display: flex; flex-direction: column; gap: 10px; padding: 12px; cursor: pointer;
-    border: 2px solid var(--borda); border-radius: var(--raio); background: var(--cartao);
-    transition: border-color 150ms ease-out;
-}
-.opcao-cartao input { position: absolute; opacity: 0; pointer-events: none; }
-.opcao-cartao:has(input:checked) { border-color: var(--primaria); }
-.opcao-cartao:has(input:focus-visible) { outline: 2px solid var(--primaria); outline-offset: 2px; }
-.opcao-cartao strong { display: block; font-size: 14px; }
-.opcao-cartao small { display: block; font-size: 12px; color: var(--suave); }
-.amostra { display: block; height: 64px; border-radius: 8px; border: 1px solid var(--borda); }
-/* Mini tela de cada tema: lateral, um cartao e um botao vermelho. */
-.amostra.claro {
-    background:
-        linear-gradient(#c1121f, #c1121f) 34% 28% / 26% 9px no-repeat,
-        linear-gradient(#ffffff, #ffffff) 70% 72% / 64% 22px no-repeat,
-        linear-gradient(90deg, #ffffff 0 16%, #ece4e5 16% 17%, #f8f6f6 17%);
-}
-.amostra.escuro {
-    background:
-        linear-gradient(#d42a35, #d42a35) 34% 28% / 26% 9px no-repeat,
-        linear-gradient(#1c1719, #1c1719) 70% 72% / 64% 22px no-repeat,
-        linear-gradient(90deg, #1c1719 0 16%, #33292b 16% 17%, #131012 17%);
-}
-.amostra.automatico {
-    background:
-        linear-gradient(#c1121f, #c1121f) 34% 28% / 26% 9px no-repeat,
-        linear-gradient(90deg, #ffffff 0 16%, #f8f6f6 16% 50%, #131012 50%);
-}
-.grade-atalhos { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 20px; }
-a.atalho {
-    position: relative; display: flex; align-items: flex-start; gap: 14px; padding: 18px 20px;
-    background: var(--cartao); border: 1px solid transparent; border-radius: var(--raio); box-shadow: var(--sombra-borda);
-    color: var(--texto); text-decoration: none; transition: box-shadow 150ms ease-out;
-}
-a.atalho .icone {
-    flex: none; width: 40px; height: 40px; padding: 9px; border-radius: 10px; background: var(--primaria-bg);
-    fill: none; stroke: var(--primaria); stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round;
-}
-a.atalho strong { display: block; font-size: 15px; }
-a.atalho small { display: block; font-size: 13px; color: var(--suave); margin-top: 2px; }
-a.atalho .pendencia { position: absolute; top: 14px; right: 14px; }
-@media (hover: hover) { a.atalho:hover { box-shadow: 0 0 0 1px var(--primaria), var(--sombra-borda); } }
-.sair-conta { margin: 4px 0 0; }
-
 /* --- Contas --- */
 .avatar {
     flex: none; display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 50%;
@@ -593,3 +546,43 @@ a.atalho .pendencia { position: absolute; top: 14px; right: 14px; }
 .evento-hora { font-size: 13px; color: var(--suave); font-variant-numeric: tabular-nums; }
 .evento-detalhe { margin: 2px 0 0; font-size: 14px; overflow-wrap: anywhere; }
 .evento-autor { margin: 2px 0 0; font-size: 13px; color: var(--suave); overflow-wrap: anywhere; }
+
+/* --- Menu da engrenagem ---
+   Abre ao passar o mouse (ponteiro com hover) ou ao clicar; a ponte invisivel no ::before cobre
+   o vao entre o botao e o painel, para o menu nao fechar no caminho. */
+.menu-lateral { position: relative; }
+.menu-lateral > .secao[data-rotulo]::after, .menu-lateral > .secao::after { display: none; }
+.painel-lateral {
+    position: absolute; left: calc(100% + 24px); bottom: 0; z-index: 50; width: 232px;
+    display: none; flex-direction: column; gap: 2px; padding: 8px;
+    background: var(--cartao); border: 1px solid transparent; border-radius: var(--raio);
+    box-shadow: var(--sombra-flutuante);
+}
+.painel-lateral::before { content: ""; position: absolute; left: -26px; top: 0; bottom: 0; width: 26px; }
+@media (hover: hover) { .menu-lateral:hover .painel-lateral { display: flex; } }
+.menu-lateral.aberto .painel-lateral, .menu-lateral:focus-within .painel-lateral { display: flex; }
+.painel-lateral .quem {
+    padding: 6px 10px 8px; font-size: 12px; color: var(--suave); overflow-wrap: anywhere;
+    border-bottom: 1px solid var(--borda); margin-bottom: 6px;
+}
+.painel-lateral .item-menu { display: flex; align-items: center; justify-content: space-between; }
+.painel-lateral .item-menu.atual { color: var(--primaria); background: var(--primaria-bg); }
+.painel-lateral .pendencia { position: static; border: 0; }
+.painel-lateral form.separado { margin: 4px 0 0; padding-top: 4px; border-top: 1px solid var(--borda); }
+.seletor-tema {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 3px; margin: 0 2px 6px;
+    background: var(--fundo); border-radius: var(--raio-controle);
+}
+.seletor-tema label {
+    display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0 5px; cursor: pointer;
+    border-radius: 6px; font-size: 11px; font-weight: 600; color: var(--suave);
+    transition: background-color 150ms ease-out, color 150ms ease-out;
+}
+.seletor-tema input { position: absolute; opacity: 0; pointer-events: none; }
+.seletor-tema svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.seletor-tema label:has(input:checked) { background: var(--cartao); color: var(--primaria); box-shadow: var(--sombra-borda); }
+.seletor-tema label:has(input:focus-visible) { outline: 2px solid var(--primaria); }
+@media (max-width: 760px) {
+    .painel-lateral { left: auto; right: 0; bottom: auto; top: calc(100% + 8px); }
+    .painel-lateral::before { display: none; }
+}

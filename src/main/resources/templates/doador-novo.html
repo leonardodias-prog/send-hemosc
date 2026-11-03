@@ -19,7 +19,6 @@
     <header class="cabecalho">
         <div>
             <h1>Novo doador</h1>
-            <p class="subtitulo">Depois de salvar, o formulário volta vazio para o próximo cadastro</p>
         </div>
         <a class="botao secundario" th:href="@{/doadores}">Voltar para doadores</a>
     </header>
@@ -86,9 +85,8 @@
         <label class="interruptor-linha">
             <input type="checkbox" class="interruptor" th:field="*{aceitaContato}"/>
             <span>
-                <strong>Autoriza receber convocações por e-mail</strong> quando o tipo sanguíneo estiver em
-                falta. Pode cancelar a qualquer momento pelo link presente em toda mensagem.
-                <span class="dica">Sem esta autorização o doador não recebe convocação &mdash; exigência da LGPD.</span>
+                <strong>Autoriza receber convocações por e-mail</strong>
+                <span class="dica">Exigido pela LGPD. Pode cancelar pelo link de qualquer e-mail.</span>
             </span>
         </label>
 
