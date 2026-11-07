@@ -7,8 +7,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import br.univille.sendhemosc.FotosDeTeste;
 import br.univille.sendhemosc.config.SendHemoscProperties;
-import br.univille.sendhemosc.domain.enums.TipoSanguineo;
-import br.univille.sendhemosc.usecase.notificacao.RenderizarConvocacaoUseCase;
 import java.awt.image.BufferedImage;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -60,35 +58,5 @@ class LogoDosEmailsTest {
     @DisplayName("o endereco que vai nos e-mails aponta para este arquivo")
     void enderecoBateComOArquivo() {
         assertThat(properties.notificacao().urlDoLogo()).isEqualTo(properties.notificacao().urlBase() + CAMINHO);
-    }
-
-    @Test
-    @DisplayName("todo tipo sanguineo tem a sua ilustracao, publica, em PNG de 440 x 680 com fundo transparente")
-    void ilustracaoDeCadaTipo() throws Exception {
-        for (final TipoSanguineo tipo : TipoSanguineo.values()) {
-            final String arquivo = RenderizarConvocacaoUseCase.arquivoDaIlustracao(tipo);
-            final byte[] bytes = mockMvc.perform(get("/img/email/" + arquivo))
-                    .andExpect(status().isOk())
-                    .andExpect(content().contentType("image/png"))
-                    .andReturn().getResponse().getContentAsByteArray();
-            final BufferedImage ilustracao = FotosDeTeste.ler(bytes);
-
-            assertThat(ilustracao.getWidth()).as("largura de %s", arquivo).isEqualTo(440);
-            assertThat(ilustracao.getHeight()).as("altura de %s", arquivo).isEqualTo(680);
-            assertThat(ilustracao.getRGB(430, 10) >>> 24).as("fundo transparente em %s", arquivo).isZero();
-            assertThat(properties.notificacao().urlDaImagemDeEmail(arquivo))
-                    .isEqualTo(properties.notificacao().urlBase() + "/img/email/" + arquivo);
-        }
-    }
-
-    @Test
-    @DisplayName("as ilustracoes de tipos diferentes sao imagens diferentes: o tipo esta desenhado dentro do coracao")
-    void ilustracoesSaoDiferentes() throws Exception {
-        final byte[] aPositivo = mockMvc.perform(get("/img/email/tipo-a-positivo.png")).andReturn().getResponse()
-                .getContentAsByteArray();
-        final byte[] oNegativo = mockMvc.perform(get("/img/email/tipo-o-negativo.png")).andReturn().getResponse()
-                .getContentAsByteArray();
-
-        assertThat(aPositivo).isNotEqualTo(oNegativo);
     }
 }

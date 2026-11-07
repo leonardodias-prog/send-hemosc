@@ -120,35 +120,12 @@ class RenderizarConvocacaoUseCaseTest {
         }
 
         @Test
-        @DisplayName("diz por que a pessoa recebe: ela autorizou, e o tipo dela e justamente o que falta")
+        @DisplayName("diz por que a pessoa recebe: ela autorizou, e o tipo dela serve")
         void dizPorQueRecebe() {
             final String corpo = useCase.execute(DOADOR, SITUACAO).corpoHtml();
 
             assertThat(corpo).contains("autorizou receber convocações");
-            assertThat(corpo).contains("é justamente o que está em falta");
-        }
-
-        @Test
-        @DisplayName("quando o tipo da pessoa so e compativel, diz que e compativel, e o titulo fala do estoque")
-        void dizQueETipoCompativel() {
-            final SituacaoEstoque aPositivo = new SituacaoEstoque(
-                    TipoSanguineo.A_POSITIVO, 11, 60, 18, NivelEstoque.CRITICO);
-            final String corpo = useCase.execute(DOADOR, aPositivo).corpoHtml();
-
             assertThat(corpo).contains("é compatível com o que está em falta");
-            assertThat(corpo).contains("O sangue tipo <span>A+</span> está em falta");
-            assertThat(corpo).doesNotContain("é justamente o que está em falta");
-        }
-
-        @Test
-        @DisplayName("quando o tipo da pessoa e o que falta, o texto fala do tipo dela, como o cartaz da campanha")
-        void textoFalaDoTipoDaPessoa() {
-            final String corpo = useCase.execute(DOADOR, SITUACAO).corpoHtml();
-
-            assertThat(corpo).contains("Amigo doador,");
-            assertThat(corpo).contains("O seu tipo sanguíneo, <span>O-</span>, está em falta");
-            assertThat(corpo).contains("no estoque do Hemosc.");
-            assertThat(corpo).contains("Precisamos de você.");
         }
 
         @Test
@@ -157,48 +134,8 @@ class RenderizarConvocacaoUseCaseTest {
             final String corpo = useCase.execute(DOADOR, SITUACAO).corpoHtml();
 
             assertThat(corpo).contains("href=\"https://www.hemosc.org.br/agende-sua-doacao-area-doador.html\"");
-            assertThat(corpo).contains("hemosc.org.br/agende-sua-doacao-area-doador.html</a>");
+            assertThat(corpo).doesNotContain("href=\"https://www.hemosc.org.br\"");
             assertThat(corpo).contains("O botão abre a página de agendamento do HEMOSC (hemosc.org.br).");
-            assertThat(corpo).contains("ligue para o hemocentro mais perto");
-        }
-
-        @Test
-        @DisplayName("traz o texto do cartaz: agendamento previo, divulgar a ideia, esperamos voce e o abraco da equipe")
-        void textoDoCartaz() {
-            final String corpo = useCase.execute(DOADOR, SITUACAO).corpoHtml();
-
-            assertThat(corpo).contains("estamos agendando previamente as doações");
-            assertThat(corpo).contains("Procure divulgar essa ideia.");
-            assertThat(corpo).contains("Esperamos você.");
-            assertThat(corpo).contains("#JuntosSalvamosVidas");
-        }
-
-        @Test
-        @DisplayName("assina como Send Hemosc, e nao como a equipe do HEMOSC: o remetente e este sistema")
-        void assinaComoSendHemosc() {
-            final String corpo = useCase.execute(DOADOR, SITUACAO).corpoHtml();
-
-            assertThat(corpo).contains("Um forte abraço de toda a equipe do Send Hemosc.");
-            assertThat(corpo).doesNotContain("equipe do Hemosc.");
-        }
-
-        @Test
-        @DisplayName("a ilustracao e a do tipo em falta, por URL absoluta, com a frase no alt; sem marca de orgao oficial")
-        void ilustracaoDoTipoSemMarcasOficiais() {
-            final String corpo = useCase.execute(DOADOR, SITUACAO).corpoHtml();
-
-            assertThat(corpo).contains("src=\"http://localhost:8080/img/email/tipo-o-negativo.png\"");
-            assertThat(corpo).contains("alt=\"Você é o tipo certo: O-\"");
-            assertThat(corpo).doesNotContain("FAHECE", "Governo de Santa Catarina", "Secretaria da Saúde");
-        }
-
-        @Test
-        @DisplayName("cada tipo sanguineo tem o nome de arquivo certo para a sua ilustracao")
-        void arquivoDaIlustracaoPorTipo() {
-            assertThat(RenderizarConvocacaoUseCase.arquivoDaIlustracao(TipoSanguineo.A_POSITIVO))
-                    .isEqualTo("tipo-a-positivo.png");
-            assertThat(RenderizarConvocacaoUseCase.arquivoDaIlustracao(TipoSanguineo.AB_NEGATIVO))
-                    .isEqualTo("tipo-ab-negativo.png");
         }
 
         @Test
@@ -266,6 +203,74 @@ class RenderizarConvocacaoUseCaseTest {
             final String corpo = corpoDo(NivelEstoque.NORMAL, 140);
 
             assertThat(corpo).contains("width=\"100%\"").doesNotContain("width=\"-").doesNotContain("width=\"0%\"");
+        }
+    }
+
+    @Nested
+    @DisplayName("o texto do cartaz da campanha, no visual da primeira versao")
+    class TextoDoCartaz {
+
+        @Test
+        @DisplayName("abre como o cartaz: Amigo doador, o tipo em falta no estoque do Hemosc, e Precisamos de voce")
+        void abertura() {
+            final String corpo = useCase.execute(DOADOR, SITUACAO).corpoHtml();
+
+            assertThat(corpo).contains("Amigo doador,");
+            assertThat(corpo).contains("O seu tipo sanguíneo, <span>O-</span>, está em falta");
+            assertThat(corpo).contains("no estoque do Hemosc.");
+            assertThat(corpo).contains("Precisamos de você.");
+            assertThat(corpo).contains("estamos agendando previamente as doações");
+        }
+
+        @Test
+        @DisplayName("quando o tipo da pessoa so serve, o titulo fala do sangue em falta e nao do tipo dela")
+        void tipoSoCompativel() {
+            final String corpo = useCase.execute(DOADOR, new SituacaoEstoque(
+                    TipoSanguineo.A_POSITIVO, 11, 60, 18, NivelEstoque.CRITICO)).corpoHtml();
+
+            assertThat(corpo).contains("O sangue tipo <span>A+</span> está em falta");
+            assertThat(corpo).doesNotContain("O seu tipo sanguíneo, <span>A+</span>");
+        }
+
+        @Test
+        @DisplayName("traz o endereco de agendamento e o convite a ligar, e o botao leva a essa pagina")
+        void agendamento() {
+            final String corpo = useCase.execute(DOADOR, SITUACAO).corpoHtml();
+
+            assertThat(corpo).contains("hemosc.org.br/agende-sua-doacao-area-doador.html</a>");
+            assertThat(corpo).contains("ligue para o hemocentro mais perto");
+            assertThat(corpo).contains("marque o seu horário e venha fazer uma nova doação");
+            assertThat(corpo).contains("href=\"https://www.hemosc.org.br/agende-sua-doacao-area-doador.html\"");
+            assertThat(corpo).contains("O botão abre a página de agendamento do HEMOSC (hemosc.org.br).");
+        }
+
+        @Test
+        @DisplayName("fecha como o cartaz, mas assina como Send Hemosc: o remetente e este sistema, nao o HEMOSC")
+        void fechamento() {
+            final String corpo = useCase.execute(DOADOR, SITUACAO).corpoHtml();
+
+            assertThat(corpo).contains("Procure divulgar essa ideia.");
+            assertThat(corpo).contains("Esperamos você.");
+            assertThat(corpo).contains("Um forte abraço de toda a equipe do Send Hemosc.");
+            assertThat(corpo).doesNotContain("equipe do Hemosc.");
+        }
+
+        @Test
+        @DisplayName("mantem o visual da primeira versao: so o logo como imagem, e o quadro de nivel do estoque")
+        void visualDaPrimeiraVersao() {
+            final String corpo = useCase.execute(DOADOR, SITUACAO).corpoHtml();
+
+            assertThat(imagens(corpo)).containsExactly("http://localhost:8080/img/email/logo.png");
+            assertThat(corpo).contains("Nível do estoque", "Crítico", "18");
+        }
+
+        @Test
+        @DisplayName("nao leva marca de orgao oficial nem a hashtag do cartaz")
+        void semMarcasOficiais() {
+            final String corpo = useCase.execute(DOADOR, SITUACAO).corpoHtml();
+
+            assertThat(corpo).doesNotContain("FAHECE", "Governo de Santa Catarina", "Secretaria da Saúde",
+                    "JuntosSalvamosVidas");
         }
     }
 
