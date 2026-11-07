@@ -4,6 +4,7 @@ import br.univille.sendhemosc.config.SendHemoscProperties;
 import br.univille.sendhemosc.domain.dto.CandidatoConvocacao;
 import br.univille.sendhemosc.domain.dto.MensagemEmail;
 import br.univille.sendhemosc.domain.dto.SituacaoEstoque;
+import br.univille.sendhemosc.domain.enums.TipoSanguineo;
 import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +43,8 @@ public class RenderizarConvocacaoUseCase {
         contexto.setVariable("nivelChave", situacao.nivel().name().toLowerCase(Locale.ROOT));
         contexto.setVariable("percentual", situacao.percentualOcupacao());
         contexto.setVariable("logoUrl", properties.notificacao().urlDoLogo());
-        contexto.setVariable("bannerUrl", properties.notificacao().urlDaImagemDeEmail("banner.png"));
+        contexto.setVariable("ilustracaoUrl",
+                properties.notificacao().urlDaImagemDeEmail(arquivoDaIlustracao(situacao.tipoSanguineo())));
         contexto.setVariable("linkDescadastro",
                 properties.notificacao().urlBase() + "/descadastro/" + doador.tokenDescadastro());
         contexto.setVariable("linkMeusDados",
@@ -53,5 +55,17 @@ public class RenderizarConvocacaoUseCase {
                 .formatted(situacao.tipoSanguineo().getSigla(), situacao.nivel().getDescricao().toLowerCase(Locale.ROOT));
 
         return new MensagemEmail(doador.email(), assunto, corpo);
+    }
+
+    /**
+     * Nome do arquivo da ilustracao do tipo em falta: o tipo vai desenhado dentro do coracao, entao
+     * ha uma imagem por tipo sanguineo, em static/img/email. Tipo novo no enum pede imagem nova, e um
+     * teste confere que nenhum fica sem.
+     *
+     * @param tipo tipo sanguineo em falta
+     * @return nome do arquivo, como tipo-a-positivo.png
+     */
+    public static String arquivoDaIlustracao(final TipoSanguineo tipo) {
+        return "tipo-" + tipo.name().toLowerCase(Locale.ROOT).replace('_', '-') + ".png";
     }
 }
