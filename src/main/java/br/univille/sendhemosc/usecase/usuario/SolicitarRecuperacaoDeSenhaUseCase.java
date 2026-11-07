@@ -34,7 +34,7 @@ import org.thymeleaf.context.Context;
 public class SolicitarRecuperacaoDeSenhaUseCase {
 
     private static final String TEMPLATE = "email/recuperacao-senha";
-    private static final String ASSUNTO = "Redefinicao de senha no Send Hemosc";
+    private static final String ASSUNTO = "Redefinição de senha no Send Hemosc";
 
     /** Pedidos mais antigos que isto ja nao contam para limite nenhum e saem do banco. */
     private static final int DIAS_DE_HISTORICO = 2;
@@ -130,6 +130,7 @@ public class SolicitarRecuperacaoDeSenhaUseCase {
         contexto.setVariable("email", usuario.email());
         contexto.setVariable("link", properties.notificacao().urlBase() + "/senha/redefinir/" + token);
         contexto.setVariable("validadeMinutos", regras.validadeMinutos());
+        contexto.setVariable("logoUrl", properties.notificacao().urlDoLogo());
 
         return templateEngine.process(TEMPLATE, contexto);
     }

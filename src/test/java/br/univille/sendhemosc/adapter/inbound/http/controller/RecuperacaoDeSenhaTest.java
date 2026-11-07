@@ -119,6 +119,20 @@ class RecuperacaoDeSenhaTest {
     }
 
     @Test
+    @DisplayName("o e-mail diz de quem e, mostra o endereco do link por inteiro e avisa que nunca pede a senha")
+    void emailDizDeQuemEEMostraOLink() throws Exception {
+        final String token = pedirEAbrirOEmail();
+        final MensagemEmail mensagem = enviadas().getLast();
+        final String endereco = "http://localhost:8080/senha/redefinir/" + token;
+
+        assertThat(mensagem.assunto()).isEqualTo("Redefinição de senha no Send Hemosc");
+        assertThat(mensagem.corpoHtml()).contains("src=\"http://localhost:8080/img/email/logo.png\"", email,
+                "nunca pede a sua senha por e-mail", "60</span> minutos");
+        // Uma vez no botao e outra em texto, para quem o botao nao abre e para o dominio ficar a vista.
+        assertThat(mensagem.corpoHtml().split(Pattern.quote(endereco), -1)).hasSizeGreaterThanOrEqualTo(3);
+    }
+
+    @Test
     @DisplayName("a tela de pedido e publica e diz por quanto tempo o link vale")
     void telaDePedido() throws Exception {
         mockMvc.perform(get("/senha/esqueci"))

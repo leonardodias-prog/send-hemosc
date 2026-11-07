@@ -73,8 +73,8 @@ public class AvisarCadastrosPendentesUseCase {
 
         final String corpo = renderizar(pendentes, regras);
         final String assunto = pendentes.size() == 1
-                ? "Cadastro aguardando aprovacao: %s".formatted(pendentes.getFirst().nome())
-                : "%d cadastros aguardando aprovacao".formatted(pendentes.size());
+                ? "Cadastro aguardando aprovação: %s".formatted(pendentes.getFirst().nome())
+                : "%d cadastros aguardando aprovação".formatted(pendentes.size());
 
         // Falha no aviso nao desfaz a reserva: os cadastros continuam na tela de contas e no
         // selo da lateral. Perder o e-mail atrasa a aprovacao; reenviar sem limite era o problema.
@@ -108,6 +108,7 @@ public class AvisarCadastrosPendentesUseCase {
         contexto.setVariable("naoListados", pendentes.size() - listados.size());
         contexto.setVariable("validadeDias", regras.validadeDias());
         contexto.setVariable("linkContas", urlBase + "/usuarios");
+        contexto.setVariable("logoUrl", properties.notificacao().urlDoLogo());
 
         return templateEngine.process(TEMPLATE, contexto);
     }

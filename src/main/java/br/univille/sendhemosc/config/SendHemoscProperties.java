@@ -59,5 +59,17 @@ public record SendHemoscProperties(Aptidao aptidao, Estoque estoque, Notificacao
      */
     public record Notificacao(int intervaloReenvioDias, int maxConvocacoesSemResposta, int prazoTetoDias,
                               String remetente, String remetenteNome, String urlBase) {
+
+        private static final String CAMINHO_DO_LOGO = "/img/email/logo.png";
+
+        /**
+         * Endereco do logo que aparece no topo dos e-mails. Tem de ser absoluto e publico: a
+         * mensagem e aberta fora do sistema, e o cliente de e-mail busca a imagem sem login.
+         *
+         * @return a URL completa da imagem
+         */
+        public String urlDoLogo() {
+            return urlBase + CAMINHO_DO_LOGO;
+        }
     }
 }

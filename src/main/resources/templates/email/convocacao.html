@@ -2,69 +2,133 @@
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"/>
-    <title>Convocação de doador</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"/>
+    <meta name="supported-color-schemes" content="light dark"/>
+    <title>O estoque de sangue precisa de reforço</title>
+    <style th:replace="~{email/base :: estilos}"></style>
 </head>
-<body style="margin:0;padding:0;background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;color:#18181b;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:24px 12px;">
+<body class="fundo" bgcolor="#f6f1f1"
+      style="margin:0;padding:0;background-color:#f6f1f1;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,Helvetica,sans-serif;color:#241b1d;">
+<!--/*
+  Convocação ao doador. A confiança vem de três coisas que o e-mail diz com todas as letras: quem
+  manda, por que esta pessoa recebe (ela autorizou, e o tipo dela serve) e para onde o botão
+  leva. Fica de fora o que faz e-mail de golpe: urgência em maiúsculas, ameaça, prêmio, link
+  que esconde o destino.
+
+  A cor do nível segue a do sistema: crítico, atenção e normal.
+*/-->
+<div th:replace="~{email/base :: previa('O estoque de ' + ${tipoNecessario} + ' está em nível ' + ${#strings.toLowerCase(nivel)} + ' e o seu tipo é compatível.')}"></div>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="fundo" bgcolor="#f6f1f1"
+       style="background-color:#f6f1f1;">
     <tr>
-        <td align="center">
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
-                   style="max-width:560px;background:#ffffff;border-radius:8px;overflow:hidden;">
+        <td align="center" style="padding:28px 12px;">
+            <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" class="cartao" bgcolor="#ffffff"
+                   style="width:100%;max-width:600px;background-color:#ffffff;border:1px solid #ece4e5;border-radius:14px;overflow:hidden;">
+
+                <tr th:replace="~{email/base :: cabecalho}"></tr>
+
                 <tr>
-                    <td style="background:#b91c1c;padding:20px 24px;color:#ffffff;">
-                        <h1 style="margin:0;font-size:20px;">Send Hemosc</h1>
-                        <p style="margin:4px 0 0;font-size:13px;opacity:.9;">Agência Transfusional &middot; Joinville/SC</p>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="padding:24px;">
-                        <p style="margin:0 0 16px;font-size:16px;">
-                            Olá, <strong th:text="${nomeDoador}">Nome do doador</strong>.
+                    <td class="miolo" style="padding:32px;"
+                        th:with="cor=${nivelChave == 'critico'} ? '#b42318' : (${nivelChave == 'atencao'} ? '#a5470a' : '#08724a'),
+                                 barra=${percentual < 0 ? 0 : (percentual > 100 ? 100 : percentual)}">
+
+                        <p class="suave" style="margin:0 0 6px;font-size:15px;line-height:1.5;color:#6e6163;">
+                            Olá, <strong class="texto" style="color:#241b1d;" th:text="${nomeDoador}">Nome do doador</strong>.
+                        </p>
+                        <h1 class="titulo texto" style="margin:0 0 4px;font-size:24px;line-height:1.25;font-weight:700;color:#241b1d;">
+                            O estoque de sangue <span th:text="${tipoNecessario}">O-</span> precisa de reforço
+                        </h1>
+                        <p class="suave" style="margin:0;font-size:15px;line-height:1.6;color:#6e6163;">
+                            Uma doação sua pode ajudar.
                         </p>
 
-                        <p style="margin:0 0 16px;font-size:15px;line-height:1.6;">
-                            O estoque de sangue do tipo
-                            <strong th:text="${tipoNecessario}">O-</strong>
-                            está em nível
-                            <strong th:text="${nivel}">crítico</strong>
-                            (<span th:text="${percentual}">18</span>% da capacidade).
-                        </p>
-
-                        <p style="margin:0 0 16px;font-size:15px;line-height:1.6;">
-                            Você está recebendo esta mensagem porque seu tipo sanguíneo
-                            (<strong th:text="${tipoDoador}">O-</strong>) é compatível e, pelo nosso registro,
-                            você já cumpriu o intervalo mínimo desde a última doação.
-                        </p>
-
-                        <table role="presentation" cellpadding="0" cellspacing="0" style="margin:20px 0;">
+                        <!--/* Onde está o estoque: o tipo, o nível e quanto da capacidade alvo está cheio. */-->
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="painel"
+                               style="margin:22px 0;background-color:#faf7f7;border:1px solid #ece4e5;border-radius:12px;">
                             <tr>
-                                <td style="background:#b91c1c;border-radius:6px;">
-                                    <a href="https://www.hemosc.org.br"
-                                       style="display:inline-block;padding:12px 24px;color:#ffffff;text-decoration:none;font-size:15px;font-weight:bold;">
-                                        Quero agendar minha doação
-                                    </a>
+                                <td style="padding:18px 20px;">
+                                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                                        <tr>
+                                            <td width="64" style="width:64px;vertical-align:middle;">
+                                                <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                                                    <tr>
+                                                        <td align="center" width="56" height="56" th:attr="bgcolor=${cor}"
+                                                            style="width:56px;height:56px;border-radius:28px;color:#ffffff;font-size:20px;font-weight:700;text-align:center;"
+                                                            th:styleappend="'background-color:' + ${cor} + ';'"
+                                                            th:text="${tipoNecessario}">O-</td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                            <td style="vertical-align:middle;">
+                                                <div class="suave" style="font-size:12px;line-height:1.4;color:#6e6163;">Nível do estoque</div>
+                                                <div th:class="'nivel-' + ${nivelChave}" style="font-size:17px;font-weight:700;line-height:1.3;"
+                                                     th:styleappend="'color:' + ${cor} + ';'" th:text="${nivel}">Crítico</div>
+                                                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                                                       style="margin:8px 0 6px;">
+                                                    <tr>
+                                                        <td th:if="${barra > 0}" th:width="${barra} + '%'" height="8" th:attr="bgcolor=${cor}"
+                                                            style="height:8px;line-height:8px;font-size:1px;border-radius:4px;"
+                                                            th:styleappend="'background-color:' + ${cor} + ';'">&nbsp;</td>
+                                                        <td th:if="${barra < 100}" th:width="${100 - barra} + '%'" height="8" class="trilho" bgcolor="#ece4e5"
+                                                            style="height:8px;line-height:8px;font-size:1px;border-radius:4px;background-color:#ece4e5;">&nbsp;</td>
+                                                    </tr>
+                                                </table>
+                                                <div class="suave" style="font-size:12px;line-height:1.4;color:#6e6163;">
+                                                    <span th:text="${percentual}">18</span>% da capacidade
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </table>
                                 </td>
                             </tr>
                         </table>
 
-                        <p style="margin:0;font-size:13px;color:#52525b;line-height:1.6;">
-                            Leve um documento com foto, alimente-se bem antes e evite alimentos gordurosos
-                            nas 4 horas anteriores à doação.
+                        <p class="texto" style="margin:0 0 22px;font-size:15px;line-height:1.65;color:#241b1d;">
+                            Você recebe esta mensagem porque autorizou receber convocações. Seu tipo sanguíneo
+                            (<strong th:text="${tipoDoador}">O-</strong>) é compatível com o que está em falta e, pelo nosso
+                            registro, você já cumpriu o intervalo mínimo desde a última doação.
                         </p>
+
+                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" class="botao-largo" style="margin:0 0 8px;">
+                            <tr>
+                                <td class="botao" bgcolor="#c1121f" style="background-color:#c1121f;border-radius:8px;">
+                                    <a href="https://www.hemosc.org.br"
+                                       style="display:inline-block;padding:14px 28px;color:#ffffff;text-decoration:none;font-size:16px;font-weight:700;line-height:1.2;">
+                                        Agendar minha doação
+                                    </a>
+                                </td>
+                            </tr>
+                        </table>
+                        <p class="suave" style="margin:0 0 24px;font-size:12px;line-height:1.5;color:#6e6163;">
+                            O botão abre o site do HEMOSC (hemosc.org.br).
+                        </p>
+
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="painel"
+                               style="background-color:#faf7f7;border:1px solid #ece4e5;border-radius:12px;">
+                            <tr>
+                                <td style="padding:16px 20px;">
+                                    <div class="texto" style="margin:0 0 6px;font-size:14px;font-weight:700;color:#241b1d;">Antes de doar</div>
+                                    <ul class="suave" style="margin:0;padding-left:18px;font-size:14px;line-height:1.7;color:#4a3d40;">
+                                        <li>Leve um documento com foto.</li>
+                                        <li>Alimente-se bem antes.</li>
+                                        <li>Evite alimentos gordurosos nas 4 horas anteriores à doação.</li>
+                                    </ul>
+                                </td>
+                            </tr>
+                        </table>
                     </td>
                 </tr>
+
                 <tr>
-                    <td style="padding:16px 24px;background:#fafafa;border-top:1px solid #e4e4e7;">
-                        <p style="margin:0 0 8px;font-size:12px;color:#71717a;line-height:1.5;">
-                            <strong>PROTÓTIPO ACADÊMICO.</strong> Mensagem gerada por um trabalho de extensão da
-                            UNIVILLE com dados fictícios. Não representa comunicação oficial do HEMOSC.
-                        </p>
-                        <p style="margin:0;font-size:12px;color:#71717a;">
+                    <td class="rodape divisa" style="padding:20px 32px;background-color:#faf7f7;border-top:1px solid #f0e8e9;">
+                        <div th:replace="~{email/base :: assinatura(true)}"></div>
+                        <p class="suave" style="margin:12px 0 0;font-size:12px;line-height:1.8;color:#6e6163;">
                             Não quer mais receber estas mensagens?
-                            <a th:href="${linkDescadastro}" href="#"
-                               style="color:#b91c1c;">Cancelar inscrição</a>.
-                            <a th:href="${linkMeusDados}" href="#"
-                               style="color:#71717a;">Ver, baixar ou excluir seus dados</a>.
+                            <a th:href="${linkDescadastro}" href="#" style="color:#c1121f;">Cancelar inscrição</a>
+                            &middot;
+                            <a th:href="${linkMeusDados}" href="#" style="color:#c1121f;">Ver, baixar ou excluir seus dados</a>
                         </p>
                     </td>
                 </tr>

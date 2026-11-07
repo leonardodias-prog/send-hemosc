@@ -4,6 +4,7 @@ import br.univille.sendhemosc.config.SendHemoscProperties;
 import br.univille.sendhemosc.domain.dto.CandidatoConvocacao;
 import br.univille.sendhemosc.domain.dto.MensagemEmail;
 import br.univille.sendhemosc.domain.dto.SituacaoEstoque;
+import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -37,15 +38,18 @@ public class RenderizarConvocacaoUseCase {
         contexto.setVariable("tipoDoador", doador.tipoSanguineo().getSigla());
         contexto.setVariable("tipoNecessario", situacao.tipoSanguineo().getSigla());
         contexto.setVariable("nivel", situacao.nivel().getDescricao());
+        // Chave estavel do nivel, para o modelo escolher a cor sem depender do texto exibido.
+        contexto.setVariable("nivelChave", situacao.nivel().name().toLowerCase(Locale.ROOT));
         contexto.setVariable("percentual", situacao.percentualOcupacao());
+        contexto.setVariable("logoUrl", properties.notificacao().urlDoLogo());
         contexto.setVariable("linkDescadastro",
                 properties.notificacao().urlBase() + "/descadastro/" + doador.tokenDescadastro());
         contexto.setVariable("linkMeusDados",
                 properties.notificacao().urlBase() + "/meus-dados/" + doador.tokenDescadastro());
 
         final String corpo = templateEngine.process(TEMPLATE_CONVOCACAO, contexto);
-        final String assunto = "Estoque de sangue %s em nivel %s - sua doacao faz diferenca"
-                .formatted(situacao.tipoSanguineo().getSigla(), situacao.nivel().getDescricao().toLowerCase());
+        final String assunto = "Estoque de sangue %s em nível %s: sua doação pode ajudar"
+                .formatted(situacao.tipoSanguineo().getSigla(), situacao.nivel().getDescricao().toLowerCase(Locale.ROOT));
 
         return new MensagemEmail(doador.email(), assunto, corpo);
     }

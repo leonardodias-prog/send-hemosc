@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/><title>Partes comuns dos e-mails</title></head>
+<body>
+<!--/*
+  Partes que os três e-mails dividem: estilos, prévia, cabeçalho com o logo e assinatura. Mudou
+  a identidade, muda aqui, e nenhum e-mail fica para trás.
+
+  Cliente de e-mail não é navegador: sem fonte externa, sem script, sem folha de estilo por
+  link, e a maior parte do visual vai no atributo style de cada elemento. Este bloco de estilos
+  cuida só do que style inline não alcança, que é o modo escuro e a tela de celular. Cliente que
+  ignora o bloco (o Outlook de computador, por exemplo) mostra a versão clara, que já está
+  completa por si.
+
+  A imagem do logo precisa ser URL absoluta, porque o e-mail é aberto fora do sistema. Se o
+  cliente bloquear imagens, o nome "Send Hemosc" ao lado dela continua lá, em texto.
+*/-->
+
+<style th:fragment="estilos">
+    :root { color-scheme: light dark; supported-color-schemes: light dark; }
+    a { color: #c1121f; }
+    @media (prefers-color-scheme: dark) {
+        .fundo { background-color: #131012 !important; }
+        .cartao { background-color: #1c1719 !important; border-color: #33292b !important; }
+        .divisa { border-color: #33292b !important; }
+        .cabecalho { border-bottom-color: #33292b !important; }
+        .nivel-critico { color: #f97066 !important; }
+        .nivel-atencao { color: #f5b041 !important; }
+        .nivel-normal { color: #4cc98d !important; }
+        .alerta { background-color: #36260b !important; border-color: #8a5a14 !important; }
+        .alerta-texto { color: #f5d9a8 !important; }
+        .texto { color: #f5eeef !important; }
+        .suave { color: #b5a7a9 !important; }
+        .painel { background-color: #241d20 !important; border-color: #33292b !important; }
+        .rodape { background-color: #171214 !important; border-color: #33292b !important; }
+        .trilho { background-color: #33292b !important; }
+        .botao-claro { background-color: #1c1719 !important; border-color: #4a3d40 !important; }
+        a { color: #f2626b !important; }
+        .botao a, .botao-claro a { color: #ffffff !important; }
+    }
+    @media only screen and (max-width: 480px) {
+        .miolo { padding: 24px 20px !important; }
+        .titulo { font-size: 21px !important; }
+        .cabecalho { padding: 18px 20px !important; }
+        .botao-largo { width: 100% !important; }
+        .botao-largo a { display: block !important; text-align: center !important; }
+        .coluna { display: block !important; width: 100% !important; padding: 0 0 12px 0 !important; }
+    }
+</style>
+
+<!--/* Texto que o cliente mostra ao lado do assunto na caixa de entrada. O enchimento impede que ele
+       complete a prévia com pedaços do corpo, como o nome do botão. */-->
+<div th:fragment="previa(texto)"
+     style="display:none;font-size:1px;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;">
+    <span th:text="${texto}">Prévia</span>&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;
+</div>
+
+<tr th:fragment="cabecalho">
+    <td class="cabecalho"
+        style="padding:22px 32px;border-top:4px solid #c1121f;border-bottom:1px solid #f0e8e9;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+                <td width="48" style="width:48px;padding-right:14px;vertical-align:middle;">
+                    <img th:src="${logoUrl}" src="logo.png" width="48" height="48" alt=""
+                         style="display:block;width:48px;height:48px;border:0;border-radius:12px;"/>
+                </td>
+                <td style="vertical-align:middle;">
+                    <div class="texto" style="font-size:18px;font-weight:700;line-height:1.25;color:#241b1d;">Send Hemosc</div>
+                    <div class="suave" style="font-size:12px;line-height:1.4;color:#6e6163;">Captação de doadores &middot; Joinville/SC</div>
+                </td>
+            </tr>
+        </table>
+    </td>
+</tr>
+
+<!--/* Quem assina. Mensagem ao doador diz com todas as letras que não é comunicação oficial do
+       HEMOSC; as internas, só que são automáticas. O nome do projeto e o aviso de protótipo
+       ficam nas duas: quem recebe precisa saber de onde veio, sem ter de adivinhar. */-->
+<div th:fragment="assinatura(aoDoador)">
+    <p class="texto" style="margin:0 0 4px;font-size:13px;line-height:1.5;color:#241b1d;">
+        <strong>Send Hemosc</strong> &middot; Projeto de Extensão da UNIVILLE &middot; Joinville/SC
+    </p>
+    <p class="suave" th:if="${aoDoador}" style="margin:0;font-size:12px;line-height:1.6;color:#6e6163;">
+        Protótipo acadêmico: esta mensagem não é uma comunicação oficial do HEMOSC.
+    </p>
+    <p class="suave" th:unless="${aoDoador}" style="margin:0;font-size:12px;line-height:1.6;color:#6e6163;">
+        Mensagem automática de um protótipo acadêmico.
+    </p>
+</div>
+
+</body>
+</html>

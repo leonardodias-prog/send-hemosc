@@ -78,7 +78,21 @@ class AvisoDeCadastrosPendentesTest {
         assertThat(avisosAoAdministrador()).singleElement().satisfies(aviso -> {
             assertThat(aviso.corpoHtml()).contains("Pessoa Alfa", "Pessoa Beta");
             assertThat(aviso.corpoHtml()).contains("/aprovacao/" + tokenAlfa + "/aprovar");
-            assertThat(aviso.assunto()).contains("cadastros aguardando aprovacao");
+            assertThat(aviso.assunto()).contains("cadastros aguardando aprovação");
+        });
+    }
+
+    @Test
+    @DisplayName("o aviso traz o logo, tem a cara dos demais e diz que e mensagem automatica")
+    void avisoComIdentidade() {
+        pendente("Pessoa Delta");
+
+        avisarCadastrosPendentes.executarSeDevido(INICIO);
+
+        assertThat(avisosAoAdministrador()).singleElement().satisfies(aviso -> {
+            assertThat(aviso.corpoHtml()).contains("src=\"http://localhost:8080/img/email/logo.png\"");
+            assertThat(aviso.corpoHtml()).contains("Mensagem automática de um protótipo acadêmico.");
+            assertThat(aviso.corpoHtml()).contains("prefers-color-scheme: dark");
         });
     }
 
