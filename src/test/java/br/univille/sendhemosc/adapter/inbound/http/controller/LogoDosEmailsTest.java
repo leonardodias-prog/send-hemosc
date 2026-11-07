@@ -59,4 +59,21 @@ class LogoDosEmailsTest {
     void enderecoBateComOArquivo() {
         assertThat(properties.notificacao().urlDoLogo()).isEqualTo(properties.notificacao().urlBase() + CAMINHO);
     }
+
+    @Test
+    @DisplayName("a ilustracao do e-mail de convocacao tambem e publica, e e um PNG de 1200 x 340 sem transparencia")
+    void ilustracaoDaConvocacao() throws Exception {
+        final String caminho = "/img/email/banner.png";
+        final byte[] bytes = mockMvc.perform(get(caminho))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("image/png"))
+                .andReturn().getResponse().getContentAsByteArray();
+        final BufferedImage banner = FotosDeTeste.ler(bytes);
+
+        assertThat(banner.getWidth()).isEqualTo(1200);
+        assertThat(banner.getHeight()).isEqualTo(340);
+        assertThat(banner.getRGB(600, 5) >>> 24).as("opaca: o fundo azul faz parte da imagem").isEqualTo(255);
+        assertThat(properties.notificacao().urlDaImagemDeEmail("banner.png"))
+                .isEqualTo(properties.notificacao().urlBase() + caminho);
+    }
 }

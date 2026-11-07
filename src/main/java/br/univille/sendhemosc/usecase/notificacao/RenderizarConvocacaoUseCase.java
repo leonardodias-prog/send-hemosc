@@ -42,6 +42,7 @@ public class RenderizarConvocacaoUseCase {
         contexto.setVariable("nivelChave", situacao.nivel().name().toLowerCase(Locale.ROOT));
         contexto.setVariable("percentual", situacao.percentualOcupacao());
         contexto.setVariable("logoUrl", properties.notificacao().urlDoLogo());
+        contexto.setVariable("bannerUrl", properties.notificacao().urlDaImagemDeEmail("banner.png"));
         contexto.setVariable("linkDescadastro",
                 properties.notificacao().urlBase() + "/descadastro/" + doador.tokenDescadastro());
         contexto.setVariable("linkMeusDados",

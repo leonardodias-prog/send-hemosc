@@ -29,6 +29,15 @@
 
                 <tr th:replace="~{email/base :: cabecalho}"></tr>
 
+                <!--/* Ilustração da campanha: bolsa, gota e coração. Só enfeite, sem texto dentro (o
+                       texto na imagem some quando o cliente bloqueia imagens e o leitor de tela não lê). */-->
+                <tr>
+                    <td style="padding:0;line-height:0;font-size:0;">
+                        <img th:src="${bannerUrl}" src="banner.png" width="600" height="170" alt=""
+                             style="display:block;width:100%;max-width:600px;height:auto;border:0;"/>
+                    </td>
+                </tr>
+
                 <tr>
                     <td class="miolo" style="padding:32px;"
                         th:with="cor=${nivelChave == 'critico'} ? '#b42318' : (${nivelChave == 'atencao'} ? '#a5470a' : '#08724a'),
@@ -38,10 +47,11 @@
                             Olá, <strong class="texto" style="color:#241b1d;" th:text="${nomeDoador}">Nome do doador</strong>.
                         </p>
                         <h1 class="titulo texto" style="margin:0 0 4px;font-size:24px;line-height:1.25;font-weight:700;color:#241b1d;">
-                            O estoque de sangue <span th:text="${tipoNecessario}">O-</span> precisa de reforço
+                            <span th:if="${tipoDoador == tipoNecessario}">O seu tipo sanguíneo, <span th:text="${tipoNecessario}">O-</span>, está em falta</span>
+                            <span th:unless="${tipoDoador == tipoNecessario}">O estoque de sangue <span th:text="${tipoNecessario}">O-</span> está em falta</span>
                         </h1>
                         <p class="suave" style="margin:0;font-size:15px;line-height:1.6;color:#6e6163;">
-                            Uma doação sua pode ajudar.
+                            Precisamos de você.
                         </p>
 
                         <!--/* Onde está o estoque: o tipo, o nível e quanto da capacidade alvo está cheio. */-->
@@ -85,16 +95,22 @@
                             </tr>
                         </table>
 
+                        <p class="texto" style="margin:0 0 14px;font-size:15px;line-height:1.65;color:#241b1d;">
+                            Você recebe esta mensagem porque autorizou receber convocações e porque o seu tipo
+                            sanguíneo (<strong th:text="${tipoDoador}">O-</strong>)
+                            <span th:if="${tipoDoador == tipoNecessario}">é justamente o que está em falta</span><span
+                                  th:unless="${tipoDoador == tipoNecessario}">é compatível com o que está em falta</span>.
+                            Pelo nosso registro, você já cumpriu o intervalo mínimo desde a última doação.
+                        </p>
                         <p class="texto" style="margin:0 0 22px;font-size:15px;line-height:1.65;color:#241b1d;">
-                            Você recebe esta mensagem porque autorizou receber convocações. Seu tipo sanguíneo
-                            (<strong th:text="${tipoDoador}">O-</strong>) é compatível com o que está em falta e, pelo nosso
-                            registro, você já cumpriu o intervalo mínimo desde a última doação.
+                            Para garantir a segurança de todos, as doações estão sendo agendadas previamente.
+                            Escolha o seu horário e venha fazer uma nova doação.
                         </p>
 
                         <table role="presentation" cellpadding="0" cellspacing="0" border="0" class="botao-largo" style="margin:0 0 8px;">
                             <tr>
                                 <td class="botao" bgcolor="#c1121f" style="background-color:#c1121f;border-radius:8px;">
-                                    <a href="https://www.hemosc.org.br"
+                                    <a href="https://www.hemosc.org.br/agende-sua-doacao-area-doador.html"
                                        style="display:inline-block;padding:14px 28px;color:#ffffff;text-decoration:none;font-size:16px;font-weight:700;line-height:1.2;">
                                         Agendar minha doação
                                     </a>
@@ -102,7 +118,8 @@
                             </tr>
                         </table>
                         <p class="suave" style="margin:0 0 24px;font-size:12px;line-height:1.5;color:#6e6163;">
-                            O botão abre o site do HEMOSC (hemosc.org.br).
+                            O botão abre a página de agendamento do HEMOSC (hemosc.org.br).
+                            Prefere ligar? Procure o hemocentro mais perto de você.
                         </p>
 
                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="painel"
@@ -118,6 +135,11 @@
                                 </td>
                             </tr>
                         </table>
+
+                        <p class="texto" style="margin:22px 0 0;font-size:15px;line-height:1.65;color:#241b1d;">
+                            Esperamos você.<br/>
+                            Um abraço da equipe do Send Hemosc.
+                        </p>
                     </td>
                 </tr>
 
