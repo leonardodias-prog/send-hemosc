@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Meu perfil — Send Hemosc</title>
+    <script th:src="@{/js/tema.js}"></script>
+    <link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/css/sendhemosc.css}"/>
+    <script th:src="@{/js/sendhemosc.js}" defer></script>
+</head>
+<body>
+<div class="app">
+
+<nav th:replace="~{fragmentos/casca :: lateral('perfil')}"></nav>
+
+<main class="conteudo">
+<div class="container estreito-medio">
+
+    <header>
+        <h1>Meu perfil</h1>
+        <p class="subtitulo">Seus dados de acesso ao Send Hemosc.</p>
+    </header>
+
+    <div class="aviso" th:if="${aviso}" th:text="${aviso}">mensagem</div>
+    <div class="erro-caixa" th:if="${erro}" th:text="${erro}">mensagem</div>
+
+    <!--/* Quem e a pessoa: a foto, ou a inicial do nome quando ela nao enviou nenhuma. */-->
+    <section class="cartao perfil-topo">
+        <img class="avatar grande" th:if="${perfil.temFoto}" th:src="@{/conta/foto}"
+             alt="Sua foto de perfil" width="96" height="96"/>
+        <span class="avatar grande" th:unless="${perfil.temFoto}" aria-hidden="true"
+              th:text="${perfil.inicial}">R</span>
+
+        <div class="identidade">
+            <h2 th:text="${perfil.usuario.nome}">Rafaela Souza</h2>
+            <p class="dica" th:text="${perfil.usuario.email}">rafaela@example.org</p>
+            <div class="etiquetas">
+                <span class="etiqueta perfil" th:text="${perfil.usuario.perfil.descricao}"
+                      th:title="${perfil.usuario.perfil.atribuicoes}">Operador</span>
+                <span class="etiqueta" th:classappend="${perfil.usuario.situacao.name().toLowerCase()}"
+                      th:text="${perfil.usuario.situacao.descricao}">Ativo</span>
+            </div>
+
+            <div class="foto-acoes">
+                <!--/* O arquivo escolhido segue sozinho (js/sendhemosc.js); sem JavaScript, o botao do noscript envia. */-->
+                <form th:action="@{/conta/foto}" method="post" enctype="multipart/form-data">
+                    <label class="escolher-foto">
+                        <input class="sr" type="file" name="foto" accept="image/jpeg,image/png,image/gif"
+                               data-foto-input data-limite-bytes="8388608"/>
+                        <span th:text="${perfil.temFoto} ? 'Trocar foto' : 'Escolher foto'">Escolher foto</span>
+                    </label>
+                    <noscript><button type="submit">Enviar foto</button></noscript>
+                </form>
+                <form th:if="${perfil.temFoto}" th:action="@{/conta/foto/remover}" method="post">
+                    <button type="submit" class="secundario">Remover foto</button>
+                </form>
+            </div>
+            <p class="erro" data-foto-erro hidden>A imagem passa de 8 MB. Escolha uma menor.</p>
+            <p class="dica">
+                JPG, PNG ou GIF, até 8 MB. A imagem é cortada em quadrado.
+                <span th:unless="${perfil.temFoto}">Sem foto, aparece a inicial do seu nome.</span>
+            </p>
+        </div>
+    </section>
+
+    <!--/* Os dados: nome e e-mail se corrigem aqui; perfil e situacao so o administrador muda. */-->
+    <section class="cartao">
+        <h2>Seus dados</h2>
+
+        <form th:action="@{/conta/dados}" method="post" style="display:block;"
+              data-dados-form th:data-email-original="${perfil.usuario.email}">
+            <div class="campo">
+                <label for="nome">Nome</label>
+                <input type="text" id="nome" name="nome" maxlength="150" autocomplete="name" required
+                       th:value="${nomeDigitado != null ? nomeDigitado : perfil.usuario.nome}"/>
+            </div>
+
+            <div class="campo">
+                <label for="email">E-mail</label>
+                <input type="email" id="email" name="email" maxlength="180" autocomplete="email" required
+                       th:value="${emailDigitado != null ? emailDigitado : perfil.usuario.email}"/>
+                <p class="dica">É com ele que você entra, e para ele vai o link de recuperação de senha.</p>
+            </div>
+
+            <!--/* Aparece quando o e-mail muda (js/sendhemosc.js); sem JavaScript fica sempre a vista. */-->
+            <div class="campo" data-confirma-email>
+                <label for="senhaConfirmaEmail">Senha atual</label>
+                <input type="password" id="senhaConfirmaEmail" name="senhaAtual" autocomplete="current-password"/>
+                <p class="dica">
+                    Pedida só para trocar o e-mail. Ao salvar, você sai e entra de novo com o endereço novo.
+                </p>
+            </div>
+
+            <button type="submit">Salvar alterações</button>
+        </form>
+
+        <dl class="resumo-chave">
+            <div>
+                <dt>Perfil de acesso</dt>
+                <dd th:text="${perfil.usuario.perfil.descricao}">Operador</dd>
+                <dd class="dica" th:text="${perfil.usuario.perfil.atribuicoes}">Cadastra doadores</dd>
+            </div>
+            <div>
+                <dt>Situação da conta</dt>
+                <dd th:text="${perfil.usuario.situacao.descricao}">Ativo</dd>
+            </div>
+            <div>
+                <dt>Conta criada em</dt>
+                <dd th:text="${#temporals.format(perfil.usuario.criadoEm, 'dd/MM/yyyy')}">01/06/2026</dd>
+            </div>
+            <div>
+                <dt>Último acesso</dt>
+                <dd th:text="${perfil.usuario.ultimoAcessoEm != null
+                        ? #temporals.format(perfil.usuario.ultimoAcessoEm, 'dd/MM/yyyy HH:mm') : 'Este é o primeiro'}">
+                    07/11/2026 11:58</dd>
+            </div>
+        </dl>
+        <p class="dica">O perfil de acesso e a situação da conta só um administrador altera.</p>
+    </section>
+
+    <!--/* Senha digitada nunca volta para o formulário, nem depois de erro. */-->
+    <section class="cartao">
+        <h2>Trocar a senha</h2>
+
+        <form th:action="@{/conta/senha}" method="post" style="display:block;">
+            <div class="campo">
+                <label for="senhaAtual">Senha atual</label>
+                <input type="password" id="senhaAtual" name="senhaAtual" autocomplete="current-password" required/>
+            </div>
+
+            <div class="campo">
+                <label for="novaSenha">Senha nova</label>
+                <input type="password" id="novaSenha" name="novaSenha" autocomplete="new-password"
+                       minlength="8" required/>
+                <p class="dica">Entre 8 e 72 caracteres.</p>
+            </div>
+
+            <div class="campo">
+                <label for="confirmacao">Repita a senha nova</label>
+                <input type="password" id="confirmacao" name="confirmacao" autocomplete="new-password"
+                       minlength="8" required/>
+            </div>
+
+            <button type="submit">Trocar senha</button>
+        </form>
+    </section>
+
+</div>
+</main>
+
+</div>
+</body>
+</html>

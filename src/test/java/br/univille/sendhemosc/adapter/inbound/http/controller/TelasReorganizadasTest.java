@@ -107,13 +107,13 @@ class TelasReorganizadasTest {
 
     @Test
     @WithMockUser(username = "admin@example.org", roles = "MASTER")
-    @DisplayName("o menu da engrenagem reune aparencia, senha, termo, contas e auditoria")
+    @DisplayName("o menu da engrenagem reune aparencia, perfil, termo, contas e auditoria")
     void menuDaEngrenagem() throws Exception {
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("data-alternar-menu")))
                 .andExpect(content().string(containsString("name=\"tema\"")))
-                .andExpect(content().string(containsString("href=\"/conta/senha\"")))
+                .andExpect(content().string(containsString("href=\"/conta\"")))
                 .andExpect(content().string(containsString("href=\"/usuarios\"")))
                 .andExpect(content().string(containsString("href=\"/termo\"")));
     }

@@ -85,3 +85,47 @@ document.addEventListener('click', (evento) => {
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('form[data-selecao]').forEach(atualizarSelecao);
 });
+
+// Perfil: a foto escolhida segue sozinha para o servidor, depois de conferir o tamanho aqui (o
+// servidor confere de novo; isto so poupa a pessoa de esperar um envio que seria recusado).
+document.addEventListener('change', (evento) => {
+    const campo = evento.target;
+
+    if (!campo.matches('[data-foto-input]') || !campo.files.length) {
+        return;
+    }
+
+    const erro = document.querySelector('[data-foto-erro]');
+    const grande = campo.files[0].size > Number(campo.dataset.limiteBytes);
+
+    if (erro) {
+        erro.hidden = !grande;
+    }
+    if (grande) {
+        campo.value = '';
+        return;
+    }
+    campo.form.requestSubmit();
+});
+
+// Perfil: a senha atual so e pedida quando o e-mail muda. Sem JavaScript o campo fica sempre a
+// vista, e o servidor recusa a troca sem a senha de qualquer jeito.
+function conferirTrocaDeEmail(formulario) {
+    const original = formulario.dataset.emailOriginal.trim().toLowerCase();
+    const mudou = formulario.elements.email.value.trim().toLowerCase() !== original;
+
+    formulario.querySelector('[data-confirma-email]').hidden = !mudou;
+    formulario.elements.senhaAtual.required = mudou;
+}
+
+document.addEventListener('input', (evento) => {
+    const formulario = evento.target.closest('form[data-dados-form]');
+
+    if (formulario && evento.target.name === 'email') {
+        conferirTrocaDeEmail(formulario);
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('form[data-dados-form]').forEach(conferirTrocaDeEmail);
+});

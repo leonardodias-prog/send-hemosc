@@ -53,6 +53,7 @@ public class AuditoriaViewAdapter {
             Map.entry("CONTA_CRIADA", "Conta criada"),
             Map.entry("CONTA_ALTERADA", "Conta alterada"),
             Map.entry("CONTA_EXCLUIDA", "Conta excluída"),
+            Map.entry("PERFIL_ALTERADO", "Perfil alterado pela própria pessoa"),
             Map.entry("SENHA_ALTERADA", "Senha alterada"),
             Map.entry("SENHA_REDEFINIDA", "Senha redefinida pelo administrador"),
             Map.entry("SENHA_REDEFINIDA_PELO_LINK", "Senha redefinida pelo link"),
@@ -76,8 +77,8 @@ public class AuditoriaViewAdapter {
                 "DOACAO_REGISTRADA", "DOADOR_EXCLUIDO", "DOADOR_DESATIVADO", "DOADOR_REATIVADO",
                 "DADOS_DO_TITULAR_EXPORTADOS", "LIMITE_DE_CONTATO_LIBERADO")));
         CATEGORIAS.put("contas", new Categoria("contas", "Contas e senhas", Set.of(
-                "USUARIO_CADASTRADO", "CONTA_CRIADA", "CONTA_ALTERADA", "CONTA_EXCLUIDA", "SENHA_ALTERADA",
-                "SENHA_REDEFINIDA", "SENHA_REDEFINIDA_PELO_LINK", "RECUPERACAO_DE_SENHA_PEDIDA")));
+                "USUARIO_CADASTRADO", "CONTA_CRIADA", "CONTA_ALTERADA", "CONTA_EXCLUIDA", "PERFIL_ALTERADO",
+                "SENHA_ALTERADA", "SENHA_REDEFINIDA", "SENHA_REDEFINIDA_PELO_LINK", "RECUPERACAO_DE_SENHA_PEDIDA")));
         CATEGORIAS.put("seguranca", new Categoria("seguranca", "Tentativas de entrada", Set.of(
                 "ENTRADA_RECUSADA", "ENTRADA_BLOQUEADA")));
     }

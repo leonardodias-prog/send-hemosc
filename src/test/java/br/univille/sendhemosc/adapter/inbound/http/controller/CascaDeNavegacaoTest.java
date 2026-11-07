@@ -57,12 +57,13 @@ class CascaDeNavegacaoTest {
         }
 
         @Test
-        @DisplayName("minha senha, com o item aparecendo para todo perfil")
-        void minhaSenha() throws Exception {
-            mockMvc.perform(get("/conta/senha"))
+        @WithMockUser(username = "admin@sendhemosc.local", roles = "MASTER")
+        @DisplayName("meu perfil, com o item aparecendo para todo perfil (usa o administrador que a subida cria)")
+        void meuPerfil() throws Exception {
+            mockMvc.perform(get("/conta"))
                     .andExpect(status().isOk())
                     .andExpect(content().string(containsString(MARCA_DA_CASCA)))
-                    .andExpect(content().string(containsString("href=\"/conta/senha\"")));
+                    .andExpect(content().string(containsString("href=\"/conta\"")));
         }
 
         @Test

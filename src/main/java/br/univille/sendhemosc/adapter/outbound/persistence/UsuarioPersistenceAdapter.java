@@ -78,6 +78,18 @@ public class UsuarioPersistenceAdapter implements IUsuarioRepositoryPort {
 
     @Override
     @Transactional
+    public Optional<UsuarioResumo> atualizarDadosPessoais(final Long id, final String nome, final String email) {
+        return usuarioRepository.findById(id).map(entidade -> {
+            entidade.setNome(nome);
+            entidade.setEmail(email);
+            entidade.setAtualizadoEm(LocalDateTime.now());
+
+            return paraResumo(usuarioRepository.save(entidade));
+        });
+    }
+
+    @Override
+    @Transactional
     public Optional<UsuarioResumo> trocarSenha(final Long id, final String senhaHash) {
         return usuarioRepository.findById(id).map(entidade -> {
             entidade.setSenhaHash(senhaHash);

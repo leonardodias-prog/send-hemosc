@@ -11,6 +11,7 @@ import br.univille.sendhemosc.domain.enums.TipoSanguineo;
 import br.univille.sendhemosc.domain.port.outbound.IAuditoriaPort;
 import br.univille.sendhemosc.domain.port.outbound.IDisparoAutomaticoRepositoryPort;
 import br.univille.sendhemosc.domain.port.outbound.IDoadorRepositoryPort;
+import br.univille.sendhemosc.domain.port.outbound.IFotoUsuarioRepositoryPort;
 import br.univille.sendhemosc.domain.port.outbound.IRecuperacaoSenhaPort;
 import br.univille.sendhemosc.domain.port.outbound.IUsuarioRepositoryPort;
 import br.univille.sendhemosc.usecase.estoque.ListarSituacaoEstoqueUseCase;
@@ -67,6 +68,9 @@ class MigracaoPostgresTest {
     private IRecuperacaoSenhaPort recuperacaoSenha;
 
     @Autowired
+    private IFotoUsuarioRepositoryPort fotoRepository;
+
+    @Autowired
     private IAuditoriaPort auditoria;
 
     @Autowired
@@ -97,7 +101,31 @@ class MigracaoPostgresTest {
 
         assertThat(tabelas).contains(
                 "doador", "doacao", "estoque_hemocomponente", "notificacao",
-                "usuario", "consentimento", "auditoria", "disparo_automatico", "recuperacao_senha");
+                "usuario", "consentimento", "auditoria", "disparo_automatico", "recuperacao_senha", "usuario_foto");
+    }
+
+    @Test
+    @DisplayName("a foto de perfil grava e le bytea no PostgreSQL, troca no mesmo lugar e some junto com a conta")
+    void fotoDePerfilNoPostgres() {
+        final String sufixo = UUID.randomUUID().toString().replace("-", "");
+        final Long id = usuarioRepository.criar("Foto " + sufixo, "foto." + sufixo + "@example.org", "hash",
+                PerfilUsuario.OPERADOR, SituacaoUsuario.ATIVO, null);
+        final byte[] primeira = {(byte) 0xFF, (byte) 0xD8, 0, 1, 2, (byte) 0xFF, (byte) 0xD9};
+        final byte[] segunda = {(byte) 0xFF, (byte) 0xD8, 9, 8, (byte) 0xFF, (byte) 0xD9};
+
+        fotoRepository.salvar(id, "image/jpeg", primeira, LocalDateTime.now());
+        assertThat(fotoRepository.buscar(id).orElseThrow().conteudo()).isEqualTo(primeira);
+        assertThat(fotoRepository.momentoDaFoto(id)).isPresent();
+
+        fotoRepository.salvar(id, "image/jpeg", segunda, LocalDateTime.now());
+        assertThat(fotoRepository.buscar(id).orElseThrow().conteudo()).isEqualTo(segunda);
+        assertThat(jdbc.queryForObject("select count(*) from usuario_foto where usuario_id = ?", Integer.class, id))
+                .as("uma foto por conta").isEqualTo(1);
+
+        // A chave estrangeira apaga a foto com a conta: o dado pessoal nao sobra sem dono.
+        usuarioRepository.excluir(id);
+        assertThat(jdbc.queryForObject("select count(*) from usuario_foto where usuario_id = ?", Integer.class, id))
+                .isZero();
     }
 
     @Test

@@ -80,11 +80,11 @@
     </a>
 
     <!--/* Menu da engrenagem: abre ao passar o mouse ou ao clicar (js/sendhemosc.js), com a
-           aparencia, a propria senha, o termo e, para o administrador, contas e auditoria. O numero
+           aparencia, o perfil da pessoa, o termo e, para o administrador, contas e auditoria. O numero
            de cadastros a espera aparece na engrenagem para que ninguem precise abrir a tela de
            contas so para descobrir que nao havia nada a decidir. */-->
     <div class="rodape-lateral menu-lateral"
-         th:with="emConfig=${secao == 'contas' or secao == 'auditoria' or secao == 'senha' or secao == 'termo'}">
+         th:with="emConfig=${secao == 'contas' or secao == 'auditoria' or secao == 'perfil' or secao == 'termo'}">
         <button type="button" class="secao" data-alternar-menu aria-haspopup="true" aria-expanded="false"
                 aria-label="Configurações" th:classappend="${emConfig} ? 'atual'">
             <svg class="icone" viewBox="0 0 24 24" aria-hidden="true">
@@ -117,9 +117,9 @@
                 </label>
             </div>
 
-            <a class="item-menu" role="menuitem" th:href="@{/conta/senha}"
-               th:classappend="${secao == 'senha'} ? 'atual'"
-               th:aria-current="${secao == 'senha'} ? 'page' : null">Minha senha</a>
+            <a class="item-menu" role="menuitem" th:href="@{/conta}"
+               th:classappend="${secao == 'perfil'} ? 'atual'"
+               th:aria-current="${secao == 'perfil'} ? 'page' : null">Meu perfil</a>
             <a class="item-menu" role="menuitem" th:href="@{/usuarios}" sec:authorize="hasRole('MASTER')"
                th:classappend="${secao == 'contas'} ? 'atual'"
                th:aria-current="${secao == 'contas'} ? 'page' : null">

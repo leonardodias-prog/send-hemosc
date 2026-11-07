@@ -64,6 +64,18 @@ public interface IUsuarioRepositoryPort {
                                       PerfilUsuario perfil, SituacaoUsuario situacao);
 
     /**
+     * Altera so o nome e o e-mail, os dados que a propria pessoa pode mudar no perfil. Existe
+     * separado de atualizar de proposito: reescrever perfil e situacao com o valor lido antes
+     * desfaria, sem aviso, uma decisao que o administrador tomou nesse meio tempo.
+     *
+     * @param id conta a alterar
+     * @param nome novo nome
+     * @param email novo e-mail
+     * @return a conta atualizada, vazio quando nao existe
+     */
+    Optional<UsuarioResumo> atualizarDadosPessoais(Long id, String nome, String email);
+
+    /**
      * Grava um novo hash de senha.
      *
      * @param id conta a alterar

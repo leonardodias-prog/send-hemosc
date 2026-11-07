@@ -586,3 +586,31 @@ a.voltar::before { content: "←"; }
     .painel-lateral { left: auto; right: 0; bottom: auto; top: calc(100% + 8px); }
     .painel-lateral::before { display: none; }
 }
+
+/* --- Perfil ---
+   Reaproveita o .avatar da lista de contas: com foto e um <img>, sem foto e a inicial do nome. */
+.avatar.grande { width: 96px; height: 96px; font-size: 40px; }
+img.avatar { object-fit: cover; background: var(--fundo); }
+.perfil-topo { display: flex; align-items: flex-start; gap: 22px; }
+.perfil-topo .identidade { flex: 1; min-width: 0; }
+.perfil-topo h2 { margin: 0; font-size: 20px; overflow-wrap: anywhere; }
+.perfil-topo .identidade > .dica:first-of-type { margin: 2px 0 10px; overflow-wrap: anywhere; }
+.perfil-topo .etiquetas { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.foto-acoes { display: flex; flex-wrap: wrap; gap: 8px; }
+.foto-acoes form { margin: 0; }
+/* O campo de arquivo fica escondido; o rotulo faz o papel do botao, como um .secundario. */
+.escolher-foto {
+    position: relative; display: inline-flex; align-items: center; justify-content: center; min-height: 40px;
+    padding: 9px 18px; border: 1px solid var(--borda); border-radius: var(--raio-controle);
+    background: var(--cartao); color: var(--texto); font-size: 14px; font-weight: 600; cursor: pointer;
+    white-space: nowrap; transition: background-color 150ms ease-out, border-color 150ms ease-out;
+}
+@media (hover: hover) { .escolher-foto:hover { background: var(--fundo); border-color: var(--suave); } }
+.escolher-foto:has(input:focus-visible) { outline: 2px solid var(--primaria); outline-offset: 2px; }
+.resumo-chave dd.dica { font-size: 12px; font-weight: 400; }
+/* O display do .campo venceria o atributo hidden: sem esta regra o bloco nunca sumiria. */
+.campo[hidden] { display: none; }
+@media (max-width: 560px) {
+    .perfil-topo { flex-direction: column; align-items: center; text-align: center; }
+    .perfil-topo .etiquetas, .foto-acoes { justify-content: center; }
+}

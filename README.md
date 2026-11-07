@@ -53,7 +53,7 @@ transfusional**. Quando A+ está em falta, convoca A+, A−, O+ e O−.
 | `/disparo-automatico` | Responsável e administrador | Liga, desliga e configura a rodada automática, com prévia de quem ela convocaria |
 | `/relatorios/conversao` | Todos autenticados | Quantos convocados viraram doação, por tipo sanguíneo e período |
 | `/usuarios` | Administrador | Criação, alteração, senha e exclusão de contas |
-| `/conta/senha` | Todos autenticados | Troca da própria senha, pedindo a atual |
+| `/conta` | Todos autenticados | Meu perfil: dados da conta, foto (ou a inicial do nome), correção de nome e e-mail e troca da própria senha. Trocar o e-mail pede a senha atual e encerra a sessão |
 | `/login`, `/cadastro`, `/termo` | Público | Entrada, autocadastro e termo de uso |
 | `/senha/esqueci` | Público | Recuperação de senha por um link enviado ao e-mail da conta |
 | `/meus-dados/{token}` | Público, pelo link dos e-mails | O doador baixa uma cópia dos próprios dados ou pede a exclusão |

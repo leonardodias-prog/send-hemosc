@@ -25,6 +25,14 @@ spring:
     basename: messages
     encoding: UTF-8
 
+  servlet:
+    multipart:
+      # So a foto de perfil recebe arquivo. O padrao do Spring (1 MB) recusaria a maioria das fotos
+      # de celular, que ficam entre 2 e 6 MB; o servidor as reduz para algumas dezenas de KB antes
+      # de guardar. O mesmo teto vale no caso de uso (ProcessadorDeFoto), que e quem da a mensagem.
+      max-file-size: 8MB
+      max-request-size: 9MB
+
 
 server:
   port: ${PORT:${SERVER_PORT:8080}}

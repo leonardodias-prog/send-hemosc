@@ -32,6 +32,10 @@
 
     <div class="aviso" th:if="${param.saiu}">Você saiu do sistema.</div>
 
+    <div class="aviso" th:if="${param.emailAlterado}">
+        E-mail alterado. Entre de novo, com o endereço novo e a mesma senha.
+    </div>
+
     <div class="cartao">
         <h2>Entrar</h2>
         <form th:action="@{/login}" method="post">

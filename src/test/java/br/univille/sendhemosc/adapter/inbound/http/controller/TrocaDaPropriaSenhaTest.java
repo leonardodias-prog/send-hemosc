@@ -78,7 +78,7 @@ class TrocaDaPropriaSenhaTest {
     @DisplayName("com a senha atual certa, a nova passa a valer e a antiga deixa de valer")
     void trocaComSenhaAtualCerta() throws Exception {
         trocar(SENHA_ATUAL, SENHA_NOVA, SENHA_NOVA)
-                .andExpect(redirectedUrl("/conta/senha"))
+                .andExpect(redirectedUrl("/conta"))
                 .andExpect(flash().attribute("aviso", containsString("Senha alterada")));
 
         assertThat(passwordEncoder.matches(SENHA_NOVA, hashGravado())).isTrue();
@@ -140,18 +140,25 @@ class TrocaDaPropriaSenhaTest {
 
     @Test
     @WithMockUser(username = EMAIL, roles = "OPERADOR")
-    @DisplayName("a tela tem a casca, com Minha senha marcada, e nao devolve senha nenhuma")
+    @DisplayName("a troca de senha vive no perfil, com a casca e o campo da senha atual")
     void telaComCasca() throws Exception {
-        mockMvc.perform(get("/conta/senha"))
+        mockMvc.perform(get("/conta"))
                 .andExpect(content().string(containsString("class=\"lateral\"")))
-                .andExpect(content().string(containsString("Minha senha")))
+                .andExpect(content().string(containsString("Trocar a senha")))
                 .andExpect(content().string(containsString("aria-current=\"page\"")))
                 .andExpect(content().string(containsString("autocomplete=\"current-password\"")));
     }
 
     @Test
+    @WithMockUser(username = EMAIL, roles = "OPERADOR")
+    @DisplayName("quem guardou o endereco antigo da tela de senha cai no perfil")
+    void enderecoAntigoLevaAoPerfil() throws Exception {
+        mockMvc.perform(get("/conta/senha")).andExpect(redirectedUrl("/conta"));
+    }
+
+    @Test
     @DisplayName("quem nao entrou e mandado para a tela de entrada")
     void anonimoVaiParaEntrada() throws Exception {
-        mockMvc.perform(get("/conta/senha")).andExpect(redirectedUrlPattern("**/login"));
+        mockMvc.perform(get("/conta")).andExpect(redirectedUrlPattern("**/login"));
     }
 }

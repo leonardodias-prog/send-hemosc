@@ -22,7 +22,11 @@ public enum UsuarioErrorsMessage implements ErrorsMessage {
     SENHA_ATUAL_INCORRETA("USU-009", "usuario.senha-atual.incorreta", HttpStatus.BAD_REQUEST),
     SENHA_FORA_DO_TAMANHO("USU-010", "usuario.senha.tamanho", HttpStatus.BAD_REQUEST),
     RECUPERACAO_INVALIDA("USU-011", "usuario.recuperacao.invalida", HttpStatus.GONE),
-    APROVACAO_VENCIDA("USU-012", "usuario.aprovacao.vencida", HttpStatus.GONE);
+    APROVACAO_VENCIDA("USU-012", "usuario.aprovacao.vencida", HttpStatus.GONE),
+    NOME_INVALIDO("USU-013", "usuario.nome.invalido", HttpStatus.BAD_REQUEST),
+    EMAIL_INVALIDO("USU-014", "usuario.email.invalido", HttpStatus.BAD_REQUEST),
+    FOTO_INVALIDA("USU-015", "usuario.foto.invalida", HttpStatus.BAD_REQUEST),
+    FOTO_GRANDE_DEMAIS("USU-016", "usuario.foto.grande-demais", HttpStatus.PAYLOAD_TOO_LARGE);
 
     private final String codigo;
     private final String chaveMensagem;
