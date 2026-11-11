@@ -65,7 +65,6 @@ class BrevoEmailAdapterTest {
     private SendHemoscProperties properties() {
         return new SendHemoscProperties(
                 new SendHemoscProperties.Aptidao(60, 90, 4, 3, 16, 69, BigDecimal.valueOf(50)),
-                new SendHemoscProperties.Estoque(30, 60),
                 new SendHemoscProperties.Notificacao(30, 3, 180, "contato@example.org", "Send Hemosc",
                         "http://localhost:8080"));
     }

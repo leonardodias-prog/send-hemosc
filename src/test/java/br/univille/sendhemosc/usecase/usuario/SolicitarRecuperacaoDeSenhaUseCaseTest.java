@@ -59,7 +59,7 @@ class SolicitarRecuperacaoDeSenhaUseCaseTest {
 
     @BeforeEach
     void preparar() {
-        final SendHemoscProperties properties = new SendHemoscProperties(null, null,
+        final SendHemoscProperties properties = new SendHemoscProperties(null,
                 new SendHemoscProperties.Notificacao(30, 3, 180, "r@example.org", "Remetente", "https://app.example.org"));
         final SegurancaProperties seguranca = new SegurancaProperties(
                 new SegurancaProperties.Login(5, 15),

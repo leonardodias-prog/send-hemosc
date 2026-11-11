@@ -1,7 +1,10 @@
 package br.univille.sendhemosc.adapter.outbound.persistence.entity;
 
+import br.univille.sendhemosc.domain.enums.NivelEstoque;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -37,6 +40,16 @@ public class EstoqueEntity {
 
     @Column(name = "capacidade_alvo", nullable = false)
     private int capacidadeAlvo;
+
+    @Column(name = "minimo_critico", nullable = false)
+    private int minimoCritico;
+
+    @Column(name = "minimo_baixo", nullable = false)
+    private int minimoBaixo;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "nivel_avisado", length = 20)
+    private NivelEstoque nivelAvisado;
 
     @Column(name = "atualizado_em", nullable = false)
     private LocalDateTime atualizadoEm;

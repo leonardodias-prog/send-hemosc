@@ -27,8 +27,9 @@ depois que o estoque já caiu.
 
 | Funcionalidade | Onde está no código |
 |---|---|
-| Classificação do estoque em **normal / atenção / crítico** | [`ClassificarNivelEstoqueUseCase`](src/main/java/br/univille/sendhemosc/usecase/estoque/ClassificarNivelEstoqueUseCase.java) |
+| Classificação do estoque em **normal / baixo / crítico**, por mínimos em bolsas de cada tipo | [`ClassificarNivelEstoqueUseCase`](src/main/java/br/univille/sendhemosc/usecase/estoque/ClassificarNivelEstoqueUseCase.java) |
 | Edição da quantidade e da capacidade alvo, com histórico de movimentação | [`AtualizarEstoqueUseCase`](src/main/java/br/univille/sendhemosc/usecase/estoque/AtualizarEstoqueUseCase.java) |
+| Aviso interno de estoque por e-mail, só para administradores: relatório diário e alerta imediato, sem repetição | [`AvisarEquipeDoEstoqueUseCase`](src/main/java/br/univille/sendhemosc/usecase/estoque/AvisarEquipeDoEstoqueUseCase.java) |
 | Cálculo da data estimada da próxima doação | [`CalcularAptidaoUseCase`](src/main/java/br/univille/sendhemosc/usecase/doador/CalcularAptidaoUseCase.java) |
 | Convocação por tipo sanguíneo + aptidão | [`ConvocarDoadoresUseCase`](src/main/java/br/univille/sendhemosc/usecase/notificacao/ConvocarDoadoresUseCase.java) |
 | Convocação de uma seleção específica | [`ConvocarSelecionadosUseCase`](src/main/java/br/univille/sendhemosc/usecase/notificacao/ConvocarSelecionadosUseCase.java) |
@@ -51,6 +52,7 @@ transfusional**. Quando A+ está em falta, convoca A+, A−, O+ e O−.
 | `/doadores` | Todos autenticados | Busca com filtros, aptidão e convocação seletiva |
 | `/doadores/{id}/editar` | Todos autenticados (excluir: responsável e administrador) | Edição, desativação, exportação dos dados e exclusão do doador |
 | `/disparo-automatico` | Responsável e administrador | Liga, desliga e configura a rodada automática, com prévia de quem ela convocaria |
+| `/aviso-estoque` | Responsável e administrador | Aviso interno de estoque: relatório diário e alerta imediato, enviados só aos administradores ativos, e os níveis mínimos de cada tipo |
 | `/relatorios/conversao` | Todos autenticados | Quantos convocados viraram doação, por tipo sanguíneo e período |
 | `/usuarios` | Administrador | Criação, alteração, senha e exclusão de contas |
 | `/conta` | Todos autenticados | Meu perfil: dados da conta, foto (ou a inicial do nome), correção de nome e e-mail e troca da própria senha. Trocar o e-mail pede a senha atual e encerra a sessão |
@@ -174,8 +176,10 @@ Ficam em `sendhemosc.aptidao`, fora do código, para serem revisadas sem ler Jav
 | Faixa etária | 16 a 69 anos | 16 a 69 anos |
 | Peso mínimo | 50 kg | 50 kg |
 
-Limiares de estoque: abaixo de **30%** da capacidade alvo é `CRITICO`, abaixo de **60%** é
-`ATENCAO`, o resto é `NORMAL`.
+Níveis de estoque: cada tipo sanguíneo tem dois mínimos, em bolsas, editados na tela
+`/aviso-estoque`. Abaixo do mínimo crítico o nível é `CRITICO`; abaixo do mínimo baixo é `ATENCAO`
+(que a equipe vê como "Baixo"); o resto é `NORMAL`. É uma régua só para o painel, a convocação e o
+aviso interno. Os mínimos iniciais correspondem aos antigos 30% e 60% da capacidade alvo.
 
 **Limite de contato por pessoa**, em `sendhemosc.notificacao`: cada pessoa recebe no máximo
 **3** convocações sem resposta, com pelo menos **30 dias** entre uma e outra. Vale para toda

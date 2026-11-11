@@ -6,6 +6,7 @@ import br.univille.sendhemosc.adapter.outbound.email.EnvioDeEmailRouter;
 import br.univille.sendhemosc.domain.dto.SituacaoEstoque;
 import br.univille.sendhemosc.domain.port.outbound.IEmailPort;
 import br.univille.sendhemosc.usecase.estoque.ListarSituacaoEstoqueUseCase;
+import java.util.Comparator;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -38,7 +39,7 @@ class SendHemoscApplicationTest {
         final List<SituacaoEstoque> situacoes = listarSituacaoEstoque.execute();
 
         assertThat(situacoes).isSortedAccordingTo(
-                (primeiro, segundo) -> Integer.compare(primeiro.percentualOcupacao(), segundo.percentualOcupacao()));
+                Comparator.comparing(SituacaoEstoque::nivel).thenComparingInt(SituacaoEstoque::percentualOcupacao));
     }
 
     @Test

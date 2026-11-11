@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"/>
+    <meta name="supported-color-schemes" content="light dark"/>
+    <title th:text="${titulo}">Estoque de sangue</title>
+    <style th:replace="~{email/base :: estilos}"></style>
+</head>
+<body class="fundo" bgcolor="#f6f1f1"
+      style="margin:0;padding:0;background-color:#f6f1f1;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,Helvetica,sans-serif;color:#241b1d;">
+<!--/*
+  Aviso interno de estoque: o mesmo modelo serve ao relatório diário, ao alerta imediato e ao
+  teste. Muda a introdução e, no alerta, o quadro com o tipo que caiu de nível.
+
+  A situação de cada tipo vai sempre escrita, e não só na cor: a equipe lê no celular, no
+  plantão, e cor sozinha não chega a todo mundo.
+*/-->
+<div th:replace="~{email/base :: previa(${tiposComAtencao != null} ? 'Tipos com atenção: ' + ${tiposComAtencao} + '.' : 'Todos os tipos estão em nível normal.')}"></div>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="fundo" bgcolor="#f6f1f1"
+       style="background-color:#f6f1f1;">
+    <tr>
+        <td align="center" style="padding:28px 12px;">
+            <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" class="cartao" bgcolor="#ffffff"
+                   style="width:100%;max-width:600px;background-color:#ffffff;border:1px solid #ece4e5;border-radius:14px;overflow:hidden;">
+
+                <tr th:replace="~{email/base :: cabecalho}"></tr>
+
+                <tr>
+                    <td class="miolo" style="padding:32px;">
+                        <h1 class="titulo texto" style="margin:0 0 12px;font-size:24px;line-height:1.25;font-weight:700;color:#241b1d;"
+                            th:text="${titulo}">Estoque de sangue em 12/11/2026</h1>
+
+                        <p class="texto" style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#241b1d;"
+                           th:text="${introducao}">Bom dia! Segue o estoque atual:</p>
+
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="alerta"
+                               th:if="${destaque != null}"
+                               style="background-color:#fff7e8;border:1px solid #e0a458;border-radius:12px;margin-bottom:20px;">
+                            <tr>
+                                <td class="alerta-texto" style="padding:14px 18px;font-size:15px;line-height:1.6;color:#4a2c05;">
+                                    <strong style="font-size:20px;" th:text="${destaque.sigla}">O-</strong>
+                                    entrou em nível <strong th:text="${destaque.nivel}">Crítico</strong>:
+                                    <strong th:text="${destaque.bolsas}">4 bolsas</strong>,
+                                    abaixo do mínimo de <span th:text="${destaque.minimo}">5</span>.
+                                </td>
+                            </tr>
+                        </table>
+
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                               style="border-collapse:collapse;margin-bottom:20px;">
+                            <tr>
+                                <th class="suave divisa" align="left"
+                                    style="padding:8px 10px;font-size:12px;font-weight:600;color:#6e6163;border-bottom:2px solid #ece4e5;">Tipo</th>
+                                <th class="suave divisa" align="right"
+                                    style="padding:8px 10px;font-size:12px;font-weight:600;color:#6e6163;border-bottom:2px solid #ece4e5;">Bolsas</th>
+                                <th class="suave divisa" align="left"
+                                    style="padding:8px 10px 8px 24px;font-size:12px;font-weight:600;color:#6e6163;border-bottom:2px solid #ece4e5;">Situação</th>
+                            </tr>
+                            <tr th:each="linha : ${linhas}"
+                                th:with="cor=${linha.chave == 'critico'} ? '#b42318' : (${linha.chave == 'atencao'} ? '#a5470a' : '#08724a'),
+                                         peso=${linha.precisaAtencao} ? '700' : '400'">
+                                <td class="texto divisa" style="padding:10px;font-size:16px;color:#241b1d;border-bottom:1px solid #f0e8e9;"
+                                    th:styleappend="'font-weight:' + ${peso} + ';'" th:text="${linha.sigla}">O-</td>
+                                <td class="texto divisa" align="right"
+                                    style="padding:10px;font-size:16px;color:#241b1d;border-bottom:1px solid #f0e8e9;"
+                                    th:styleappend="'font-weight:' + ${peso} + ';'" th:text="${linha.bolsas}">4</td>
+                                <td class="divisa" style="padding:10px 10px 10px 24px;font-size:15px;border-bottom:1px solid #f0e8e9;">
+                                    <span th:class="'nivel-' + ${linha.chave}"
+                                          th:styleappend="'color:' + ${cor} + ';font-weight:' + ${peso} + ';'"
+                                          th:text="${linha.nivel}">Crítico</span>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="alerta"
+                               th:if="${tiposComAtencao != null}"
+                               style="background-color:#fff7e8;border:1px solid #e0a458;border-radius:12px;">
+                            <tr>
+                                <td class="alerta-texto" style="padding:14px 18px;font-size:15px;line-height:1.6;color:#4a2c05;">
+                                    <strong>Tipos com atenção:</strong>
+                                    <span th:text="${tiposComAtencao} + '.'">O- e A-.</span>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <p class="texto" th:if="${tiposComAtencao == null}"
+                           style="margin:0;font-size:15px;line-height:1.6;color:#241b1d;">
+                            Todos os tipos estão em nível normal.
+                        </p>
+
+                        <p class="suave" style="margin:20px 0 0;font-size:12px;line-height:1.7;color:#6e6163;">
+                            Os níveis seguem os mínimos de cada tipo, definidos na tela Aviso de estoque.
+                            O estoque completo está no <a th:href="${linkPainel}" href="#" style="color:#c1121f;">painel</a>.
+                        </p>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="rodape divisa" style="padding:20px 32px;background-color:#faf7f7;border-top:1px solid #f0e8e9;">
+                        <div th:replace="~{email/base :: assinatura(false)}"></div>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

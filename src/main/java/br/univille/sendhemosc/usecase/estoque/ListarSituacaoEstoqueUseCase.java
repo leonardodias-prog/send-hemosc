@@ -27,9 +27,10 @@ public class ListarSituacaoEstoqueUseCase {
      */
     public List<SituacaoEstoque> execute() {
         final List<SituacaoEstoque> situacoes = estoqueRepository.listarTodos().stream()
-                .map(registro -> classificarNivel.execute(
-                        registro.tipoSanguineo(), registro.quantidadeBolsas(), registro.capacidadeAlvo()))
-                .sorted(Comparator.comparingInt(SituacaoEstoque::percentualOcupacao))
+                .map(classificarNivel::execute)
+                // Primeiro o nivel, que e o que a regua decide; o percentual desempata dentro dele.
+                .sorted(Comparator.comparing(SituacaoEstoque::nivel)
+                        .thenComparingInt(SituacaoEstoque::percentualOcupacao))
                 .toList();
 
         log.info("[m=execute] Situacao de estoque consolidada para {} tipos sanguineos", situacoes.size());

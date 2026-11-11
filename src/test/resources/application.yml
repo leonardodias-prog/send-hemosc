@@ -24,9 +24,9 @@ sendhemosc:
     idade-minima: 16
     idade-maxima: 69
     peso-minimo-kg: 50
-  estoque:
-    limiar-critico-percentual: 30
-    limiar-atencao-percentual: 60
+  aviso-estoque:
+    # Idem para o relatorio diario de estoque: os testes chamam o aviso direto.
+    primeira-verificacao-ms: 3600000
   disparo-automatico:
     # Uma hora: a conferencia periodica nao roda durante os testes, que chamam a rodada direto.
     primeira-verificacao-ms: 3600000

@@ -66,12 +66,11 @@ class ConvocarDoadoresUseCaseTest {
     void preparar() {
         final var properties = new SendHemoscProperties(
                 new SendHemoscProperties.Aptidao(60, 90, 4, 3, 16, 69, BigDecimal.valueOf(50)),
-                new SendHemoscProperties.Estoque(30, 60),
                 new SendHemoscProperties.Notificacao(30, 3, 180, "teste@example.org", "Teste", "http://localhost:8080"));
 
         useCase = new ConvocarDoadoresUseCase(
                 estoqueRepository, doadorRepository, notificacaoRepository, emailPort,
-                new ClassificarNivelEstoqueUseCase(properties), new CalcularAptidaoUseCase(properties),
+                new ClassificarNivelEstoqueUseCase(), new CalcularAptidaoUseCase(properties),
                 new AvaliarLimiteDeContatoUseCase(properties), renderizarConvocacao, auditoria);
 
         ReflectionTestUtils.setField(useCase, "maxFalhasConsecutivas", 5);
@@ -92,7 +91,7 @@ class ConvocarDoadoresUseCaseTest {
     private void estoqueEm(final int quantidade, final int capacidade) {
         when(estoqueRepository.buscarPorTipo(TipoSanguineo.O_NEGATIVO))
                 .thenReturn(Optional.of(new IEstoqueRepositoryPort.RegistroEstoque(
-                        TipoSanguineo.O_NEGATIVO, quantidade, capacidade)));
+                        TipoSanguineo.O_NEGATIVO, quantidade, capacidade, capacidade * 3 / 10, capacidade * 6 / 10)));
     }
 
     @Test
@@ -166,7 +165,7 @@ class ConvocarDoadoresUseCaseTest {
     void buscaPorCompatibilidade() {
         when(estoqueRepository.buscarPorTipo(TipoSanguineo.A_POSITIVO))
                 .thenReturn(Optional.of(new IEstoqueRepositoryPort.RegistroEstoque(
-                        TipoSanguineo.A_POSITIVO, 10, 100)));
+                        TipoSanguineo.A_POSITIVO, 10, 100, 30, 60)));
         when(doadorRepository.buscarCandidatos(anySet(), any())).thenReturn(List.of());
 
         useCase.execute(TipoSanguineo.A_POSITIVO, OrigemNotificacao.AUTOMATICA, false);

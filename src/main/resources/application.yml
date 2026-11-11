@@ -123,10 +123,6 @@ sendhemosc:
     idade-minima: 16
     idade-maxima: 69
     peso-minimo-kg: 50
-  estoque:
-    # Percentual da capacidade alvo que separa cada nível
-    limiar-critico-percentual: 30
-    limiar-atencao-percentual: 60
   email:
     # log   = apenas registra a mensagem no console. Padrão: nada sai da máquina.
     # brevo = entrega pela API HTTP do Brevo, na porta 443. Hospedagens gratuitas bloqueiam
@@ -143,6 +139,13 @@ sendhemosc:
     ativo-na-subida: ${EMAIL_ATIVO:true}
     brevo:
       api-key: ${BREVO_API_KEY:}
+
+  aviso-estoque:
+    # De quanto em quanto tempo o agendador confere se o relatório diário de estoque é devido.
+    # O aviso não se desliga e vai só aos administradores ativos; a tela /aviso-estoque ajusta a hora.
+    # Os níveis mínimos de cada tipo também ficam lá, e não aqui.
+    verificacao-ms: 600000
+    primeira-verificacao-ms: 60000
 
   disparo-automatico:
     # De quanto em quanto tempo o agendador confere se a rodada automática é devida. Se há

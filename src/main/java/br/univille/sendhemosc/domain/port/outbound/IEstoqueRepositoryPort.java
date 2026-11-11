@@ -1,6 +1,7 @@
 package br.univille.sendhemosc.domain.port.outbound;
 
 import br.univille.sendhemosc.domain.dto.MovimentacaoEstoque;
+import br.univille.sendhemosc.domain.enums.NivelEstoque;
 import br.univille.sendhemosc.domain.enums.TipoSanguineo;
 import java.util.List;
 import java.util.Optional;
@@ -45,12 +46,41 @@ public interface IEstoqueRepositoryPort {
     List<MovimentacaoEstoque> listarMovimentacoes(int limite);
 
     /**
+     * Grava os minimos que separam os niveis de um tipo.
+     *
+     * @param tipoSanguineo tipo a atualizar
+     * @param minimoCritico abaixo desta quantidade o nivel e critico
+     * @param minimoBaixo abaixo desta quantidade o nivel e baixo
+     * @return false quando os valores ja eram esses
+     */
+    boolean atualizarMinimos(TipoSanguineo tipoSanguineo, int minimoCritico, int minimoBaixo);
+
+    /**
+     * Informa o ultimo nivel de que a equipe foi avisada para o tipo.
+     *
+     * @param tipoSanguineo tipo desejado
+     * @return o nivel avisado, ou vazio quando o tipo esta rearmado para um novo alerta
+     */
+    Optional<NivelEstoque> nivelAvisado(TipoSanguineo tipoSanguineo);
+
+    /**
+     * Guarda o nivel de que a equipe acabou de ser avisada.
+     *
+     * @param tipoSanguineo tipo avisado
+     * @param nivel nivel avisado; NORMAL limpa o registro
+     */
+    void registrarNivelAvisado(TipoSanguineo tipoSanguineo, NivelEstoque nivel);
+
+    /**
      * Registro bruto de estoque, sem a classificacao de nivel aplicada.
      *
      * @param tipoSanguineo tipo sanguineo
      * @param quantidadeBolsas quantidade atual
      * @param capacidadeAlvo capacidade considerada ideal
+     * @param minimoCritico abaixo desta quantidade o nivel e critico
+     * @param minimoBaixo abaixo desta quantidade o nivel e baixo
      */
-    record RegistroEstoque(TipoSanguineo tipoSanguineo, int quantidadeBolsas, int capacidadeAlvo) {
+    record RegistroEstoque(TipoSanguineo tipoSanguineo, int quantidadeBolsas, int capacidadeAlvo,
+                           int minimoCritico, int minimoBaixo) {
     }
 }

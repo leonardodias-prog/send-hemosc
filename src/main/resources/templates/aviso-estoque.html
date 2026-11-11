@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Aviso de estoque — Send Hemosc</title>
+    <script th:src="@{/js/tema.js}"></script>
+    <link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}"/>
+    <link rel="stylesheet" th:href="@{/css/sendhemosc.css}"/>
+    <script th:src="@{/js/sendhemosc.js}" defer></script>
+</head>
+<body>
+<div class="app">
+
+<nav th:replace="~{fragmentos/casca :: lateral('aviso')}"></nav>
+
+<main class="conteudo">
+<div class="container">
+
+    <header class="cabecalho">
+        <div>
+            <h1>Aviso de estoque</h1>
+            <p class="dica">E-mail interno sobre as bolsas em estoque. Só os administradores recebem.</p>
+        </div>
+    </header>
+
+    <div class="aviso" th:if="${aviso}" th:text="${aviso}">mensagem</div>
+    <div class="erro-caixa" th:if="${erro}" th:text="${erro}">mensagem</div>
+
+    <div class="faixa" th:unless="${envioReal}">
+        O envio de e-mail está desligado: os avisos ficam só registrados e ninguém recebe.
+        <a th:href="@{/disparo-automatico}">Ligar em Envio de e-mail</a>.
+    </div>
+
+    <!--/* 1. Quando o aviso sai. Sem interruptor de proposito: o aviso nao se desliga. */-->
+    <section class="cartao">
+        <div class="titulo-secao">
+            <h2>Quando avisar</h2>
+            <span class="pilula-estado ligado">Sempre ligado</span>
+        </div>
+
+        <dl class="resumo-chave">
+            <div>
+                <dt>Último relatório diário</dt>
+                <dd>
+                    <span th:if="${configuracao.ultimoRelatorioEm == null}">nenhum ainda</span>
+                    <span th:unless="${configuracao.ultimoRelatorioEm == null}"
+                          th:text="${#temporals.format(configuracao.ultimoRelatorioEm, 'dd/MM/yyyy')}">12/11/2026</span>
+                </dd>
+            </div>
+            <div>
+                <dt>Alterado por</dt>
+                <dd>
+                    <span th:if="${configuracao.atualizadoPor == null}">configuração inicial</span>
+                    <span th:unless="${configuracao.atualizadoPor == null}"
+                          th:text="${configuracao.atualizadoPor} + ' em ' + ${#temporals.format(configuracao.atualizadoEm, 'dd/MM HH:mm')}">email</span>
+                </dd>
+            </div>
+        </dl>
+
+        <form th:action="@{/aviso-estoque}" method="post" class="form-frases">
+
+            <p>
+                <strong>Relatório diário</strong> com o estoque de todos os tipos.
+                <span class="dica">Um por dia. Se o sistema estiver parado no horário, sai assim que ele voltar.</span>
+            </p>
+
+            <p class="frase">
+                Enviar o relatório a partir das
+                <select name="horaRelatorio" aria-label="Hora do relatório diário">
+                    <option th:each="h : ${#numbers.sequence(0, 23)}" th:value="${h}" th:text="${h} + 'h'"
+                            th:selected="${h == configuracao.horaRelatorio}">7h</option>
+                </select>.
+            </p>
+
+            <p>
+                <strong>Alerta imediato</strong> quando um tipo cai para Baixo ou Crítico.
+                <span class="dica">Um alerta por queda de nível. Não repete enquanto o tipo continuar no mesmo nível.</span>
+            </p>
+
+            <div class="acoes">
+                <button type="submit">Salvar hora</button>
+            </div>
+        </form>
+    </section>
+
+    <!--/* 2. Quem recebe. */-->
+    <section class="cartao">
+        <h2>Quem recebe</h2>
+
+        <p class="dica">
+            Os administradores ativos, e só eles. Para mudar quem recebe, altere o perfil das contas.
+        </p>
+
+        <p class="erro-caixa" th:if="${#lists.isEmpty(destinatarios)}">
+            Não há administrador ativo: nenhum aviso sai.
+        </p>
+
+        <table class="tabela-doadores" th:unless="${#lists.isEmpty(destinatarios)}">
+            <tbody>
+            <tr th:each="d : ${destinatarios}">
+                <td class="col-quebra" th:text="${d}">admin@example.org</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="acoes" style="margin-top:14px;" th:unless="${#lists.isEmpty(destinatarios)}">
+            <form th:action="@{/aviso-estoque/teste}" method="post">
+                <button type="submit" class="secundario"
+                        data-confirmar="Enviar agora um e-mail de teste com o estoque atual para os administradores?">
+                    Enviar teste agora
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!--/* 3. A regua: os minimos de cada tipo. */-->
+    <section class="cartao">
+        <h2>Níveis mínimos</h2>
+        <p class="dica">
+            Em bolsas, por tipo sanguíneo. Valem para este aviso, para o painel e para a convocação de doadores.
+        </p>
+
+        <form th:action="@{/aviso-estoque/minimos}" method="post">
+            <table class="tabela-doadores">
+                <thead>
+                <tr>
+                    <th>Tipo</th>
+                    <th>Agora</th>
+                    <th>Baixo abaixo de</th>
+                    <th>Crítico abaixo de</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="m : ${minimos}">
+                    <td class="col-tipo"><span class="tipo-pilula" th:text="${m.tipo.sigla}">O-</span></td>
+                    <td>
+                        <span th:text="${m.quantidadeBolsas}">11</span> bolsas
+                        <span class="etiqueta" th:classappend="${m.nivel.name().toLowerCase()}"
+                              th:text="${m.nivel.descricao}">Crítico</span>
+                    </td>
+                    <td>
+                        <input type="number" min="2" required class="numero-curto" style="width:90px;"
+                               th:name="'baixo_' + ${m.tipo.name()}" th:value="${m.minimoBaixo}"
+                               th:aria-label="'Mínimo baixo de ' + ${m.tipo.sigla}"/>
+                    </td>
+                    <td>
+                        <input type="number" min="1" required class="numero-curto" style="width:90px;"
+                               th:name="'critico_' + ${m.tipo.name()}" th:value="${m.minimoCritico}"
+                               th:aria-label="'Mínimo crítico de ' + ${m.tipo.sigla}"/>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <div class="acoes" style="margin-top:14px;">
+                <button type="submit">Salvar níveis mínimos</button>
+            </div>
+        </form>
+    </section>
+
+    <!--/* 4. O que ja saiu. */-->
+    <section class="cartao">
+        <h2>Últimos avisos</h2>
+
+        <p class="dica" th:if="${#lists.isEmpty(envios)}">Nenhum aviso enviado ainda.</p>
+
+        <table class="tabela-doadores" th:unless="${#lists.isEmpty(envios)}">
+            <thead>
+            <tr>
+                <th>Quando</th>
+                <th>Aviso</th>
+                <th>Assunto</th>
+                <th>Destinatários</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="e : ${envios}">
+                <td class="col-data" th:text="${#temporals.format(e.enviadoEm, 'dd/MM/yyyy HH:mm')}">12/11/2026 07:00</td>
+                <td th:text="${e.tipo.descricao}">Relatório diário</td>
+                <td class="col-quebra" th:text="${e.assunto}">Estoque de sangue – 12/11/2026</td>
+                <td>
+                    <span th:text="${e.destinatarios}">3</span>
+                    <span class="dica critico" th:if="${e.falhas > 0}"
+                          th:text="'(' + ${e.falhas} + ' com falha)'">(1 com falha)</span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+</div>
+</main>
+
+</div>
+</body>
+</html>

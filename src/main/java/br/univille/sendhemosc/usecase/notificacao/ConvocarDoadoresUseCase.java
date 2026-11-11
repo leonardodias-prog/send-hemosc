@@ -179,8 +179,7 @@ public class ConvocarDoadoresUseCase {
         final var registro = estoqueRepository.buscarPorTipo(tipoSanguineo)
                 .orElseThrow(() -> new NegocioException(EstoqueErrorsMessage.NAO_ENCONTRADO));
 
-        return classificarNivel.execute(
-                registro.tipoSanguineo(), registro.quantidadeBolsas(), registro.capacidadeAlvo());
+        return classificarNivel.execute(registro);
     }
 
     private boolean estaApto(final CandidatoConvocacao candidato, final LocalDate referencia) {

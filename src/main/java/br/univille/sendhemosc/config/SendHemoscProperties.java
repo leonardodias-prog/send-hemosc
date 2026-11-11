@@ -9,11 +9,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * os valores sem alterar a aplicacao.
  *
  * @param aptidao regras de aptidao do doador
- * @param estoque limiares de classificacao do estoque
  * @param notificacao parametros de envio e reenvio de convocacoes
  */
 @ConfigurationProperties(prefix = "sendhemosc")
-public record SendHemoscProperties(Aptidao aptidao, Estoque estoque, Notificacao notificacao) {
+public record SendHemoscProperties(Aptidao aptidao, Notificacao notificacao) {
 
     /**
      * Regras de aptidao para doacao.
@@ -34,15 +33,6 @@ public record SendHemoscProperties(Aptidao aptidao, Estoque estoque, Notificacao
             int idadeMinima,
             int idadeMaxima,
             BigDecimal pesoMinimoKg) {
-    }
-
-    /**
-     * Limiares percentuais que separam os niveis de estoque.
-     *
-     * @param limiarCriticoPercentual percentual da capacidade abaixo do qual o nivel e CRITICO
-     * @param limiarAtencaoPercentual percentual da capacidade abaixo do qual o nivel e ATENCAO
-     */
-    public record Estoque(int limiarCriticoPercentual, int limiarAtencaoPercentual) {
     }
 
     /**

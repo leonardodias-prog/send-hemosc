@@ -121,7 +121,6 @@ public class ConvocarSelecionadosUseCase {
         final var registro = estoqueRepository.buscarPorTipo(tipo)
                 .orElseThrow(() -> new NegocioException(EstoqueErrorsMessage.NAO_ENCONTRADO));
 
-        return classificarNivel.execute(registro.tipoSanguineo(),
-                registro.quantidadeBolsas(), registro.capacidadeAlvo());
+        return classificarNivel.execute(registro);
     }
 }

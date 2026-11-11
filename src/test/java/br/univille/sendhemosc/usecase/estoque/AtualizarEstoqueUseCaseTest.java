@@ -35,15 +35,18 @@ class AtualizarEstoqueUseCaseTest {
     @Mock
     private IEstoqueRepositoryPort estoqueRepository;
 
+    @Mock
+    private AvisarEquipeDoEstoqueUseCase avisarEquipe;
+
     private AtualizarEstoqueUseCase useCase;
 
     @BeforeEach
     void preparar() {
-        useCase = new AtualizarEstoqueUseCase(estoqueRepository);
+        useCase = new AtualizarEstoqueUseCase(estoqueRepository, avisarEquipe);
     }
 
     private void estoqueAtual(final int quantidade, final int capacidade) {
-        when(estoqueRepository.buscarPorTipo(TIPO)).thenReturn(Optional.of(new RegistroEstoque(TIPO, quantidade, capacidade)));
+        when(estoqueRepository.buscarPorTipo(TIPO)).thenReturn(Optional.of(new RegistroEstoque(TIPO, quantidade, capacidade, 18, 36)));
     }
 
     @Test
@@ -56,6 +59,18 @@ class AtualizarEstoqueUseCaseTest {
         assertThat(useCase.execute(TIPO, 15, 80)).contains(movimentacao);
         assertThat(movimentacao.variacaoBolsas()).isEqualTo(4);
         assertThat(movimentacao.capacidadeAlterada()).isTrue();
+        verify(avisarEquipe).avaliarAlerta(TIPO);
+    }
+
+    @Test
+    @DisplayName("falha no alerta a equipe nao desfaz nem impede a atualizacao")
+    void falhaNoAlertaNaoImpedeAAtualizacao() {
+        estoqueAtual(11, 60);
+        final var movimentacao = new MovimentacaoEstoque(TIPO, 11, 4, 60, 60, "operador@example.org", LocalDateTime.now());
+        when(estoqueRepository.atualizar(TIPO, 4, 60)).thenReturn(Optional.of(movimentacao));
+        when(avisarEquipe.avaliarAlerta(TIPO)).thenThrow(new IllegalStateException("provedor fora do ar"));
+
+        assertThat(useCase.execute(TIPO, 4, null)).contains(movimentacao);
     }
 
     @Test
@@ -67,6 +82,8 @@ class AtualizarEstoqueUseCaseTest {
         useCase.execute(TIPO, 20, null);
 
         verify(estoqueRepository).atualizar(TIPO, 20, 60);
+        // Nada mudou no estoque, entao nao ha o que avaliar.
+        verify(avisarEquipe, never()).avaliarAlerta(any());
     }
 
     @Test

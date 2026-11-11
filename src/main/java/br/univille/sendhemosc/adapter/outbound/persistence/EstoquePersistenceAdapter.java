@@ -5,6 +5,7 @@ import br.univille.sendhemosc.adapter.outbound.persistence.entity.MovimentacaoEs
 import br.univille.sendhemosc.adapter.outbound.persistence.repository.EstoqueJpaRepository;
 import br.univille.sendhemosc.adapter.outbound.persistence.repository.MovimentacaoEstoqueJpaRepository;
 import br.univille.sendhemosc.domain.dto.MovimentacaoEstoque;
+import br.univille.sendhemosc.domain.enums.NivelEstoque;
 import br.univille.sendhemosc.domain.enums.TipoSanguineo;
 import br.univille.sendhemosc.domain.exception.EstoqueErrorsMessage;
 import br.univille.sendhemosc.domain.exception.NegocioException;
@@ -90,11 +91,52 @@ public class EstoquePersistenceAdapter implements IEstoqueRepositoryPort {
                 .toList();
     }
 
+    @Override
+    @Transactional
+    public boolean atualizarMinimos(final TipoSanguineo tipoSanguineo, final int minimoCritico, final int minimoBaixo) {
+        final EstoqueEntity entidade = entidadeDo(tipoSanguineo);
+
+        if (entidade.getMinimoCritico() == minimoCritico && entidade.getMinimoBaixo() == minimoBaixo) {
+            return false;
+        }
+
+        entidade.setMinimoCritico(minimoCritico);
+        entidade.setMinimoBaixo(minimoBaixo);
+        estoqueRepository.save(entidade);
+
+        log.info("[m=atualizarMinimos] Minimos de {} agora: baixo abaixo de {}, critico abaixo de {}",
+                tipoSanguineo.getSigla(), minimoBaixo, minimoCritico);
+        return true;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<NivelEstoque> nivelAvisado(final TipoSanguineo tipoSanguineo) {
+        return estoqueRepository.findByTipoSanguineo(tipoSanguineo.getSigla()).map(EstoqueEntity::getNivelAvisado);
+    }
+
+    @Override
+    @Transactional
+    public void registrarNivelAvisado(final TipoSanguineo tipoSanguineo, final NivelEstoque nivel) {
+        final EstoqueEntity entidade = entidadeDo(tipoSanguineo);
+
+        // Normal nao se guarda: coluna vazia e o tipo rearmado para o proximo alerta.
+        entidade.setNivelAvisado(nivel == NivelEstoque.NORMAL ? null : nivel);
+        estoqueRepository.save(entidade);
+    }
+
+    private EstoqueEntity entidadeDo(final TipoSanguineo tipoSanguineo) {
+        return estoqueRepository.findByTipoSanguineo(tipoSanguineo.getSigla())
+                .orElseThrow(() -> new NegocioException(EstoqueErrorsMessage.NAO_ENCONTRADO));
+    }
+
     private RegistroEstoque paraRegistro(final EstoqueEntity entidade) {
         return new RegistroEstoque(
                 TipoSanguineo.doSigla(entidade.getTipoSanguineo()),
                 entidade.getQuantidadeBolsas(),
-                entidade.getCapacidadeAlvo());
+                entidade.getCapacidadeAlvo(),
+                entidade.getMinimoCritico(),
+                entidade.getMinimoBaixo());
     }
 
     private MovimentacaoEstoque paraMovimentacao(final MovimentacaoEstoqueEntity entidade) {

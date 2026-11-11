@@ -43,6 +43,8 @@ public class AuditoriaViewAdapter {
             Map.entry("DISPARO_AUTOMATICO_LIGADO", "Disparo automático ligado"),
             Map.entry("DISPARO_AUTOMATICO_DESLIGADO", "Disparo automático desligado"),
             Map.entry("DISPARO_AUTOMATICO_ALTERADO", "Disparo automático alterado"),
+            Map.entry("AVISO_ESTOQUE_ALTERADO", "Aviso de estoque alterado"),
+            Map.entry("ESTOQUE_MINIMOS_ALTERADOS", "Níveis mínimos de estoque alterados"),
             Map.entry("LIMITE_DE_CONTATO_LIBERADO", "Limite de contato liberado"),
             Map.entry("DOACAO_REGISTRADA", "Doação registrada"),
             Map.entry("DOADOR_EXCLUIDO", "Doador excluído"),
@@ -72,7 +74,7 @@ public class AuditoriaViewAdapter {
                 "CONVOCACAO_SELETIVA", "CONVOCACAO_AUTOMATICA", "CONVOCACAO_POR_TIPO", "CONVOCACAO_GERAL")));
         CATEGORIAS.put("envio", new Categoria("envio", "Envio de e-mail", Set.of(
                 "ENVIO_LIGADO", "ENVIO_DESLIGADO", "DISPARO_AUTOMATICO_LIGADO", "DISPARO_AUTOMATICO_DESLIGADO",
-                "DISPARO_AUTOMATICO_ALTERADO")));
+                "DISPARO_AUTOMATICO_ALTERADO", "AVISO_ESTOQUE_ALTERADO", "ESTOQUE_MINIMOS_ALTERADOS")));
         CATEGORIAS.put("doadores", new Categoria("doadores", "Doadores", Set.of(
                 "DOACAO_REGISTRADA", "DOADOR_EXCLUIDO", "DOADOR_DESATIVADO", "DOADOR_REATIVADO",
                 "DADOS_DO_TITULAR_EXPORTADOS", "LIMITE_DE_CONTATO_LIBERADO")));
